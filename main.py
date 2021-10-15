@@ -227,6 +227,7 @@ class ScalableScatter(Scatter):
         self.size = (scale*self.width_org, scale*self.height_org)
         self.image.resize(scale)
 
+
 class PanelizerScreen(Screen):
 
     def __init__(self, **kwargs):
