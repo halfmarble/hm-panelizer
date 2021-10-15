@@ -1,0 +1,173 @@
+#:kivy 1.8.0
+#:import KivyLexer kivy.extras.highlight.KivyLexer
+#:import Factory kivy.factory.Factory
+
+
+<ActionSpinnerOptions@SpinnerOption>:
+    background_color: .4, .4, .4, 1
+
+
+<ActionSpinner@Spinner+ActionItem>:
+    canvas.before:
+        Color:
+            rgba: 0.128, 0.128, 0.128, 1
+        Rectangle:
+        Rectangle:
+            size: self.size
+            pos: self.pos
+    border: 27, 20, 12, 12
+    background_normal: 'atlas://data/images/defaulttheme/action_group'
+    option_cls: Factory.ActionSpinnerOptions
+
+
+<PanelizerScreen>:
+    ScrollView:
+        do_scroll_x: False
+        do_scroll_y: (content.height > root.height - dp(16))
+        AnchorLayout:
+            size_hint_y: None
+            height: max(root.height, content.height)
+            GridLayout:
+                id: content
+                cols: 1
+                spacing: '8dp'
+                padding: '8dp'
+                size_hint: (.8, None)
+                height: self.minimum_height
+
+
+<LayerButton>:
+    background_normal: ''
+    background_color: 0.2, 0.2, 0.2, 1.0
+    color: 0.6, 0.6, 0.6, 1.0
+    size_hint_x: None
+    size_hint_y: None
+    width: 192
+    height: 32
+
+
+BoxLayout:
+    orientation: 'vertical'
+
+    ActionBar:
+        ActionView:
+            id: _action_view
+            ActionPrevious:
+                with_previous: False
+                on_release: pass
+            ActionSeparator:
+            ActionSeparator:
+                width: 10
+                opacity: 0.0
+            ActionButton:
+                text: 'Zoom out'
+                icon: 'data/icons/zoom-out.png'
+                size_hint_max: (32, 32)
+                size_hint: (1.0, 1.0)
+                on_release: app.select_zoom(True)
+            ActionSeparator:
+                width: 10
+                opacity: 0.0
+            ActionButton:
+                text: 'Zoom in'
+                icon: 'data/icons/zoom-in.png'
+                size_hint_max: (32, 32)
+                size_hint: (1.0, 1.0)
+                on_release: app.select_zoom(False)
+            ActionSeparator:
+                width: 10
+                opacity: 0.0
+            ActionSpinner:
+                id: _zoom_button
+                important: True
+                text: app.zoom_str
+                values: app.zoom_values_properties
+                on_text: idx = app.zoom_values_properties.index(args[1]); app.select_zoom_index(idx)
+                font_size: 20
+                bold: True
+                size_hint_max: (96, 32)
+                size_hint: (1.0, 1.0)
+                color: 0.65, 0.65, 0.65
+            ActionSeparator:
+                width: 10
+                opacity: 0.0
+
+    BoxLayout:
+        orientation: 'horizontal'
+        ScreenManager:
+            id: _screen_manager
+            on_current_screen: pass
+        BoxLayout:
+            id: _box_layout
+            orientation: 'vertical'
+            size_hint_x: None
+            width: 200
+            spacing: 2
+            padding: 4
+            canvas:
+                Color:
+                    rgb: 0.0, 0.0, 0.0
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+            Widget:
+                size_hint_x: None
+                size_hint_y: None
+                width: 192
+                height: 10
+            Label:
+                title_color: 1.0, 0.0, 0.0, 1.0
+                background_normal: ''
+                background_color: .2, .2, .2, 1
+                color: .6, .6, .6, 1
+                size_hint_x: None
+                size_hint_y: None
+                width: 192
+                height: 32
+                text: 'PCB layers:'
+                bold: True
+                font_size: 20
+            LayerButton:
+                id: _top1
+                text: 'Top traces'
+                state: 'down'
+                on_state: app.layer_toggle(5, self.state);
+            LayerButton:
+                id: _top3
+                text: 'Top silk'
+                state: 'down'
+                on_state: app.layer_toggle(3, self.state)
+            LayerButton:
+                id: _top4
+                text: 'Top mask'
+                state: 'down'
+                on_state: app.layer_toggle(4, self.state)
+            LayerButton:
+                id: _top2
+                text: 'Top paste'
+                on_state: app.layer_toggle(2, self.state)
+            LayerButton:
+                id: _bottom1
+                text: 'Bottom traces'
+                on_state: app.layer_toggle(6, self.state)
+            LayerButton:
+                id: _bottom3
+                text: 'Bottom silk'
+                on_state: app.layer_toggle(8, self.state)
+            LayerButton:
+                id: _bottom4
+                text: 'Bottom mask'
+                on_state: app.layer_toggle(7, self.state)
+            LayerButton:
+                id: _bottom2
+                text: 'Bottom paste'
+                on_state: app.layer_toggle(9, self.state)
+            LayerButton:
+                text: 'Drill NPH'
+                state: 'down'
+                on_state: app.layer_toggle(10, self.state)
+            LayerButton:
+                text: 'Drill'
+                state: 'down'
+                on_state: app.layer_toggle(11, self.state)
+            Widget:
