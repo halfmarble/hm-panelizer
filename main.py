@@ -234,19 +234,12 @@ class PanelizerScreen(Screen):
         super(PanelizerScreen, self).__init__(**kwargs)
 
         with self.canvas:
-            Color(0.9, 0.9, 0.9)
+            Color(0.95, 0.95, 0.95, 1.0)
             self.background_rect = Rectangle(pos=self.pos, size=self.size)
 
-        self.bind(pos=self.update_rect)
         self.bind(size=self.update_rect)
 
-    def add_widget(self, *args, **kwargs):
-        if 'content' in self.ids:
-            return self.ids.content.add_widget(*args, **kwargs)
-        return super(PanelizerScreen, self).add_widget(*args, **kwargs)
-
     def update_rect(self, *args):
-        self.background_rect.pos = (self.pos[0], self.pos[1])
         self.background_rect.size = (self.size[0], self.size[1])
 
 
@@ -272,8 +265,7 @@ class PanelizerApp(App):
         for value in self.zoom_values:
             self.zoom_values_properties.append('{}%'.format(value))
 
-        #self.screen = PanelizerScreen()
-        self.screen = Builder.load_file('PanelizerScreen.kv')
+        self.screen = PanelizerScreen()
         self.surface = Widget()
         self.screen.add_widget(self.surface, False)
         self.update_zoom_title()

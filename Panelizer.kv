@@ -8,13 +8,6 @@
 
 
 <ActionSpinner@Spinner+ActionItem>:
-    canvas.before:
-        Color:
-            rgba: 0.128, 0.128, 0.128, 1
-        Rectangle:
-        Rectangle:
-            size: self.size
-            pos: self.pos
     border: 27, 20, 12, 12
     background_normal: 'atlas://data/images/defaulttheme/action_group'
     option_cls: Factory.ActionSpinnerOptions
@@ -94,11 +87,23 @@ BoxLayout:
 
     BoxLayout:
         orientation: 'horizontal'
-        ScreenManager:
-            id: _screen_manager
-            on_current_screen: pass
+        GridLayout:
+            rows: 2
+            ScreenManager:
+                id: _screen_manager
+                on_current_screen: pass
+            BoxLayout:
+                size_hint_y: None
+                height: 32
+                canvas:
+                    Color:
+                        rgb: 0.05, 0.05, 0.05
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+
+
         BoxLayout:
-            id: _box_layout
             orientation: 'vertical'
             size_hint_x: None
             width: 200
@@ -106,7 +111,7 @@ BoxLayout:
             padding: 4
             canvas:
                 Color:
-                    rgb: 0.0, 0.0, 0.0
+                    rgb: 0.05, 0.05, 0.05
                 Rectangle:
                     size: self.size
                     pos: self.pos
