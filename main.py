@@ -17,6 +17,8 @@ from os.path import dirname, join
 
 import copy
 
+import math
+
 from kivy import Config
 Config.set('graphics', 'width', '1200')
 Config.set('graphics', 'height', '900')
@@ -60,7 +62,7 @@ from kivy.properties import NumericProperty, StringProperty, BooleanProperty, Li
 
 from kivy.graphics.stencil_instructions import StencilPush, StencilPop, StencilUse, StencilUnUse
 from kivy.graphics import RenderContext, Canvas, Fbo, Scale, Color, Line, Rectangle, BindTexture, ClearBuffers
-from kivy.graphics import ClearColor, PushMatrix, PopMatrix
+from kivy.graphics import ClearColor, PushMatrix, PopMatrix, Translate
 
 from random import random as r
 
@@ -123,6 +125,8 @@ class PCB:
 
         self.layers = [0, 1, 3, 4, 5, 10, 11]
 
+        self.board_size = (math.ceil(58.01868), math.ceil(95.6146))
+
     def render_layer(self, layer, fbo):
         yes = False
         if layer in self.layers_always:
@@ -178,8 +182,17 @@ class PCB:
             if layer in self.layers:
                 self.layers.remove(layer)
 
+    @property
     def size(self):
         return self.images[0].texture_size
+
+    @property
+    def board_size_pixels(self):
+        return self.size
+
+    @property
+    def board_size_mm(self):
+        return self.board_size
 
 
 class PcbImage(Image):
@@ -188,7 +201,7 @@ class PcbImage(Image):
         super(PcbImage, self).__init__()
 
         self.pcb = pcb
-        self.size = self.pcb.size()
+        self.size = self.pcb.size
         self.width_org = self.size[0]
         self.height_org = self.size[1]
         self.fbo = Fbo(size=self.size, use_parent_projection=False, mipmap=True)
@@ -198,6 +211,7 @@ class PcbImage(Image):
         self.texture_size = self.size
 
     def resize(self, scale):
+        scale = scale/100.0
         self.size = (scale*self.width_org, scale*self.height_org)
 
     def render(self):
@@ -225,13 +239,14 @@ class ScalableScatter(Scatter):
     def resize(self, scale):
         scale = scale/100.0
         self.size = (scale*self.width_org, scale*self.height_org)
-        self.image.resize(scale)
 
 
 class PanelizerScreen(Screen):
 
-    def __init__(self, **kwargs):
+    def __init__(self, app, **kwargs):
         super(PanelizerScreen, self).__init__(**kwargs)
+
+        self.app = app
 
         with self.canvas:
             Color(0.95, 0.95, 0.95, 1.0)
@@ -241,6 +256,7 @@ class PanelizerScreen(Screen):
 
     def update_rect(self, *args):
         self.background_rect.size = (self.size[0], self.size[1])
+        self.app.resize(self.background_rect.size)
 
 
 class PanelizerApp(App):
@@ -254,9 +270,18 @@ class PanelizerApp(App):
         super(PanelizerApp, self).__init__(**kwargs)
 
         self.pcb = None
+        self.pcb_image = None
+        self.pcb_scatter = None
+        self.background_fbo = None
+        self.background_image = None
+        self.screen = None
+        self.surface = None
         self.scatters = []
         self.images = []
         self.scale = 70
+        self.pixels_per_cm = 10
+        self.pixels_per_cm_scaled = 10
+        self.size = (0, 0)
 
     def build(self):
         self.title = 'hmPanelizer'
@@ -265,37 +290,51 @@ class PanelizerApp(App):
         for value in self.zoom_values:
             self.zoom_values_properties.append('{}%'.format(value))
 
-        self.screen = PanelizerScreen()
+        self.screen = PanelizerScreen(self)
         self.surface = Widget()
         self.screen.add_widget(self.surface, False)
         self.update_zoom_title()
         self.root.ids._screen_manager.switch_to(self.screen)
 
+        self.background_fbo = Fbo(size=self.screen.size, use_parent_projection=False, mipmap=True)
+        self.background_image = Image(texture=self.background_fbo.texture, texture_size=self.screen.size, pos=(0, 0))
+        self.surface.add_widget(self.background_image)
+
         self.load_pcb(join(dirname(__file__), 'data'))
-        self.add_pcb_image()
 
     def load_pcb(self, path):
         self.pcb = PCB(path)
+        self.add_pcb_image()
 
-    def add_pcb_image(self):
-        pcb_image = PcbImage(self.pcb)
-        self.images.append(pcb_image)
-        scatter = ScalableScatter(size_hint=(None, None), size=pcb_image.size)
-        scatter.add_widget(pcb_image)
-        self.scatters.append(scatter)
-        self.surface.add_widget(scatter)
-        scatter.resize(self.scale)
+    def add_pcb_image(self, draggabe=True):
+        self.pcb_image = PcbImage(self.pcb)
+        #self.images.append(self.pcb_image)
+        self.pcb_scatter = ScalableScatter(size_hint=(None, None), size=self.pcb_image.size)
+        self.pcb_scatter.add_widget(self.pcb_image)
+        #self.scatters.append(self.pcb_scatter)
+        self.surface.add_widget(self.pcb_scatter)
+        self.pcb_scatter.resize(self.scale)
+        if not draggabe:
+            pass
+        self.update_zoom_title()
 
     def update_zoom_title(self):
         self.zoom_str = self.zoom_values_properties[self.zoom_values_index]
         self.root.ids._zoom_button.text = self.zoom_str
         self.scale = self.zoom_values[self.zoom_values_index]
+        if self.pcb_scatter is not None:
+            self.pcb_scatter.resize(self.scale)
+        if self.pcb_image is not None:
+            self.pcb_image.resize(self.scale)
         for scatter in self.scatters:
             scatter.resize(self.scale)
+        for image in self.images:
+            image.resize(self.scale)
 
     def select_zoom_index(self, index):
         self.zoom_values_index = index
         self.update_zoom_title()
+        self.center()
 
     def select_zoom(self, in_out):
         if in_out:
@@ -307,12 +346,70 @@ class PanelizerApp(App):
             if self.zoom_values_index < 0:
                 self.zoom_values_index = 0
         self.update_zoom_title()
+        self.center()
 
     def layer_toggle(self, layer, state):
         self.pcb.set_layer(self.root.ids, layer, state)
+        if self.pcb_image is not None:
+            self.pcb_image.render()
         for image in self.images:
             image.render()
 
+    def resize(self, size):
+        self.size = size
+        self.center()
+
+    def center(self):
+        if self.pcb_image is None:
+            return
+        if self.size[0] > self.size[1]:
+            self.pixels_per_cm = 10.0 * self.pcb.board_size_pixels[0] / self.pcb.board_size_mm[0]
+        else:
+            self.pixels_per_cm = 10.0 * self.pcb.board_size_pixels[1] / self.pcb.board_size_mm[1]
+        self.pixels_per_cm_scaled = (self.pixels_per_cm * self.scale) / 100.0
+
+        cx = self.size[0] / 2.0
+        cy = self.size[1] / 2.0
+        line_count_x = int(((math.floor(self.size[0] / self.pixels_per_cm_scaled)) / 2.0) + 1.0)
+        line_count_y = int(((math.floor(self.size[1] / self.pixels_per_cm_scaled)) / 2.0) + 1.0)
+
+        self.background_fbo.size = self.size
+        with self.background_fbo:
+            ClearColor(0.95, 0.95, 0.95, 1.0)
+            ClearBuffers()
+
+            x = 0.0
+            sy = 0.0
+            ey = self.size[1]
+            Color(0.50, 0.50, 0.50, 1.0)
+            Line(points=[cx, sy, cx, ey])
+            x += self.pixels_per_cm_scaled
+            Color(0.80, 0.80, 0.80, 1.0)
+            for i in range(0, line_count_x):
+                x_int = int(round(x))
+                Line(points=[cx+x_int, sy, cx+x_int, ey])
+                Line(points=[cx-x_int, sy, cx-x_int, ey])
+                x += self.pixels_per_cm_scaled
+
+            y = 0.0
+            sx = 0.0
+            ex = self.size[0]
+            Color(0.50, 0.50, 0.50, 1.0)
+            Line(points=[sx, cy, ex, cy])
+            y += self.pixels_per_cm_scaled
+            Color(0.80, 0.80, 0.80, 1.0)
+            for i in range(0, line_count_y):
+                y_int = int(round(y))
+                Line(points=[sx, cy+y_int, ex, cy+y_int])
+                Line(points=[sx, cy-y_int, ex, cy-y_int])
+                y += self.pixels_per_cm_scaled
+
+        self.background_fbo.draw()
+        self.background_image.texture = self.background_fbo.texture
+        self.background_image.texture_size = self.size
+        self.background_image.size = self.size
+
+        self.pcb_scatter.pos = (cx-(self.pcb_image.size[0]/2.0), cy-(self.pcb_image.size[1]/2.0))
 
 if __name__ == '__main__':
     PanelizerApp().run()

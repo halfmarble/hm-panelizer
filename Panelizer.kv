@@ -101,7 +101,13 @@ BoxLayout:
                     Rectangle:
                         size: self.size
                         pos: self.pos
-
+                Label:
+                    id: status_label
+                    color: 0.4, 0.4, 0.4, 1.0
+                    text: ' Status: '
+                    text_size: self.size
+                    halign: 'left'
+                    valign: 'middle'
 
         BoxLayout:
             orientation: 'vertical'
