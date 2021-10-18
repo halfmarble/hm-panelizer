@@ -62,17 +62,47 @@ BoxLayout:
             ActionSeparator:
                 width: 10
                 opacity: 0.0
-            ActionSpinner:
-                id: _panelization_choices
-                important: True
+            ActionButton:
+                text: 'col-add'
+                icon: 'data/icons/minus.png'
+                size_hint_max: (32, 32)
+                size_hint: (1.0, 1.0)
+                on_release: app.panelize_column(False)
+            ActionButton:
+                text: 'col-delete'
+                icon: 'data/icons/plus.png'
+                size_hint_max: (32, 32)
+                size_hint: (1.0, 1.0)
+                on_release: app.panelize_column(True)
+            ActionSeparator:
+                width: 10
+                opacity: 0.0
+            ActionLabel:
+                id: _panelization_label
                 text: app.panelization_str
-                values: app.panelization_values_properties
-                on_text: idx = app.panelization_values_properties.index(args[1]); app.select_panelization_index(idx)
                 font_size: 20
                 bold: True
-                size_hint_max: (96, 32)
+                size_hint_max: (42, 32)
                 size_hint: (1.0, 1.0)
                 color: 0.65, 0.65, 0.65
+            ActionSeparator:
+                width: 10
+                opacity: 0.0
+            ActionButton:
+                text: 'col-add'
+                icon: 'data/icons/minus.png'
+                size_hint_max: (32, 32)
+                size_hint: (1.0, 1.0)
+                on_release: app.panelize_row(False)
+            ActionButton:
+                text: 'col-delete'
+                icon: 'data/icons/plus.png'
+                size_hint_max: (32, 32)
+                size_hint: (1.0, 1.0)
+                on_release: app.panelize_row(True)
+            ActionSeparator:
+                width: 10
+                opacity: 0.0
             ActionSeparator:
             ActionSeparator:
                 width: 10
@@ -119,7 +149,6 @@ BoxLayout:
                 opacity: 0.0
             ActionSpinner:
                 id: _zoom_button
-                important: True
                 text: app.zoom_str
                 values: app.zoom_values_properties
                 on_text: idx = app.zoom_values_properties.index(args[1]); app.select_zoom_index(idx)

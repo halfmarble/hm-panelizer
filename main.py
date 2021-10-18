@@ -274,11 +274,6 @@ class PanelizerApp(App):
     zoom_str = '{}%'.format(zoom_values[zoom_values_index])
     zoom_values_properties = ListProperty([])
 
-    panelization_values_index = 0
-    panelization_values = ['1x1', '2x2', '3x3', '4x4', '5x5', '10x10', '20x20']
-    panelization_str = '{}'.format(panelization_values[panelization_values_index])
-    panelization_values_properties = ListProperty([])
-
     def __init__(self, **kwargs):
         super(PanelizerApp, self).__init__(**kwargs)
 
@@ -296,6 +291,9 @@ class PanelizerApp(App):
         self.pixels_per_cm = 10.0
         self.pixels_per_cm_scaled = 10.0
         self.size = (0, 0)
+        self.panels_x = 1
+        self.panels_y = 1
+        self.panelization_str = '{}x{}'.format(self.panels_x, self.panels_y)
 
     def build(self):
         self.title = 'hmPanelizer'
@@ -303,10 +301,6 @@ class PanelizerApp(App):
         self.zoom_values_index = self.zoom_values.index(self.scale)
         for value in self.zoom_values:
             self.zoom_values_properties.append('{}%'.format(value))
-
-        self.panelization_values_index = self.panelization_values.index('1x1')
-        for value in self.panelization_values:
-            self.panelization_values_properties.append('{}'.format(value))
 
         self.screen = PanelizerScreen(self)
         self.surface = Widget()
@@ -318,7 +312,7 @@ class PanelizerApp(App):
         self.background_image = Image(texture=self.background_fbo.texture, texture_size=self.screen.size, pos=(0, 0))
         self.surface.add_widget(self.background_image)
 
-        self.load_pcb(join(dirname(__file__), 'data', 'example_pcb', 'NEAToBoard'))
+        self.load_pcb(join(dirname(__file__), 'data', 'example_pcb', 'NEAToBOARD'))
 
     def load_pcb(self, path):
         self.pcb = PCB(path)
@@ -338,7 +332,36 @@ class PanelizerApp(App):
 
     def panelize(self):
         if self.root.ids._panelization_button.state == 'down':
-            print('TODO: panelize')
+            print('TODO: panelize {}x{}'.format(self.panels_x, self.panels_y))
+        self.panelization_str = '{}x{}'.format(self.panels_x, self.panels_y)
+        self.root.ids._panelization_label.text = self.panelization_str
+        self.update_status()
+
+    def panelize_column(self, add):
+        if add:
+            self.panels_x += 1
+            if self.panels_x > 99:
+                self.panels_x = 99
+                print('WARNING: clamping self.panels_x: {}'.format(self.panels_x))
+        else:
+            self.panels_x -= 1
+            if self.panels_x < 1:
+                self.panels_x = 1
+        self.root.ids._panelization_button.state = 'down'
+        self.panelize()
+
+    def panelize_row(self, add):
+        if add:
+            self.panels_y += 1
+            if self.panels_y > 99:
+                self.panels_y = 99
+                print('WARNING: clamping self.panels_y: {}'.format(self.panels_y))
+        else:
+            self.panels_y -= 1
+            if self.panels_y < 1:
+                self.panels_y = 1
+        self.root.ids._panelization_button.state = 'down'
+        self.panelize()
 
     def update_status(self):
         status = self.root.ids._status_label
@@ -346,12 +369,9 @@ class PanelizerApp(App):
             status.text = ''
             status.text += '  PCB: {},'.format(self.pcb.board_name)
             status.text += '  size: {}mm x {}mm,'.format(round(self.pcb.board_size_mm[0], 2), round(self.pcb.board_size_mm[1], 2))
+            status.text += '  panel size: {}mm x {}mm,'.format(round(0.0, 2), round(0.0, 2))
         else:
             status.text = 'PCB board not loaded'
-
-    def select_panelization_index(self, index):
-        self.root.ids._panelization_button.state = 'down'
-        self.panelize()
 
     def update_zoom_title(self):
         self.zoom_str = self.zoom_values_properties[self.zoom_values_index]
