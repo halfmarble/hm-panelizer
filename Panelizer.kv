@@ -52,6 +52,53 @@ BoxLayout:
             ActionSeparator:
                 width: 10
                 opacity: 0.0
+            ActionToggleButton:
+                id: _panelization_button
+                text: 'Panelize'
+                icon: 'data/icons/panelize.png'
+                size_hint_max: (32, 32)
+                size_hint: (1.0, 1.0)
+                on_release: app.panelize()
+            ActionSeparator:
+                width: 10
+                opacity: 0.0
+            ActionSpinner:
+                id: _panelization_choices
+                important: True
+                text: app.panelization_str
+                values: app.panelization_values_properties
+                on_text: idx = app.panelization_values_properties.index(args[1]); app.select_panelization_index(idx)
+                font_size: 20
+                bold: True
+                size_hint_max: (96, 32)
+                size_hint: (1.0, 1.0)
+                color: 0.65, 0.65, 0.65
+            ActionSeparator:
+            ActionSeparator:
+                width: 10
+                opacity: 0.0
+            ActionButton:
+                text: 'Rotate'
+                icon: 'data/icons/rotate-left.png'
+                size_hint_max: (32, 32)
+                size_hint: (1.0, 1.0)
+                on_release: app.rotate(False)
+            ActionSeparator:
+                width: 10
+                opacity: 0.0
+            ActionButton:
+                text: 'Rotate'
+                icon: 'data/icons/rotate-right.png'
+                size_hint_max: (32, 32)
+                size_hint: (1.0, 1.0)
+                on_release: app.rotate(True)
+            ActionSeparator:
+                width: 10
+                opacity: 0.0
+            ActionSeparator:
+            ActionSeparator:
+                width: 10
+                opacity: 0.0
             ActionButton:
                 text: 'Zoom out'
                 icon: 'data/icons/zoom-out.png'
@@ -102,10 +149,11 @@ BoxLayout:
                         size: self.size
                         pos: self.pos
                 Label:
-                    id: status_label
+                    id: _status_label
                     color: 0.4, 0.4, 0.4, 1.0
                     text: ' Status: '
                     text_size: self.size
+                    font_size: 12
                     halign: 'left'
                     valign: 'middle'
 

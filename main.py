@@ -16,7 +16,7 @@
 from os.path import dirname, join
 
 import copy
-
+import os
 import math
 
 from kivy import Config
@@ -63,6 +63,7 @@ from kivy.properties import NumericProperty, StringProperty, BooleanProperty, Li
 from kivy.graphics.stencil_instructions import StencilPush, StencilPop, StencilUse, StencilUnUse
 from kivy.graphics import RenderContext, Canvas, Fbo, Scale, Color, Line, Rectangle, BindTexture, ClearBuffers
 from kivy.graphics import ClearColor, PushMatrix, PopMatrix, Translate
+from kivy.graphics.transformation import Matrix
 
 from random import random as r
 
@@ -105,6 +106,7 @@ class PCB:
     layers_bottom = [6, 7, 8, 9]
 
     def __init__(self, path):
+
         self.images = []
 
         self.images.append(Image(source=join(path, '0_outline_mask.png')))
@@ -125,7 +127,9 @@ class PCB:
 
         self.layers = [0, 1, 3, 4, 5, 10, 11]
 
-        self.board_size = (math.ceil(58.01868), math.ceil(95.6146))
+        self.board_name = path.split(os.path.sep)[-1]
+        self.board_size_metric = (58.01868, 95.6146)
+        self.board_size_rounded = (math.ceil(self.board_size_metric[0]), math.ceil(self.board_size_metric[1]))
 
     def render_layer(self, layer, fbo):
         yes = False
@@ -184,15 +188,19 @@ class PCB:
 
     @property
     def size(self):
-        return self.images[0].texture_size
+        return self.board_size_pixels
 
     @property
     def board_size_pixels(self):
-        return self.size
+        return self.images[0].texture_size
 
     @property
     def board_size_mm(self):
-        return self.board_size
+        return self.board_size_metric
+
+    @property
+    def board_size(self):
+        return self.board_size_rounded
 
 
 class PcbImage(Image):
@@ -266,6 +274,11 @@ class PanelizerApp(App):
     zoom_str = '{}%'.format(zoom_values[zoom_values_index])
     zoom_values_properties = ListProperty([])
 
+    panelization_values_index = 0
+    panelization_values = ['1x1', '2x2', '3x3', '4x4', '5x5', '10x10', '20x20']
+    panelization_str = '{}'.format(panelization_values[panelization_values_index])
+    panelization_values_properties = ListProperty([])
+
     def __init__(self, **kwargs):
         super(PanelizerApp, self).__init__(**kwargs)
 
@@ -278,9 +291,10 @@ class PanelizerApp(App):
         self.surface = None
         self.scatters = []
         self.images = []
-        self.scale = 70
-        self.pixels_per_cm = 10
-        self.pixels_per_cm_scaled = 10
+        self.scale = 70.0
+        self.angle = 0.0
+        self.pixels_per_cm = 10.0
+        self.pixels_per_cm_scaled = 10.0
         self.size = (0, 0)
 
     def build(self):
@@ -289,6 +303,10 @@ class PanelizerApp(App):
         self.zoom_values_index = self.zoom_values.index(self.scale)
         for value in self.zoom_values:
             self.zoom_values_properties.append('{}%'.format(value))
+
+        self.panelization_values_index = self.panelization_values.index('1x1')
+        for value in self.panelization_values:
+            self.panelization_values_properties.append('{}'.format(value))
 
         self.screen = PanelizerScreen(self)
         self.surface = Widget()
@@ -300,23 +318,40 @@ class PanelizerApp(App):
         self.background_image = Image(texture=self.background_fbo.texture, texture_size=self.screen.size, pos=(0, 0))
         self.surface.add_widget(self.background_image)
 
-        self.load_pcb(join(dirname(__file__), 'data'))
+        self.load_pcb(join(dirname(__file__), 'data', 'example_pcb', 'NEAToBoard'))
 
     def load_pcb(self, path):
         self.pcb = PCB(path)
         self.add_pcb_image()
 
-    def add_pcb_image(self, draggabe=True):
+    def add_pcb_image(self, draggabex=False, draggabey=False):
         self.pcb_image = PcbImage(self.pcb)
         #self.images.append(self.pcb_image)
-        self.pcb_scatter = ScalableScatter(size_hint=(None, None), size=self.pcb_image.size)
+        self.pcb_scatter = ScalableScatter(size_hint=(None, None), size=self.pcb_image.size,
+                                           do_rotation=False, do_scale=False, do_translation_x=draggabex, do_translation_y=draggabey)
+        #self.pcb_scatter.rotation = 90.0
         self.pcb_scatter.add_widget(self.pcb_image)
         #self.scatters.append(self.pcb_scatter)
         self.surface.add_widget(self.pcb_scatter)
         self.pcb_scatter.resize(self.scale)
-        if not draggabe:
-            pass
         self.update_zoom_title()
+
+    def panelize(self):
+        if self.root.ids._panelization_button.state == 'down':
+            print('TODO: panelize')
+
+    def update_status(self):
+        status = self.root.ids._status_label
+        if self.pcb is not None:
+            status.text = ''
+            status.text += '  PCB: {},'.format(self.pcb.board_name)
+            status.text += '  size: {}mm x {}mm,'.format(round(self.pcb.board_size_mm[0], 2), round(self.pcb.board_size_mm[1], 2))
+        else:
+            status.text = 'PCB board not loaded'
+
+    def select_panelization_index(self, index):
+        self.root.ids._panelization_button.state = 'down'
+        self.panelize()
 
     def update_zoom_title(self):
         self.zoom_str = self.zoom_values_properties[self.zoom_values_index]
@@ -330,6 +365,7 @@ class PanelizerApp(App):
             scatter.resize(self.scale)
         for image in self.images:
             image.resize(self.scale)
+        self.update_status()
 
     def select_zoom_index(self, index):
         self.zoom_values_index = index
@@ -354,9 +390,18 @@ class PanelizerApp(App):
             self.pcb_image.render()
         for image in self.images:
             image.render()
+        self.update_status()
 
     def resize(self, size):
         self.size = size
+        self.center()
+
+    def rotate(self, right):
+        if right:
+            self.angle = self.angle - 90.0
+        else:
+            self.angle = self.angle + 90.0
+        self.angle = (self.angle % 360.0)
         self.center()
 
     def center(self):
@@ -409,7 +454,16 @@ class PanelizerApp(App):
         self.background_image.texture_size = self.size
         self.background_image.size = self.size
 
-        self.pcb_scatter.pos = (cx-(self.pcb_image.size[0]/2.0), cy-(self.pcb_image.size[1]/2.0))
+        anchor_x = (self.pcb_image.size[0]/2.0)
+        anchor_y = (self.pcb_image.size[1]/2.0)
+        self.pcb_scatter.transform = Matrix().identity()
+        mat = Matrix().translate(cx-anchor_x, cy-anchor_y, 0.0)
+        self.pcb_scatter.apply_transform(mat)
+        mat = Matrix().rotate(math.radians(self.angle), 0.0, 0.0, 1.0)
+        self.pcb_scatter.apply_transform(mat, post_multiply=True, anchor=(anchor_x, anchor_y))
+
+        self.update_status()
+
 
 if __name__ == '__main__':
     PanelizerApp().run()
