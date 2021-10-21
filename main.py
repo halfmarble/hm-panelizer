@@ -18,6 +18,7 @@ from os.path import dirname, join
 import copy
 import os
 import math
+import sys
 
 from kivy import Config
 Config.set('graphics', 'width', '1400')
@@ -67,7 +68,7 @@ from kivy.graphics.transformation import Matrix
 
 from random import random as r
 
-import constants
+import Constants
 
 
 fs_mask = '''
@@ -76,6 +77,11 @@ void main(void) {
     gl_FragColor = frag_color * texture2D(texture0, tex_coord0).a;
 }
 '''
+
+
+def beep():
+    #print('\a')
+    sys.stdout.write("\a")
 
 
 def is_desktop():
@@ -88,64 +94,196 @@ class LayerButton(ToggleButton):
     pass
 
 
-class PcbBoard:
-    colors = [
-        constants.PCB_MASK_COLOR,
-        constants.PCB_OUTLINE_COLOR,
-        constants.PCB_TOP_PASTE_COLOR,
-        constants.PCB_TOP_SILK_COLOR,
-        constants.PCB_TOP_MASK_COLOR,
-        constants.PCB_TOP_TRACES_COLOR,
-        constants.PCB_BOTTOM_TRACES_COLOR,
-        constants.PCB_BOTTOM_MASK_COLOR,
-        constants.PCB_BOTTOM_SILK_COLOR,
-        constants.PCB_PASTE_COLOR,
-        constants.PCB_DRILL_NPH_COLOR,
-        constants.PCB_DRILL_COLOR,
+class GridRenderer:
+
+    def __init__(self):
+        self._pixels_per_cm = 1.0
+
+    def set_pixels_per_cm(self, pixels_per_cm):
+        self._pixels_per_cm = pixels_per_cm
+
+    def render(self, fbo, size):
+        cx = size[0] / 2.0
+        cy = size[1] / 2.0
+        line_count_x = int(((math.floor(size[0] / self._pixels_per_cm)) / 2.0) + 1.0)
+        line_count_y = int(((math.floor(size[1] / self._pixels_per_cm)) / 2.0) + 1.0)
+
+        with fbo:
+            c = Constants.GRID_BACKGROUND_COLOR
+            ClearColor(c.r, c.g, c.b, c.a)
+            ClearBuffers()
+
+            x = 0.0
+            sy = 0.0
+            ey = size[1]
+            c = Constants.GRID_MAJOR_COLOR
+            Color(c.r, c.g, c.b, c.a)
+            Line(points=[cx, sy, cx, ey])
+            x += self._pixels_per_cm
+            c = Constants.GRID_MINOR_COLOR
+            Color(c.r, c.g, c.b, c.a)
+            for i in range(0, line_count_x):
+                x_int = int(round(x))
+                Line(points=[cx + x_int, sy, cx + x_int, ey])
+                Line(points=[cx - x_int, sy, cx - x_int, ey])
+                x += self._pixels_per_cm
+
+            y = 0.0
+            sx = 0.0
+            ex = size[0]
+            c = Constants.GRID_MAJOR_COLOR
+            Color(c.r, c.g, c.b, c.a)
+            Line(points=[sx, cy, ex, cy])
+            y += self._pixels_per_cm
+            c = Constants.GRID_MINOR_COLOR
+            Color(c.r, c.g, c.b, c.a)
+            for i in range(0, line_count_y):
+                y_int = int(round(y))
+                Line(points=[sx, cy + y_int, ex, cy + y_int])
+                Line(points=[sx, cy - y_int, ex, cy - y_int])
+                y += self._pixels_per_cm
+
+
+class OffScreenImage(Image):
+
+    def __init__(self, client, shader=None, **kwargs):
+        super(OffScreenImage, self).__init__(**kwargs)
+
+        self._client = client
+        self._fbo = Fbo(use_parent_projection=False, mipmap=True)
+        if shader is not None:
+            self._fbo.shader.fs = shader
+
+    def render(self, size):
+        if size is not None:
+            self.size = size
+
+        self._fbo.size = self.size
+        with self._fbo:
+            ClearColor(0, 0, 0, 0)
+            ClearBuffers()
+            if self._client is not None:
+                self._client.render(self._fbo, self.size)
+        self._fbo.draw()
+        self.texture = self._fbo.texture
+
+
+class OffScreenScatter(Scatter):
+
+    def __init__(self, client, size, shader=None, **kwargs):
+
+        self.size_hint = (None, None)
+        self.do_rotation = False
+        self.do_scale = False
+        self.do_translation_x = False
+        self.do_translation_y = False
+
+        super(OffScreenScatter, self).__init__(**kwargs)
+
+        self.size = size
+        self._width_org = self.size[0]
+        self._height_org = self.size[1]
+
+        self._scale = 1.0
+        self._angle = 0.0
+
+        self._client = client
+
+        self._fbo = Fbo(size=self.size, use_parent_projection=False, mipmap=True)
+        if shader is not None:
+            self._fbo.shader.fs = shader
+
+        self._image = Image(size=size, texture=self._fbo.texture)
+        self.add_widget(self._image)
+
+        self.render()
+
+    def set_scale(self, scale):
+        self._scale = scale / 100.0
+
+    def render(self):
+        with self._fbo:
+            ClearColor(0, 0, 0, 0)
+            ClearBuffers()
+            if self._client is not None:
+                self._client.render(self._fbo)
+        self._fbo.draw()
+        self._image.texture = self._fbo.texture
+
+    def center(self, available_size, angle=None):
+        if angle is not None:
+            self._angle = angle
+        cx = available_size[0] / 2.0
+        cy = available_size[1] / 2.0
+        ax = (self.size[0] / 2.0)
+        ay = (self.size[1] / 2.0)
+        self.transform = Matrix().identity()
+        mat = Matrix().translate(cx-ax, cy-ay, 0.0)
+        self.apply_transform(mat)
+        mat = Matrix().rotate(math.radians(self._angle), 0.0, 0.0, 1.0)
+        self.apply_transform(mat, post_multiply=True, anchor=(ax, ay))
+        mat = Matrix().scale(self._scale, self._scale, 1.0)
+        self.apply_transform(mat, post_multiply=True, anchor=(ax, ay))
+
+
+class Pcb:
+    _colors = [
+        Constants.PCB_MASK_COLOR,
+        Constants.PCB_OUTLINE_COLOR,
+        Constants.PCB_TOP_PASTE_COLOR,
+        Constants.PCB_TOP_SILK_COLOR,
+        Constants.PCB_TOP_MASK_COLOR,
+        Constants.PCB_TOP_TRACES_COLOR,
+        Constants.PCB_BOTTOM_TRACES_COLOR,
+        Constants.PCB_BOTTOM_MASK_COLOR,
+        Constants.PCB_BOTTOM_SILK_COLOR,
+        Constants.PCB_PASTE_COLOR,
+        Constants.PCB_DRILL_NPH_COLOR,
+        Constants.PCB_DRILL_COLOR,
     ]
 
-    layers_always = [0, 1]
-    layers_top = [2, 3, 4, 5]
-    layers_bottom = [6, 7, 8, 9]
+    _layers_always = [0, 1]
+    _layers_top = [2, 3, 4, 5]
+    _layers_bottom = [6, 7, 8, 9]
 
     def __init__(self, path, **kwargs):
 
-        self.images = []
+        self._images = []
 
-        self.images.append(Image(source=join(path, '0_outline_mask.png')))
-        self.images.append(Image(source=join(path, '1_outline.png')))
+        self._images.append(Image(source=join(path, '0_outline_mask.png')))
+        self._images.append(Image(source=join(path, '1_outline.png')))
 
-        self.images.append(Image(source=join(path, '2_toppaste.png')))
-        self.images.append(Image(source=join(path, '3_topsilk.png')))
-        self.images.append(Image(source=join(path, '4_topmask.png')))
-        self.images.append(Image(source=join(path, '5_top.png')))
+        self._images.append(Image(source=join(path, '2_toppaste.png')))
+        self._images.append(Image(source=join(path, '3_topsilk.png')))
+        self._images.append(Image(source=join(path, '4_topmask.png')))
+        self._images.append(Image(source=join(path, '5_top.png')))
 
-        self.images.append(Image(source=join(path, '6_bottom.png')))
-        self.images.append(Image(source=join(path, '7_bottommask.png')))
-        self.images.append(Image(source=join(path, '8_bottomsilk.png')))
-        self.images.append(Image(source=join(path, '9_bottompaste.png')))
+        self._images.append(Image(source=join(path, '6_bottom.png')))
+        self._images.append(Image(source=join(path, '7_bottommask.png')))
+        self._images.append(Image(source=join(path, '8_bottomsilk.png')))
+        self._images.append(Image(source=join(path, '9_bottompaste.png')))
 
-        self.images.append(Image(source=join(path, '10_drill.png')))
-        self.images.append(Image(source=join(path, '11_drill.png')))
+        self._images.append(Image(source=join(path, '10_drill.png')))
+        self._images.append(Image(source=join(path, '11_drill.png')))
 
-        self.layers = [0, 1, 3, 4, 5, 10, 11]
+        self._layers = [0, 1, 3, 4, 5, 10, 11]
 
-        self.board_name = path.split(os.path.sep)[-1]
-        self.board_size = self.images[0].texture_size
-        self.board_size_metric = (58.01868, 95.6146)
-        self.board_size_rounded = (math.ceil(self.board_size_metric[0]), math.ceil(self.board_size_metric[1]))
+        self._name = path.split(os.path.sep)[-1]
+        self._size_pixels = self._images[0].texture_size
+        self._size_mm = (58.01868, 95.6146)
+        self._size_rounded_mm = (math.ceil(self._size_mm[0]), math.ceil(self._size_mm[1]))
 
     def render_layer(self, layer, fbo):
         yes = False
-        if layer in self.layers_always:
+        if layer in self._layers_always:
             yes = True
-        elif layer in self.layers:
+        elif layer in self._layers:
             yes = True
         if yes:
             with fbo:
-                color = self.colors[layer]
+                color = self._colors[layer]
                 Color(color.r, color.g, color.b, color.a)
-                image = self.images[layer]
+                image = self._images[layer]
                 Rectangle(texture=image.texture, size=image.texture_size, pos=(0, 0))
 
     def render(self, fbo):
@@ -169,101 +307,46 @@ class PcbBoard:
 
     def set_layer(self, ids, layer, state):
         if state is 'down':
-            if layer in self.layers_top:
+            if layer in self._layers_top:
                 ids._bottom1.state = 'normal'
                 ids._bottom2.state = 'normal'
                 ids._bottom3.state = 'normal'
                 ids._bottom4.state = 'normal'
-                for bottom in self.layers_bottom:
-                    if bottom in self.layers:
-                        self.layers.remove(bottom)
-            elif layer in self.layers_bottom:
+                for bottom in self._layers_bottom:
+                    if bottom in self._layers:
+                        self._layers.remove(bottom)
+            elif layer in self._layers_bottom:
                 ids._top1.state = 'normal'
                 ids._top2.state = 'normal'
                 ids._top3.state = 'normal'
                 ids._top4.state = 'normal'
-                for top in self.layers_top:
-                    if top in self.layers:
-                        self.layers.remove(top)
-            self.layers.append(layer)
+                for top in self._layers_top:
+                    if top in self._layers:
+                        self._layers.remove(top)
+            self._layers.append(layer)
         else:
-            if layer in self.layers:
-                self.layers.remove(layer)
+            if layer in self._layers:
+                self._layers.remove(layer)
 
     @property
-    def board_size_pixels(self):
-        return self.board_size
+    def size_pixels(self):
+        return self._size_pixels
 
     @property
-    def board_size_mm(self):
-        return self.board_size_metric
+    def size_mm(self):
+        return self._size_mm
 
     @property
-    def board_size_rounded_mm(self):
-        return self.board_size_rounded
-
-
-class PcbPanel:
-
-    def __init__(self, pcb_board, panels_x, panels_y, **kwargs):
-        self.pcb = pcb_board
-        self.panels_x = panels_x
-        self.panels_y = panels_y
-
-        width = (self.pcb.board_size_mm[0] * self.panels_x) + (constants.PCB_PANEL_GAP_MM * (self.panels_x - 1))
-        height = (self.pcb.board_size_mm[1] * self.panels_y) + (constants.PCB_PANEL_GAP_MM * (self.panels_y - 1))
-        height += constants.PCB_PANEL_TOP_RAIL_MM + constants.PCB_PANEL_GAP_MM
-        height += constants.PCB_PANEL_GAP_MM + constants.PCB_PANEL_BOTTOM_RAIL_MM
-        self.board_size_metric = (width, height)
+    def size_rounded_mm(self):
+        return self._size_rounded_mm
 
     @property
-    def panel_size_mm(self):
-        return self.board_size_metric
+    def pixels_per_cm(self):
+        return 10.0 * self.size_pixels[1] / self.size_rounded_mm[1]
 
-
-class PcbImage(Image):
-
-    def __init__(self, pcb_board, **kwargs):
-        super(PcbImage, self).__init__()
-
-        self.pcb_board = pcb_board
-        self.size = self.pcb_board.board_size_pixels
-        self.width_org = self.size[0]
-        self.height_org = self.size[1]
-        self.fbo = Fbo(size=self.size, use_parent_projection=False, mipmap=True)
-        self.fbo.shader.fs = fs_mask
-        self.render()
-        self.texture = self.fbo.texture
-        self.texture_size = self.size
-
-    def resize(self, scale):
-        scale = scale/100.0
-        self.size = (scale*self.width_org, scale*self.height_org)
-
-    def render(self):
-        with self.fbo:
-            ClearColor(0, 0, 0, 0)
-            ClearBuffers()
-            self.pcb_board.render(self.fbo)
-        self.fbo.draw()
-
-
-class ScalableScatter(Scatter):
-
-    def __init__(self, **kwargs):
-        super(ScalableScatter, self).__init__(**kwargs)
-        self.width_org = self.size[0]
-        self.height_org = self.size[1]
-
-    def add_widget(self, *args, **kwargs):
-        image = args[0]
-        self.width_org = image.size[0]
-        self.height_org = image.size[1]
-        return super(ScalableScatter, self).add_widget(*args, **kwargs)
-
-    def resize(self, scale):
-        scale = scale/100.0
-        self.size = (scale*self.width_org, scale*self.height_org)
+    @property
+    def board_name(self):
+        return self._name
 
 
 class PanelizerScreen(Screen):
@@ -271,7 +354,7 @@ class PanelizerScreen(Screen):
     def __init__(self, app, **kwargs):
         super(PanelizerScreen, self).__init__(**kwargs)
 
-        self.app = app
+        self._app = app
 
         with self.canvas:
             Color(0.95, 0.95, 0.95, 1.0)
@@ -281,235 +364,172 @@ class PanelizerScreen(Screen):
 
     def update_rect(self, *args):
         self.background_rect.size = (self.size[0], self.size[1])
-        self.app.resize(self.background_rect.size)
-        self.app.calculate_fit_scale()
+        self._app.resize(self.background_rect.size)
+        self._app.calculate_fit_scale()
 
 
 class PanelizerApp(App):
 
-    zoom_values_index = 0
-    zoom_values = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10]
-    zoom_str = '{}%'.format(zoom_values[zoom_values_index])
-    zoom_values_properties = ListProperty([])
+    _zoom_values_index = 2
+    _zoom_values = [200, 150, 100, 90, 80, 70, 60, 50, 40, 30, 20, 10]
+    _zoom_str = '{}%'.format(_zoom_values[_zoom_values_index])
+    _zoom_values_properties = ListProperty([])
 
     def __init__(self, **kwargs):
         super(PanelizerApp, self).__init__(**kwargs)
 
-        self.screen = None
-        self.surface = None
+        self._screen = None
+        self._surface = None
 
-        self.pcb_board = None
-        self.pcb_board_image = None
-        self.pcb_board_scatter = None
+        self._pcb = None
+        self._pcb_board = None
 
-        self.pcb_panel = None
-        self.pb_panel_image = None
-        self.pcb_panel_scatter = None
+        self._grid = None
+        self._grid_renderer = GridRenderer()
 
-        self.background_fbo = None
-        self.background_image = None
+        self._scale_fit = 0.0
+        self._scale = 100.0
+        self._angle = 0.0
 
-        self.fit_scale = 100.0
-        self.scale = 100.0
-        self.angle = 0.0
+        self._pixels_per_cm = 1.0
+        self._pixels_per_cm_scaled = 1.0
+        self._size = (100, 100)
 
-        self.pixels_per_cm = 10.0
-        self.pixels_per_cm_scaled = 10.0
-        self.size = (100, 100)
-
-        self.panels_x = 1
-        self.panels_y = 1
-        self.panelization_str = '{}x{}'.format(self.panels_x, self.panels_y)
+        self._show_panel = False
+        self._panels_x = 1
+        self._panels_y = 1
+        self._panelization_str = '{}x{}'.format(self._panels_x, self._panels_y)
 
     def build(self):
         self.title = 'hmPanelizer'
 
-        self.zoom_values_index = self.zoom_values.index(self.scale)
-        for value in self.zoom_values:
-            self.zoom_values_properties.append('{}%'.format(value))
+        self._zoom_values_index = self._zoom_values.index(self._scale)
+        for value in self._zoom_values:
+            self._zoom_values_properties.append('{}%'.format(value))
 
-        self.screen = PanelizerScreen(self)
-        self.surface = Widget()
-        self.screen.add_widget(self.surface, False)
-        self.update_zoom_title()
-        self.root.ids._screen_manager.switch_to(self.screen)
+        self._screen = PanelizerScreen(self)
+        self._surface = Widget()
+        self._screen.add_widget(self._surface, False)
+        self.root.ids._screen_manager.switch_to(self._screen)
 
-        self.background_fbo = Fbo(size=self.screen.size, use_parent_projection=False, mipmap=True)
-        self.background_image = Image(texture=self.background_fbo.texture, texture_size=self.screen.size, pos=(0, 0))
-        self.surface.add_widget(self.background_image)
+        self._grid = OffScreenImage(client=self._grid_renderer, shader=None)
+        self._surface.add_widget(self._grid)
 
         self.load_pcb(join(dirname(__file__), 'data', 'example_pcb', 'NEAToBOARD'))
 
     def load_pcb(self, path):
-        self.pcb_board = PcbBoard(path)
-        self.pcb_board_image = PcbImage(self.pcb_board)
-        self.pcb_board_scatter = ScalableScatter(size_hint=(None, None), size=self.pcb_board_image.size,
-                                                 do_rotation=False, do_scale=False,
-                                                 do_translation_x=False, do_translation_y=False)
-        self.pcb_board_scatter.add_widget(self.pcb_board_image)
-        self.surface.add_widget(self.pcb_board_scatter)
+        self._pcb = Pcb(path)
+        self._pixels_per_cm = self._pcb.pixels_per_cm
 
-        self.pixels_per_cm = 10.0 * self.pcb_board.board_size_pixels[1] / self.pcb_board.board_size_mm[1]
-        self.update_zoom_title()
-        self.update_scale()
+        self._pcb_board = OffScreenScatter(client=self._pcb, size=self._pcb.size_pixels, shader=fs_mask)
+        self._surface.add_widget(self._pcb_board)
 
     def panelize(self):
-        if self.root.ids._panelization_button.state == 'down':
-            self.pcb_panel = PcbPanel(self.pcb_board, self.panels_x, self.panels_y)
-        self.panelization_str = '{}x{}'.format(self.panels_x, self.panels_y)
-        self.root.ids._panelization_label.text = self.panelization_str
+        self._show_panel = self.root.ids._panelization_button.state == 'down'
+        if self._show_panel:
+            self._surface.remove_widget(self._pcb_board)
+        else:
+            self._surface.add_widget(self._pcb_board)
         self.update_status()
 
     def panelize_column(self, add):
         if add:
-            self.panels_x += 1
-            if self.panels_x > 99:
-                self.panels_x = 99
-                print('WARNING: clamping self.panels_x: {}'.format(self.panels_x))
+            self._panels_x += 1
+            if self._panels_x > 99:
+                self._panels_x = 99
+                beep()
+                print('WARNING: clamping self.panels_x: {}'.format(self._panels_x))
         else:
-            self.panels_x -= 1
-            if self.panels_x < 1:
-                self.panels_x = 1
+            self._panels_x -= 1
+            if self._panels_x < 1:
+                self._panels_x = 1
+                beep()
         self.root.ids._panelization_button.state = 'down'
         self.panelize()
 
     def panelize_row(self, add):
         if add:
-            self.panels_y += 1
-            if self.panels_y > 99:
-                self.panels_y = 99
-                print('WARNING: clamping self.panels_y: {}'.format(self.panels_y))
+            self._panels_y += 1
+            if self._panels_y > 99:
+                self._panels_y = 99
+                beep()
+                print('WARNING: clamping self.panels_y: {}'.format(self._panels_y))
         else:
-            self.panels_y -= 1
-            if self.panels_y < 1:
-                self.panels_y = 1
+            self._panels_y -= 1
+            if self._panels_y < 1:
+                self._panels_y = 1
+                beep()
         self.root.ids._panelization_button.state = 'down'
         self.panelize()
 
     def calculate_fit_scale(self):
-        if self.fit_scale == 100.0:
-            target = constants.FIT_SCALE * self.size[1]
-            self.fit_scale = target / self.pcb_board.board_size_pixels[1]
-            if self.fit_scale > 1.0:
-                # TODO: why is zoom > 1 not working?
-                self.fit_scale = 1.0
+        if self._scale_fit == 0.0:
+            target = Constants.FIT_SCALE * self._size[1]
+            self._scale_fit = target / self._pcb.size_pixels[1]
             self.update_scale()
 
     def update_scale(self):
-        self.scale = self.zoom_values[self.zoom_values_index]
-        self.pixels_per_cm_scaled = (self.pixels_per_cm * self.fit_scale * self.scale) / 100.0
-        if self.pcb_board_scatter is not None:
-            self.pcb_board_scatter.resize(self.fit_scale * self.scale)
-        if self.pcb_board_image is not None:
-            self.pcb_board_image.resize(self.fit_scale * self.scale)
-            self.center()
+        self._scale = self._zoom_values[self._zoom_values_index]
+        self._pixels_per_cm_scaled = (self._pixels_per_cm * self._scale_fit * self._scale) / 100.0
+        self._grid_renderer.set_pixels_per_cm(self._pixels_per_cm_scaled)
+        self._pcb_board.set_scale(self._scale_fit * self._scale)
+        self.center()
 
     def update_status(self):
+        self._panelization_str = '{}x{}'.format(self._panels_x, self._panels_y)
+        self.root.ids._panelization_label.text = self._panelization_str
         status = self.root.ids._status_label
-        if self.pcb_board is not None:
-            status.text = ''
-            status.text += '  PCB: {},'.format(self.pcb_board.board_name)
-            status.text += '  size: {}mm x {}mm,'.format(round(self.pcb_board.board_size_mm[0], 2), round(self.pcb_board.board_size_mm[1], 2))
-            status.text += '  panel size: {}mm x {}mm,'.format(round(0.0, 2), round(0.0, 2))
-        else:
-            status.text = 'PCB board not loaded'
+        status.text = ''
+        status.text += '  PCB: {},'.format(self._pcb.board_name)
+        status.text += '  size: {}mm x {}mm,'.format(round(self._pcb.size_mm[0], 2),
+                                                     round(self._pcb.size_mm[1], 2))
+        status.text += '  panel size: {}mm x {}mm,'.format(round(0, 2), round(0, 2))
 
     def update_zoom_title(self):
-        self.zoom_str = self.zoom_values_properties[self.zoom_values_index]
-        self.root.ids._zoom_button.text = self.zoom_str
+        self._zoom_str = self._zoom_values_properties[self._zoom_values_index]
+        self.root.ids._zoom_button.text = self._zoom_str
         self.update_scale()
         self.update_status()
 
     def select_zoom_index(self, index):
-        self.zoom_values_index = index
+        self._zoom_values_index = index
         self.update_zoom_title()
         self.center()
 
     def select_zoom(self, in_out):
         if in_out:
-            self.zoom_values_index += 1
-            if self.zoom_values_index >= len(self.zoom_values):
-                self.zoom_values_index = (len(self.zoom_values) - 1)
+            self._zoom_values_index += 1
+            if self._zoom_values_index >= len(self._zoom_values):
+                self._zoom_values_index = (len(self._zoom_values) - 1)
+                beep()
         else:
-            self.zoom_values_index -= 1
-            if self.zoom_values_index < 0:
-                self.zoom_values_index = 0
+            self._zoom_values_index -= 1
+            if self._zoom_values_index < 0:
+                self._zoom_values_index = 0
+                beep()
         self.update_zoom_title()
         self.center()
 
     def layer_toggle(self, layer, state):
-        self.pcb_board.set_layer(self.root.ids, layer, state)
-        if self.pcb_board_image is not None:
-            self.pcb_board_image.render()
+        self._pcb.set_layer(self.root.ids, layer, state)
+        self._pcb_board.render()
         self.update_status()
 
     def resize(self, size):
-        self.size = size
+        self._size = size
         self.center()
 
     def rotate(self, right):
         if right:
-            self.angle = self.angle - 90.0
+            self._angle = self._angle - 90.0
         else:
-            self.angle = self.angle + 90.0
-        self.angle = (self.angle % 360.0)
+            self._angle = self._angle + 90.0
+        self._angle = (self._angle % 360.0)
         self.center()
 
-    def render_background(self, cx, cy):
-        line_count_x = int(((math.floor(self.size[0] / self.pixels_per_cm_scaled)) / 2.0) + 1.0)
-        line_count_y = int(((math.floor(self.size[1] / self.pixels_per_cm_scaled)) / 2.0) + 1.0)
-        self.background_fbo.size = self.size
-        with self.background_fbo:
-            ClearColor(0.95, 0.95, 0.95, 1.0)
-            ClearBuffers()
-
-            x = 0.0
-            sy = 0.0
-            ey = self.size[1]
-            Color(0.50, 0.50, 0.50, 1.0)
-            Line(points=[cx, sy, cx, ey])
-            x += self.pixels_per_cm_scaled
-            Color(0.80, 0.80, 0.80, 1.0)
-            for i in range(0, line_count_x):
-                x_int = int(round(x))
-                Line(points=[cx+x_int, sy, cx+x_int, ey])
-                Line(points=[cx-x_int, sy, cx-x_int, ey])
-                x += self.pixels_per_cm_scaled
-
-            y = 0.0
-            sx = 0.0
-            ex = self.size[0]
-            Color(0.50, 0.50, 0.50, 1.0)
-            Line(points=[sx, cy, ex, cy])
-            y += self.pixels_per_cm_scaled
-            Color(0.80, 0.80, 0.80, 1.0)
-            for i in range(0, line_count_y):
-                y_int = int(round(y))
-                Line(points=[sx, cy+y_int, ex, cy+y_int])
-                Line(points=[sx, cy-y_int, ex, cy-y_int])
-                y += self.pixels_per_cm_scaled
-
-        self.background_fbo.draw()
-        self.background_image.texture = self.background_fbo.texture
-        self.background_image.texture_size = self.size
-        self.background_image.size = self.size
-
     def center(self):
-        if self.pcb_board_image is None:
-            return
-
-        cx = self.size[0] / 2.0
-        cy = self.size[1] / 2.0
-        self.render_background(cx, cy)
-
-        anchor_x = (self.pcb_board_image.size[0] / 2.0)
-        anchor_y = (self.pcb_board_image.size[1] / 2.0)
-        self.pcb_board_scatter.transform = Matrix().identity()
-        mat = Matrix().translate(cx-anchor_x, cy-anchor_y, 0.0)
-        self.pcb_board_scatter.apply_transform(mat)
-        mat = Matrix().rotate(math.radians(self.angle), 0.0, 0.0, 1.0)
-        self.pcb_board_scatter.apply_transform(mat, post_multiply=True, anchor=(anchor_x, anchor_y))
-
+        self._grid.render(self._size)
+        self._pcb_board.center(self._size, self._angle)
         self.update_status()
 
 
