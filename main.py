@@ -292,9 +292,12 @@ class PcbPanel(OffScreenScatter):
         self._fbo.size = self.size
         self._image.size = self.size
         self._image.texture_size = self.size
-        self.render()
+        self.paint2()
 
-    def render(self):
+    # TODO: if we try to overide the paint() method here,
+    #  then we can't access self._rows, why is that?!
+    #  AttributeError: 'PcbPanel' object has no attribute '_rows'
+    def paint2(self):
         width = self.size[0]
         height = self.size[1]
         height_bottom = Constants.PCB_PANEL_BOTTOM_RAIL_MM * self._client.pixels_per_cm/10.0
@@ -307,13 +310,13 @@ class PcbPanel(OffScreenScatter):
                 c = Constants.PCB_MASK_COLOR
                 Color(c.r, c.g, c.b, c.a)
                 Rectangle(pos=(0, 0), size=(width, height_bottom))
-                Rectangle(pos=(0, height-height_top), size=(width, height_bottom))
-                x = 0.0
+                Rectangle(pos=(0, height-height_top), size=(width, height_top))
                 y = height_bottom + gap
                 for r in range(0, self._rows):
+                    x = 0.0
                     for c in range(0, self._columns):
                         PushMatrix()
-                        Translate(x, y, 0.0)
+                        Translate(x, y, 0)
                         self._client.paint(self._fbo)
                         PopMatrix()
                         x += self._client.size_pixels[0]
@@ -345,6 +348,7 @@ class PcbPanel(OffScreenScatter):
     @property
     def size_mm(self):
         return self._size_mm
+
 
 class Pcb:
     _colors = [
@@ -484,7 +488,7 @@ class PanelizerScreen(Screen):
     def update_rect(self, *args):
         self.background_rect.size = (self.size[0], self.size[1])
         self._app.resize(self.background_rect.size)
-        self._app.calculate_fit_scale()
+        self._app.calculate_pcb_fit_scale()
 
 
 class PanelizerApp(App):
@@ -507,7 +511,8 @@ class PanelizerApp(App):
         self._pcb_board = None
         self._pcb_panel = None
 
-        self._scale_fit = 0.0
+        self._board_scale_fit = 1.0
+        self._panel_scale_fit = 1.0
         self._scale = 100.0
         self._angle = 0.0
 
@@ -516,7 +521,7 @@ class PanelizerApp(App):
 
         self._show_panel = False
         self._panels_x = 3
-        self._panels_y = 1
+        self._panels_y = 2
         self._panelization_str = '{}x{}'.format(self._panels_x, self._panels_y)
 
     def build(self):
@@ -552,10 +557,13 @@ class PanelizerApp(App):
             self._pcb_board.remove_from(self._surface)
             self._pcb_panel.add_to(self._surface)
             self._pcb_panel.panelize(self._panels_x, self._panels_y)
+            self.calculate_panel_fit_scale()
+            self._pcb_panel.set_scale(self._panel_scale_fit * self._scale)
             self.center()
         else:
             self._pcb_board.add_to(self._surface)
             self._pcb_panel.remove_from(self._surface)
+            self.update_scale()
         self.update_status()
 
     def panelize_column(self, add):
@@ -588,18 +596,35 @@ class PanelizerApp(App):
         self.root.ids._panelization_button.state = 'down'
         self.panelize()
 
-    def calculate_fit_scale(self):
-        if self._scale_fit == 0.0:
-            target = Constants.FIT_SCALE * self._size[1]
-            self._scale_fit = target / self._pcb.size_pixels[1]
+    def calculate_fit_scale(self, size_mm, size_pixels):
+        target = Constants.FIT_SCALE * size_mm[0]
+        fit_x = target / size_pixels[0]
+        target = Constants.FIT_SCALE * size_mm[1]
+        fit_y = target / size_pixels[1]
+        return min(fit_x, fit_y)
+
+    def calculate_pcb_fit_scale(self):
+        if self._board_scale_fit == 1.0:
+            self._board_scale_fit = self.calculate_fit_scale(self._size, self._pcb.size_pixels)
             self.update_scale()
+
+    def calculate_panel_fit_scale(self):
+        self._panel_scale_fit = self.calculate_fit_scale(self._size, self._pcb_panel.size_pixels)
+        self.update_scale()
 
     def update_scale(self):
         self._scale = self._zoom_values[self._zoom_values_index]
-        pixels_per_cm_scaled = (self._pixels_per_cm * self._scale_fit * self._scale) / 100.0
+
+        self._pcb_board.set_scale(self._board_scale_fit * self._scale)
+        self._pcb_panel.set_scale(self._panel_scale_fit * self._scale)
+
+        pixels_per_cm_scaled = 0.0
+        if self._show_panel:
+            pixels_per_cm_scaled = (self._pixels_per_cm * self._panel_scale_fit * self._scale) / 100.0
+        else:
+            pixels_per_cm_scaled = (self._pixels_per_cm * self._board_scale_fit * self._scale) / 100.0
         self._grid_renderer.set_pixels_per_cm(pixels_per_cm_scaled)
-        self._pcb_board.set_scale(self._scale_fit * self._scale)
-        self._pcb_panel.set_scale(self._scale_fit * self._scale)
+
         self.center()
 
     def update_status(self):
@@ -620,7 +645,6 @@ class PanelizerApp(App):
     def select_zoom_index(self, index):
         self._zoom_values_index = index
         self.update_zoom_title()
-        self.center()
 
     def select_zoom(self, in_out):
         if in_out:
@@ -634,7 +658,6 @@ class PanelizerApp(App):
                 self._zoom_values_index = 0
                 beep()
         self.update_zoom_title()
-        self.center()
 
     def layer_toggle(self, layer, state):
         self._pcb.set_layer(self.root.ids, layer, state)

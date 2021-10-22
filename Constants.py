@@ -17,7 +17,7 @@ from typing import Final
 from kivy.graphics import Color
 
 # the ratio of the pcb board to the available window size at 100% zoom
-FIT_SCALE: Final = 0.75
+FIT_SCALE: Final = 0.9
 
 GRID_BACKGROUND_COLOR: Final =      Color(0.95, 0.95, 0.95, 1.0)
 GRID_MAJOR_COLOR: Final =           Color(0.50, 0.50, 0.50, 1.0)
