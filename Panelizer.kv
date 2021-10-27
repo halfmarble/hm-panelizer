@@ -13,7 +13,7 @@
     option_cls: Factory.ActionSpinnerOptions
 
 
-<PanelizerScreen>:
+<WorkScreen>:
     ScrollView:
         do_scroll_x: False
         do_scroll_y: (content.height > root.height - dp(16))
@@ -30,7 +30,6 @@
 
 
 <LayerButton>:
-    background_normal: ''
     background_color: 0.2, 0.2, 0.2, 1.0
     color: 0.6, 0.6, 0.6, 1.0
     size_hint_x: None
@@ -38,10 +37,12 @@
     width: 192
     height: 32
 
+
 <ActionSeparator>:
     background_image: 'data/icons/separator.png'
     size_hint_max: (20, 32)
     size_hint: (1.0, 1.0)
+
 
 BoxLayout:
     orientation: 'vertical'
@@ -97,18 +98,21 @@ BoxLayout:
 
             ActionSeparator:
 
-            ActionButton:
-                text: 'Rotate'
-                icon: 'data/icons/rotate-left.png'
-                size_hint_max: (32, 32)
-                size_hint: (1.0, 1.0)
-                on_release: app.rotate(False)
-            ActionButton:
-                text: 'Rotate'
-                icon: 'data/icons/rotate-right.png'
+            ActionToggleButton:
+                id: _vertical_button
+                text: 'Vertical'
+                state: 'down'
+                icon: 'data/icons/vertical.png'
                 size_hint_max: (32, 32)
                 size_hint: (1.0, 1.0)
                 on_release: app.rotate(True)
+            ActionToggleButton:
+                id: _horizontal_button
+                text: 'Horizontal'
+                icon: 'data/icons/horizontal.png'
+                size_hint_max: (32, 32)
+                size_hint: (1.0, 1.0)
+                on_release: app.rotate(False)
 
             ActionSeparator:
 
