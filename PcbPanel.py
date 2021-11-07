@@ -45,8 +45,15 @@ class BiteRenderer:
 
 class BiteWidget(OffScreenScatter):
 
-    def __init__(self, root, horizontal, position, size):
+    def __init__(self, edge, root, horizontal, position, size):
+
+        self._edge = edge
+        self._root = root
+        self._horizontal = horizontal
+
         self._base_color = Color(PCB_MASK_COLOR.r, PCB_MASK_COLOR.g, PCB_MASK_COLOR.b, PCB_MASK_COLOR.a)
+        self._moving_color = Color(0, 0, 1, 1)
+        self._moving = False
 
         super(BiteWidget, self).__init__(BiteRenderer(self), size, None, pos=position)
 
@@ -57,8 +64,59 @@ class BiteWidget(OffScreenScatter):
             self.do_translation_x = False
             self.do_translation_y = True
 
-        self._root = root
         self._group = None
+        self._start = (0, 0)
+
+    # TODO: is there a better way to repaint?
+    def repaint(self):
+        self.paint()
+        self.deactivate()
+        self.activate()
+
+    def start_move(self):
+        self._moving = True
+        self._start = self.pos
+        self.repaint()
+
+    def end_move(self):
+        self._moving = False
+        self.repaint()
+
+    def move_by(self, dx, dy):
+        if self._moving:
+            position = (self._start[0]+dx, self._start[1]+dy)
+            # if self._edge.connects(position[0], position[1]):
+            #     self._moving_color = Color(0, 1, 0, 1)
+            # else:
+            #     self._moving_color = Color(1, 0, 0, 1)
+            self.pos = position
+
+    def on_touch_down(self, touch):
+        handled = super(BiteWidget, self).on_touch_down(touch)
+        if handled:
+            self.start_move()
+            for b in self._group:
+                b.start_move()
+        return handled
+
+    def on_touch_move(self, touch):
+        handled = super(BiteWidget, self).on_touch_move(touch)
+        if self._moving:
+            dx = self.pos[0] - self._start[0]
+            dy = self.pos[1] - self._start[1]
+            for b in self._group:
+                if b is not self:
+                    b.move_by(dx, dy)
+        return handled
+
+    def on_touch_up(self, touch):
+        handled = super(BiteWidget, self).on_touch_up(touch)
+        if self._moving:
+            self.end_move()
+            for b in self._group:
+                if b is not self:
+                    b.end_move()
+        return handled
 
     def assign_group(self, group):
         self._group = group
@@ -71,7 +129,10 @@ class BiteWidget(OffScreenScatter):
 
     @property
     def color(self):
-        return self._base_color
+        if self._moving:
+            return self._moving_color
+        else:
+            return self._base_color
 
 
 class PcbEdge:
@@ -95,15 +156,26 @@ class PcbEdge:
         panel_ox = panel.origin[0]
         panel_oy = panel.origin[1]
         shape_ox = (main.x * scale)
-        shape_oy = ((shape1.y+shape1.height) * scale)
+        shape_oy = ((shape1.y+shape1.height) * scale) - 2.0
         shape_w = (main.width * scale)
 
         self._bites = []
         for i in range(bites_count):
             slide = ((float(i+1) / float(bites_count+1)) * shape_w) - (bite / 2.0)
             pos = (panel_ox+shape_ox+slide, panel_oy+shape_oy)
-            size = (bite, gap)
-            self._bites.append(BiteWidget(root, self._horizontal, pos, size))
+            size = (bite, gap+3.0)
+            self._bites.append(BiteWidget(self, root, self._horizontal, pos, size))
+
+    def connects(self, x, y):
+        pass
+        # if self._horizontal:
+        #     if self._kind is PcbKind.top:
+        #         return True  # always connects
+        #     elif self._kind is PcbKind.bottom:
+        #         return True  # always connects
+        #     elif self._kind is PcbKind.main:
+        #         # TODO: implement
+        #         return True
 
     def __str__(self):
         rep = 'PcbEdge'
@@ -127,6 +199,20 @@ class PcbEdge:
 
 class PcbBites:
 
+    def assign_groups(self, count, columns, rows, edges):
+        for i in range(count):
+            group = []
+            for r in range(0, rows):
+                for c in range(0, columns):
+                    edge = edges.get(c, r)
+                    bite = edge.bite(i)
+                    group.append(bite)
+            for r in range(0, rows):
+                for c in range(0, columns):
+                    edge = edges.get(c, r)
+                    bite = edge.bite(i)
+                    bite.assign_group(group)
+
     def __init__(self, panel, root, shapes, bites_x, bites_y):
         print('\nPcbBites:')
 
@@ -142,9 +228,11 @@ class PcbBites:
                 for c in range(0, columns):
                     bottom = self._shapes.get(c, r)
                     top = self._shapes.get(c, r + 1)
-                    self._horizontal.put(c, r, PcbEdge(panel, root, True, bites_x, bottom, top))
+                    edge = PcbEdge(panel, root, True, bites_x, bottom, top)
+                    self._horizontal.put(c, r, edge)
             print(' horizontal edges:')
             self._horizontal.print('  ')
+            self.assign_groups(bites_x, columns, rows, self._horizontal)
         else:
             self._horizontal = Array2D(0, 0)
 
@@ -156,9 +244,11 @@ class PcbBites:
                 for c in range(0, columns):
                     left = self._shapes.get(c, r)
                     right = self._shapes.get(c+1, r)
-                    self._vertical.put(c, r, PcbEdge(panel, root, False, bites_x, left, right))
+                    edge = PcbEdge(panel, root, False, bites_x, left, right)
+                    self._vertical.put(c, r, edge)
             print(' vertical edges:')
             self._vertical.print('  ')
+            self.assign_groups(bites_y, columns, rows, self._vertical)
         else:
             self._vertical = Array2D(0, 0)
 
@@ -204,15 +294,6 @@ class PcbShape:
         else:
             rep += ' ????'
         return rep + ' {}, {}'.format(self._pos, self._size)
-
-    def connects(self, x, y):
-        if self._kind is PcbKind.top:
-            return True  # always connects
-        elif self._kind is PcbKind.bottom:
-            return True  # always connects
-        elif self._kind is PcbKind.main:
-            # TODO: implement
-            return True
 
     def is_of_kind(self, kind):
         return kind == self._kind
