@@ -26,6 +26,8 @@ from kivy.uix.widget import Widget
 from kivy.properties import ListProperty
 from typing import Final
 from kivy.clock import Clock
+from kivy.uix.popup import Popup
+from kivy.uix.label import Label
 
 from Constants import *
 from Utilities import *
@@ -78,9 +80,12 @@ class PanelizerApp(App):
         self._size = (100, 100)
 
         self._show_panel = False
-        self._panels_x = 4
+        self._panels_x = 2
         self._panels_y = 2
         self._panelization_str = '{}x{}'.format(self._panels_x, self._panels_y)
+
+        self._bites_x = PCB_PANEL_BITES_X
+        self._bites_y = PCB_PANEL_BITES_Y
 
     def build(self):
         self.title = 'hmPanelizer'
@@ -94,6 +99,8 @@ class PanelizerApp(App):
         self._screen.add_widget(self._surface, False)
         self.root.ids._screen_manager.switch_to(self._screen)
 
+        self._popup = Settings(title='Settings')
+
         self._grid = OffScreenImage(client=self._grid_renderer, shader=None)
         self._surface.add_widget(self._grid)
 
@@ -103,26 +110,30 @@ class PanelizerApp(App):
         self._pcb = Pcb(path)
         self._pixels_per_cm = self._pcb.pixels_per_cm
 
-        self._pcb_board = PcbBoard(client=self._pcb, size=self._pcb.size_pixels, shader=fs_mask)
-        self._pcb_board.add_to(self._surface)
-        self._pcb_panel = PcbPanel(client=self._pcb, size=self._pcb.size_pixels, shader=fs_mask)
-        self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle)
+        self._pcb_board = PcbBoard(root=self._surface, pcb=self._pcb, shader=fs_mask)
+        self._pcb_board.activate()
+        self._pcb_panel = PcbPanel(root=self._surface, pcb=self._pcb, shader=fs_mask)
+        self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle, self._bites_x, self._bites_y)
         self.update_status()
         #Clock.schedule_interval(self.timer_callback, 0.1)
 
     def panelize(self):
         self._show_panel = self.root.ids._panelization_button.state == 'down'
         if self._show_panel:
-            self._pcb_board.remove_from(self._surface)
-            self._pcb_panel.add_to(self._surface)
-            self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle)
-            self.calculate_panel_fit_scale()
-            self._pcb_panel.set_scale(self._panel_scale_fit * self._scale)
-            self.center()
-        else:
-            self._pcb_board.add_to(self._surface)
-            self._pcb_panel.remove_from(self._surface)
+            self._pcb_board.deactivate()
+
+            self._pcb_panel.deactivate()
             self.update_scale()
+            self.calculate_panel_fit_scale()
+            self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle, self._bites_x, self._bites_y)
+            self.center()
+            self._pcb_panel.activate()
+        else:
+            self._pcb_panel.deactivate()
+
+            self.update_scale()
+            self.center()
+            self._pcb_board.activate()
         self.update_status()
 
     def panelize_column(self, add):
@@ -161,6 +172,11 @@ class PanelizerApp(App):
             self.update_scale()
 
     def calculate_panel_fit_scale(self):
+        # self._pcb_panel.panelize(self._panels_x, self._panels_y, 0.0)
+        # fit_horizontal = calculate_fit_scale(FIT_SCALE, self._size, self._pcb_panel.size_pixels)
+        # self._pcb_panel.panelize(self._panels_x, self._panels_y, 90.0)
+        # fit_vertical = calculate_fit_scale(FIT_SCALE, self._size, self._pcb_panel.size_pixels)
+        # self._panel_scale_fit = min(fit_horizontal, fit_vertical)
         self._panel_scale_fit = calculate_fit_scale(FIT_SCALE, self._size, self._pcb_panel.size_pixels)
         self.update_scale()
 
@@ -170,7 +186,6 @@ class PanelizerApp(App):
         self._pcb_board.set_scale(self._board_scale_fit * self._scale)
         self._pcb_panel.set_scale(self._panel_scale_fit * self._scale)
 
-        pixels_per_cm_scaled = 0.0
         if self._show_panel:
             pixels_per_cm_scaled = (self._pixels_per_cm * self._panel_scale_fit * self._scale) / 100.0
         else:
@@ -232,7 +247,7 @@ class PanelizerApp(App):
             self._angle = 90.0
             self.root.ids._vertical_button.state = 'normal'
             self.root.ids._horizontal_button.state = 'down'
-        self.center()
+        self.panelize()
 
     def center(self):
         self._grid.paint(self._size)
@@ -240,6 +255,14 @@ class PanelizerApp(App):
         self._pcb_panel.center(self._size, self._angle)
         self.update_status()
 
+    def settings_open(self):
+        self._popup.open()
+
+    def settings_close(self):
+        self._popup.dismiss()
+
+    def settings_bites(self):
+        print('settings_bites')
 
 if __name__ == '__main__':
     PanelizerApp().run()

@@ -18,17 +18,18 @@ from OffScreenScatter import *
 
 class PcbBoard(OffScreenScatter):
 
-    def __init__(self, client, size, shader, **kwargs):
-        super(PcbBoard, self).__init__(client, size, shader, **kwargs)
+    def __init__(self, root, pcb, shader, **kwargs):
+        super(PcbBoard, self).__init__(pcb, pcb.size_pixels, shader, **kwargs)
 
+        self._root = root
         self._active = False
 
-    def add_to(self, root):
+    def activate(self):
         if not self._active:
-            root.add_widget(self)
+            self._root.add_widget(self)
             self._active = True
 
-    def remove_from(self, root):
+    def deactivate(self):
         if self._active:
-            root.remove_widget(self)
+            self._root.remove_widget(self)
             self._active = False

@@ -14,10 +14,11 @@
 # limitations under the License.
 
 import sys
+import math
 
 
 def beep():
-    #print('\a')
+    # print('\a')
     sys.stdout.write("\a")
 
 
@@ -26,9 +27,14 @@ def is_desktop():
         return True
     return False
 
+
 def calculate_fit_scale(scale, size_mm, size_pixels):
     target = scale * size_mm[0]
     fit_x = target / size_pixels[0]
     target = scale * size_mm[1]
     fit_y = target / size_pixels[1]
     return min(fit_x, fit_y)
+
+
+def round_float(value):
+    return int(math.ceil(value))

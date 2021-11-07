@@ -1,8 +1,7 @@
 # halfmarble-panelizer
-a simple PCB panelizer
+A simple PCB panelizer
 
-a work in progress...
-- can render different PCB layers
+This is a work in progress and not ready to be used yet!
 
 
 Rendering Examples:
