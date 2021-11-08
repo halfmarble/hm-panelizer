@@ -45,10 +45,11 @@ class BiteRenderer:
 
 class BiteWidget(OffScreenScatter):
 
-    def __init__(self, edge, root, horizontal):
+    def __init__(self, edge, root, horizontal, slide):
         self._edge = edge
         self._root = root
         self._horizontal = horizontal
+        self._slide = slide
 
         self._base_color = Color(PCB_MASK_COLOR.r, PCB_MASK_COLOR.g, PCB_MASK_COLOR.b, PCB_MASK_COLOR.a)
         self._moving_color = Color(0, 0, 1, 1)
@@ -84,15 +85,13 @@ class BiteWidget(OffScreenScatter):
 
     def end_move(self):
         self._moving = False
+        self._slide = self._edge.calculate_slide(self, self.pos[0])
+        self._edge.layout()  # constrain the bite location to lie within the edge
         self.repaint()
 
     def move_by(self, dx, dy):
         if self._moving:
             position = (self._start[0]+dx, self._start[1]+dy)
-            # if self._edge.connects(position[0], position[1]):
-            #     self._moving_color = Color(0, 1, 0, 1)
-            # else:
-            #     self._moving_color = Color(1, 0, 0, 1)
             self.pos = position
 
     def on_touch_down(self, touch):
@@ -132,6 +131,10 @@ class BiteWidget(OffScreenScatter):
         self._root.remove_widget(self)
 
     @property
+    def slide(self):
+        return self._slide
+
+    @property
     def color(self):
         if self._moving:
             return self._moving_color
@@ -151,19 +154,27 @@ class PcbEdge:
 
         gap = (PCB_PANEL_GAP_MM * scale_mm)
         width = (PCB_PANEL_BITES_SIZE_MM * scale_mm)
+        width_half = (width / 2.0)
 
         panel_ox = self._panel.origin[0]
         panel_oy = self._panel.origin[1]
         shape_ox = (main.x * scale)
         shape_oy = ((self._shape1.y+self._shape1.height) * scale) - 2.0
         shape_w = (main.width * scale)
+        origin_x = panel_ox+shape_ox
+        origin_y = panel_oy+shape_oy
 
         for i in range(self._bites_count):
-            slide = ((float(i+1) / float(self._bites_count+1)) * shape_w) - (width / 2.0)
-            pos = (panel_ox+shape_ox+slide, panel_oy+shape_oy)
-            size = (width, gap+3.0)
             bite = self._bites[i]
+            #slide = (bite.slide * shape_w) - width_half
+            slide = (bite.slide * shape_w)
+            pos = (origin_x+slide, origin_y)
+            size = (width, gap+3.0)
             bite.set(pos, size)
+
+        self._edge_start = origin_x
+        self._edge_end = origin_x + shape_w
+        self._bite_width = width
 
     def __init__(self, panel, root, horizontal, bites_count, shape1, shape2):
         self._panel = panel
@@ -174,8 +185,13 @@ class PcbEdge:
         self._shape2 = shape2
 
         self._bites = []
+        self._edge_start = 0
+        self._edge_end = 0
+        self._bite_width = 0
+
         for i in range(self._bites_count):
-            self._bites.append(BiteWidget(self, root, self._horizontal))
+            slide = (float(i+1) / float(self._bites_count+1))
+            self._bites.append(BiteWidget(self, root, self._horizontal, slide))
 
     def connects(self, x, y):
         pass
@@ -199,6 +215,14 @@ class PcbEdge:
     def deactivate(self):
         for b in self._bites:
             b.deactivate()
+
+    def calculate_slide(self, bite, x):
+        if x < self._edge_start:
+            x = self._edge_start
+        elif x >= self._edge_end-self._bite_width:
+            x = self._edge_end-self._bite_width-1
+        slide = (x - self._edge_start) / (self._edge_end - self._edge_start)
+        return slide
 
     def bite(self, index):
         return self._bites[index]
