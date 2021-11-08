@@ -45,8 +45,7 @@ class BiteRenderer:
 
 class BiteWidget(OffScreenScatter):
 
-    def __init__(self, edge, root, horizontal, position, size):
-
+    def __init__(self, edge, root, horizontal):
         self._edge = edge
         self._root = root
         self._horizontal = horizontal
@@ -55,7 +54,7 @@ class BiteWidget(OffScreenScatter):
         self._moving_color = Color(0, 0, 1, 1)
         self._moving = False
 
-        super(BiteWidget, self).__init__(BiteRenderer(self), size, None, pos=position)
+        super(BiteWidget, self).__init__(BiteRenderer(self))
 
         if horizontal:
             self.do_translation_x = True
@@ -66,6 +65,11 @@ class BiteWidget(OffScreenScatter):
 
         self._group = None
         self._start = (0, 0)
+
+    def set(self, pos, size):
+        self.pos = pos
+        self.size = size
+        self.paint()
 
     # TODO: is there a better way to repaint?
     def repaint(self):
@@ -137,34 +141,41 @@ class BiteWidget(OffScreenScatter):
 
 class PcbEdge:
 
+    def layout(self):
+        main = self._shape1
+        if not main.is_of_kind(PcbKind.main):
+            main = self._shape2
+
+        scale = self._panel.scale
+        scale_mm = self._panel.pixels_per_cm * scale / 10.0
+
+        gap = (PCB_PANEL_GAP_MM * scale_mm)
+        width = (PCB_PANEL_BITES_SIZE_MM * scale_mm)
+
+        panel_ox = self._panel.origin[0]
+        panel_oy = self._panel.origin[1]
+        shape_ox = (main.x * scale)
+        shape_oy = ((self._shape1.y+self._shape1.height) * scale) - 2.0
+        shape_w = (main.width * scale)
+
+        for i in range(self._bites_count):
+            slide = ((float(i+1) / float(self._bites_count+1)) * shape_w) - (width / 2.0)
+            pos = (panel_ox+shape_ox+slide, panel_oy+shape_oy)
+            size = (width, gap+3.0)
+            bite = self._bites[i]
+            bite.set(pos, size)
+
     def __init__(self, panel, root, horizontal, bites_count, shape1, shape2):
+        self._panel = panel
+        self._root = root
         self._horizontal = horizontal
         self._bites_count = bites_count
         self._shape1 = shape1
         self._shape2 = shape2
 
-        main = shape1
-        if not main.is_of_kind(PcbKind.main):
-            main = shape2
-
-        scale = panel.scale
-        scale_mm = panel.pixels_per_cm * scale / 10.0
-
-        gap = (PCB_PANEL_GAP_MM * scale_mm)
-        bite = (PCB_PANEL_BITES_SIZE_MM * scale_mm)
-
-        panel_ox = panel.origin[0]
-        panel_oy = panel.origin[1]
-        shape_ox = (main.x * scale)
-        shape_oy = ((shape1.y+shape1.height) * scale) - 2.0
-        shape_w = (main.width * scale)
-
         self._bites = []
-        for i in range(bites_count):
-            slide = ((float(i+1) / float(bites_count+1)) * shape_w) - (bite / 2.0)
-            pos = (panel_ox+shape_ox+slide, panel_oy+shape_oy)
-            size = (bite, gap+3.0)
-            self._bites.append(BiteWidget(self, root, self._horizontal, pos, size))
+        for i in range(self._bites_count):
+            self._bites.append(BiteWidget(self, root, self._horizontal))
 
     def connects(self, x, y):
         pass
@@ -274,14 +285,25 @@ class PcbBites:
                 edge = self._vertical.get(c, r)
                 edge.deactivate()
 
+    def layout(self):
+        # TODO: implement Array2D iterator and use it here
+        for c in range(self._horizontal.width):
+            for r in range(self._horizontal.height):
+                edge = self._horizontal.get(c, r)
+                edge.layout()
+        for c in range(self._vertical.width):
+            for r in range(self._vertical.height):
+                edge = self._vertical.get(c, r)
+                edge.layout()
+
 
 class PcbShape:
 
-    def __init__(self, kind, mask, pos, size):
+    def __init__(self, kind, mask):
         self._kind = kind
         self._mask = mask
-        self._pos = pos
-        self._size = size
+        self._pos = (0, 0)
+        self._size = (0, 0)
 
     def __str__(self):
         rep = 'PcbShape'
@@ -297,6 +319,10 @@ class PcbShape:
 
     def is_of_kind(self, kind):
         return kind == self._kind
+
+    def set(self, pos, size):
+        self._pos = pos
+        self._size = size
 
     @property
     def x(self):
@@ -322,12 +348,18 @@ class PcbShape:
     def cy(self):
         return self.y + (self.height/2)
 
+    @property
+    def pos(self):
+        return self._pos
+
+    @property
+    def size(self):
+        return self._size
+
 
 class PcbPanel(OffScreenScatter):
 
     def __init__(self, root, pcb, shader, **kwargs):
-        super(PcbPanel, self).__init__(pcb, pcb.size_pixels, shader, **kwargs)
-
         self._root = root
         self._active = False
         self._size_mm = (0, 0)
@@ -335,10 +367,13 @@ class PcbPanel(OffScreenScatter):
         self._origin = (0, 0)
         self._columns = 0
         self._rows = 0
+        self._shapes = None
         self._bites_x = 0  # per single pcb
         self._bites_y = 0  # per single pcb
 
         self._bites = None
+
+        super(PcbPanel, self).__init__(pcb, (0, 0), pcb.size_pixels, shader, **kwargs)
 
     def activate(self):
         if not self._active:
@@ -352,19 +387,64 @@ class PcbPanel(OffScreenScatter):
             self._root.remove_widget(self)
             self._active = False
 
+    def paint(self):
+        if self._shapes is None:
+            return
+
+        pcb_client_width = self._client.size_pixels[0]
+        pcb_client_height = self._client.size_pixels[1]
+        pcb_width = pcb_client_width
+        pcb_height = pcb_client_height
+        if self._angle != 0.0:
+            pcb_width = pcb_client_height
+            pcb_height = pcb_client_width
+
+        with self._fbo:
+            ClearColor(0, 0, 0, 0)
+            ClearBuffers()
+
+            c = PCB_MASK_COLOR
+            Color(c.r, c.g, c.b, c.a)
+
+            bottom = self._shapes.get(0, 0)
+            Rectangle(pos=bottom.pos, size=bottom.size)
+
+            top = self._shapes.get(0, self._rows+1)
+            Rectangle(pos=top.pos, size=top.size)
+
+            for r in range(0, self._rows):
+                for c in range(0, self._columns):
+                    # pos_main = (round_float(x), round_float(y))
+                    # size_main = (round_float(pcb_width), round_float(pcb_height))
+                    # Color(0.5, 0.5, 0.5, 0.25)
+                    # Rectangle(pos=pos_main, size=size_main)
+
+                    main = self._shapes.get(c, r+1)
+                    PushMatrix()
+                    Translate(main.x + pcb_width / 2.0, main.y + pcb_height / 2.0, 0.0)
+                    Rotate(self._angle, 0.0, 0.0, 1.0)
+                    Translate(-pcb_client_width / 2.0, -pcb_client_height / 2.0, 0.0)
+                    self._client.paint(self._fbo)
+                    PopMatrix()
+
+        self._fbo.draw()
+        self._image.texture = self._fbo.texture
+
     def panelize(self, columns, rows, angle, bites_x, bites_y):
         self._columns = columns
         self._rows = rows
         self._angle = angle
         self._bites_x = bites_x
         self._bites_y = bites_y
+        self._shapes = None
+        self._bites = None
 
         scale = self._client.pixels_per_cm / 10.0
 
-        self.calculate_sizes(scale, columns, rows)
+        self.allocate_parts()
+        self.calculate_sizes(scale, self._columns, self._rows)
         self.layout_parts(scale, self.size[0], self.size[1])
-
-        self.deactivate()
+        self.paint()
 
     def calculate_sizes(self, scale, columns, rows):
         pcb_width = self._client.size_mm[0]
@@ -394,6 +474,22 @@ class PcbPanel(OffScreenScatter):
         self._image.size = self.size
         self._image.texture_size = self.size
 
+    def allocate_parts(self):
+        self._shapes = Array2D(self._columns, self._rows + 2)
+
+        # we only have 1 top and 1 bottom pcb, but pretend we have as many as columns to
+        # map 1:1 to the main pieces for easy calculations later
+        for c in range(0, self._columns):
+            self._shapes.put(c, 0, PcbShape(PcbKind.bottom, None))
+        for c in range(0, self._columns):
+            self._shapes.put(c, self._rows + 1, PcbShape(PcbKind.top, None))
+
+        for r in range(0, self._rows):
+            for c in range(0, self._columns):
+                self._shapes.put(c, r + 1, PcbShape(PcbKind.main, None))
+
+        self._bites = PcbBites(self, self._root, self._shapes, self._bites_x, self._bites_y)
+
     def layout_parts(self, scale, panel_width, panel_height):
         pcb_client_width = self._client.size_pixels[0]
         pcb_client_height = self._client.size_pixels[1]
@@ -407,55 +503,31 @@ class PcbPanel(OffScreenScatter):
         height_top = PCB_PANEL_TOP_RAIL_MM * scale
         gap = PCB_PANEL_GAP_MM * scale
 
-        pos_bottom = (0, 0)
-        size_bottom = (round_float(panel_width), round_float(height_bottom))
+        # we only have 1 top and 1 bottom pcb, but pretend we have as many as columns to
+        # map 1:1 to the main pieces for easy calculations later
+        for c in range(0, self._columns):
+            bottom = self._shapes.get(c, 0)
+            pos = (0, 0)
+            size = (round_float(panel_width), round_float(height_bottom))
+            bottom.set(pos, size)
+        for c in range(0, self._columns):
+            bottom = self._shapes.get(c, self._rows+1)
+            pos = (0, round_float(panel_height - height_top))
+            size = (round_float(panel_width), round_float(height_top))
+            bottom.set(pos, size)
 
-        pos_top = (0, round_float(panel_height - height_top))
-        size_top = (round_float(panel_width), round_float(height_top))
+        y = height_bottom + gap
+        for r in range(0, self._rows):
+            x = 0.0
+            for c in range(0, self._columns):
+                main = self._shapes.get(c, r+1)
+                pos = (round_float(x), round_float(y))
+                size = (round_float(pcb_width), round_float(pcb_height))
+                main.set(pos, size)
+                x += pcb_width + gap
+            y += pcb_height + gap
 
-        shapes = Array2D(self._columns, self._rows + 2)
-
-        with self._fbo:
-            ClearColor(0, 0, 0, 0)
-            ClearBuffers()
-            if self._client is not None:
-                c = PCB_MASK_COLOR
-                Color(c.r, c.g, c.b, c.a)
-                Rectangle(pos=pos_bottom, size=size_bottom)
-                Rectangle(pos=pos_top, size=size_top)
-
-                # we only have 1 top and 1 bottom pcb, but pretend we have as many as columns to
-                # map 1:1 to the main pieces for easy calculations later
-                for c in range(0, self._columns):
-                    shapes.put(c, 0, PcbShape(PcbKind.bottom, None, pos_bottom, size_bottom))
-                for c in range(0, self._columns):
-                    shapes.put(c, self._rows + 1, PcbShape(PcbKind.top, None, pos_top, size_top))
-
-                y = height_bottom + gap
-                for r in range(0, self._rows):
-                    x = 0.0
-                    for c in range(0, self._columns):
-                        pos_main = (round_float(x), round_float(y))
-                        size_main = (round_float(pcb_width), round_float(pcb_height))
-                        #Color(0.5, 0.5, 0.5, 0.25)
-                        #Rectangle(pos=pos_main, size=size_main)
-                        shapes.put(c, r + 1, PcbShape(PcbKind.main, None, pos_main, size_main))
-
-                        PushMatrix()
-                        Translate(x + pcb_width / 2.0, y + pcb_height / 2.0, 0.0)
-                        Rotate(self._angle, 0.0, 0.0, 1.0)
-                        Translate(-pcb_client_width / 2.0, -pcb_client_height / 2.0, 0.0)
-                        self._client.paint(self._fbo)
-                        PopMatrix()
-
-                        x += pcb_width
-                        x += gap
-                    y += pcb_height
-                    y += gap
-        self._fbo.draw()
-        self._image.texture = self._fbo.texture
-
-        self._bites = PcbBites(self, self._root, shapes, self._bites_x, self._bites_y)
+        self._bites.layout()
 
     def center(self, available_size, angle):
         if angle is not None:
@@ -476,6 +548,10 @@ class PcbPanel(OffScreenScatter):
         self.apply_transform(mat)
         mat = Matrix().scale(self._scale, self._scale, 1.0)
         self.apply_transform(mat, post_multiply=True, anchor=(ax, ay))
+
+        scale = self._client.pixels_per_cm / 10.0
+        self.calculate_sizes(scale, self._columns, self._rows)
+        self.layout_parts(scale, self.size[0], self.size[1])
 
     @property
     def size_pixels(self):

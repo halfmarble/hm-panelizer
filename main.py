@@ -124,7 +124,7 @@ class PanelizerApp(App):
 
             self._pcb_panel.deactivate()
             self.update_scale()
-            self.calculate_panel_fit_scale()
+            self.calculate_pcb_fit_scale()
             self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle, self._bites_x, self._bites_y)
             self.center()
             self._pcb_panel.activate()
@@ -167,16 +167,7 @@ class PanelizerApp(App):
         self.panelize()
 
     def calculate_pcb_fit_scale(self):
-        if self._board_scale_fit == 1.0:
-            self._board_scale_fit = calculate_fit_scale(FIT_SCALE, self._size, self._pcb.size_pixels)
-            self.update_scale()
-
-    def calculate_panel_fit_scale(self):
-        # self._pcb_panel.panelize(self._panels_x, self._panels_y, 0.0)
-        # fit_horizontal = calculate_fit_scale(FIT_SCALE, self._size, self._pcb_panel.size_pixels)
-        # self._pcb_panel.panelize(self._panels_x, self._panels_y, 90.0)
-        # fit_vertical = calculate_fit_scale(FIT_SCALE, self._size, self._pcb_panel.size_pixels)
-        # self._panel_scale_fit = min(fit_horizontal, fit_vertical)
+        self._board_scale_fit = calculate_fit_scale(FIT_SCALE, self._size, self._pcb.size_pixels)
         self._panel_scale_fit = calculate_fit_scale(FIT_SCALE, self._size, self._pcb_panel.size_pixels)
         self.update_scale()
 
@@ -236,7 +227,7 @@ class PanelizerApp(App):
 
     def resize(self, size):
         self._size = size
-        self.center()
+        self.calculate_pcb_fit_scale()
 
     def rotate(self, vertical):
         if vertical:

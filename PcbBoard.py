@@ -19,7 +19,7 @@ from OffScreenScatter import *
 class PcbBoard(OffScreenScatter):
 
     def __init__(self, root, pcb, shader, **kwargs):
-        super(PcbBoard, self).__init__(pcb, pcb.size_pixels, shader, **kwargs)
+        super(PcbBoard, self).__init__(client=pcb, pos=(0, 0), size=pcb.size_pixels, shader=shader, **kwargs)
 
         self._root = root
         self._active = False

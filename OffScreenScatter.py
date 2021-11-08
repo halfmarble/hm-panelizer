@@ -22,8 +22,9 @@ from kivy.graphics.transformation import Matrix
 
 class OffScreenScatter(Scatter):
 
-    def __init__(self, client, size, shader=None, **kwargs):
-
+    def __init__(self, client, pos=(0, 0), size=(100, 100), shader=None, **kwargs):
+        self.pos = pos
+        self.size = size
         self.size_hint = (None, None)
         self.do_rotation = False
         self.do_scale = False
@@ -32,7 +33,6 @@ class OffScreenScatter(Scatter):
 
         super(OffScreenScatter, self).__init__(**kwargs)
 
-        self.size = size
         self._width_org = self.size[0]
         self._height_org = self.size[1]
 
@@ -54,6 +54,8 @@ class OffScreenScatter(Scatter):
         self._scale = scale / 100.0
 
     def paint(self):
+        self._fbo.size = self.size
+        self._image.size = self.size
         with self._fbo:
             ClearColor(0, 0, 0, 0)
             ClearBuffers()
