@@ -51,8 +51,10 @@ class BiteWidget(OffScreenScatter):
         self._horizontal = horizontal
         self._slide = slide
 
+        self._connected = True
         self._base_color = Color(PCB_MASK_COLOR.r, PCB_MASK_COLOR.g, PCB_MASK_COLOR.b, PCB_MASK_COLOR.a)
-        self._moving_color = Color(0, 0, 1, 1)
+        self._moving_color = Color(0.25, 0.85, 0.25, 0.75)
+        self._moving_disconnected_color = Color(0.85, 0.25, 0.25, 0.75)
         self._moving = False
 
         super(BiteWidget, self).__init__(BiteRenderer(self))
@@ -85,14 +87,16 @@ class BiteWidget(OffScreenScatter):
 
     def end_move(self):
         self._moving = False
-        self._slide = self._edge.calculate_slide(self, self.pos[0])
+        self._slide = self._edge.validate_move(self, self.pos[0])
         self._edge.layout()  # constrain the bite location to lie within the edge
+        self.mark_connected(True)
         self.repaint()
 
     def move_by(self, dx, dy):
         if self._moving:
-            position = (self._start[0]+dx, self._start[1]+dy)
+            position = (self._start[0] + dx, self._start[1] + dy)
             self.pos = position
+            self._slide = self._edge.validate_move(self, self.pos[0])
 
     def on_touch_down(self, touch):
         handled = super(BiteWidget, self).on_touch_down(touch)
@@ -130,6 +134,12 @@ class BiteWidget(OffScreenScatter):
     def deactivate(self):
         self._root.remove_widget(self)
 
+    def mark_connected(self, value):
+        update = (self._connected != value)
+        self._connected = value
+        if update:
+            self.repaint()
+
     @property
     def slide(self):
         return self._slide
@@ -137,44 +147,15 @@ class BiteWidget(OffScreenScatter):
     @property
     def color(self):
         if self._moving:
-            return self._moving_color
+            if not self._connected:
+                return self._moving_disconnected_color
+            else:
+                return self._moving_color
         else:
             return self._base_color
 
 
 class PcbEdge:
-
-    def layout(self):
-        main = self._shape1
-        if not main.is_of_kind(PcbKind.main):
-            main = self._shape2
-
-        scale = self._panel.scale
-        scale_mm = self._panel.pixels_per_cm * scale / 10.0
-
-        gap = (PCB_PANEL_GAP_MM * scale_mm)
-        width = (PCB_PANEL_BITES_SIZE_MM * scale_mm)
-        width_half = (width / 2.0)
-
-        panel_ox = self._panel.origin[0]
-        panel_oy = self._panel.origin[1]
-        shape_ox = (main.x * scale)
-        shape_oy = ((self._shape1.y+self._shape1.height) * scale) - 2.0
-        shape_w = (main.width * scale)
-        origin_x = panel_ox+shape_ox
-        origin_y = panel_oy+shape_oy
-
-        for i in range(self._bites_count):
-            bite = self._bites[i]
-            #slide = (bite.slide * shape_w) - width_half
-            slide = (bite.slide * shape_w)
-            pos = (origin_x+slide, origin_y)
-            size = (width, gap+3.0)
-            bite.set(pos, size)
-
-        self._edge_start = origin_x
-        self._edge_end = origin_x + shape_w
-        self._bite_width = width
 
     def __init__(self, panel, root, horizontal, bites_count, shape1, shape2):
         self._panel = panel
@@ -190,19 +171,44 @@ class PcbEdge:
         self._bite_width = 0
 
         for i in range(self._bites_count):
-            slide = (float(i+1) / float(self._bites_count+1))
+            slide = (float(i + 1) / float(self._bites_count + 1))
             self._bites.append(BiteWidget(self, root, self._horizontal, slide))
 
-    def connects(self, x, y):
-        pass
-        # if self._horizontal:
-        #     if self._kind is PcbKind.top:
-        #         return True  # always connects
-        #     elif self._kind is PcbKind.bottom:
-        #         return True  # always connects
-        #     elif self._kind is PcbKind.main:
-        #         # TODO: implement
-        #         return True
+    def layout(self):
+        main = self._shape1
+        if not main.is_of_kind(PcbKind.main):
+            main = self._shape2
+
+        scale = self._panel.scale
+        scale_mm = self._panel.pixels_per_cm * scale / 10.0
+
+        gap = (PCB_PANEL_GAP_MM * scale_mm)
+        width = (PCB_PANEL_BITES_SIZE_MM * scale_mm)
+
+        panel_ox = self._panel.origin[0]
+        panel_oy = self._panel.origin[1]
+        shape_ox = (main.x * scale)
+        shape_oy = ((self._shape1.y + self._shape1.height) * scale) - 2.0
+        shape_w = (main.width * scale)
+        origin_x = panel_ox + shape_ox
+        origin_y = panel_oy + shape_oy
+
+        self._edge_start = origin_x
+        self._edge_end = origin_x + shape_w
+        self._bite_width = width
+
+        for i in range(self._bites_count):
+            bite = self._bites[i]
+            slide = (bite.slide * shape_w)
+            x = self.validate_pos(bite, (origin_x + slide))
+            pos = (x, origin_y)
+            size = (width, gap + 3.0)
+            bite.set(pos, size)
+
+    def connects(self, pos):
+        connects1 =  self._shape1.connects(self._horizontal, True, pos)
+        connects2 = self._shape2.connects(self._horizontal, False, pos)
+        return connects1 and connects2
 
     def __str__(self):
         rep = 'PcbEdge'
@@ -216,11 +222,20 @@ class PcbEdge:
         for b in self._bites:
             b.deactivate()
 
-    def calculate_slide(self, bite, x):
+    def validate_pos(self, bite, x):
+        out_of_bounds = False
         if x < self._edge_start:
+            out_of_bounds = True
             x = self._edge_start
-        elif x >= self._edge_end-self._bite_width:
-            x = self._edge_end-self._bite_width-1
+        elif x >= self._edge_end - self._bite_width:
+            out_of_bounds = True
+            x = self._edge_end - self._bite_width - 1
+        connected = self.connects(x)
+        bite.mark_connected(not out_of_bounds and connected)
+        return x
+
+    def validate_move(self, bite, x):
+        x = self.validate_pos(bite, x)
         slide = (x - self._edge_start) / (self._edge_end - self._edge_start)
         return slide
 
@@ -278,7 +293,7 @@ class PcbBites:
             for r in range(0, rows):
                 for c in range(0, columns):
                     left = self._shapes.get(c, r)
-                    right = self._shapes.get(c+1, r)
+                    right = self._shapes.get(c + 1, r)
                     edge = PcbEdge(panel, root, False, bites_x, left, right)
                     self._vertical.put(c, r, edge)
             print(' vertical edges:')
@@ -348,6 +363,21 @@ class PcbShape:
         self._pos = pos
         self._size = size
 
+    # horizontal==true  --> side==True is 'bottom', else 'top'
+    # horizontal==false --> side==True is 'left',   else 'right'
+    def connects(self, horizontal, side, pos):
+        if horizontal:
+            if self._kind is PcbKind.bottom:
+                return True  # always connects
+            elif self._kind is PcbKind.top:
+                return True  # always connects
+            elif self._kind is PcbKind.main:
+                # TODO: implement
+                return True
+        else:
+            # TODO: implement
+            return False
+
     @property
     def x(self):
         return self._pos[0]
@@ -363,14 +393,6 @@ class PcbShape:
     @property
     def height(self):
         return self._size[1]
-
-    @property
-    def cx(self):
-        return self.x + (self.width/2)
-
-    @property
-    def cy(self):
-        return self.y + (self.height/2)
 
     @property
     def pos(self):
@@ -433,7 +455,7 @@ class PcbPanel(OffScreenScatter):
             bottom = self._shapes.get(0, 0)
             Rectangle(pos=bottom.pos, size=bottom.size)
 
-            top = self._shapes.get(0, self._rows+1)
+            top = self._shapes.get(0, self._rows + 1)
             Rectangle(pos=top.pos, size=top.size)
 
             for r in range(0, self._rows):
@@ -443,7 +465,7 @@ class PcbPanel(OffScreenScatter):
                     # Color(0.5, 0.5, 0.5, 0.25)
                     # Rectangle(pos=pos_main, size=size_main)
 
-                    main = self._shapes.get(c, r+1)
+                    main = self._shapes.get(c, r + 1)
                     PushMatrix()
                     Translate(main.x + pcb_width / 2.0, main.y + pcb_height / 2.0, 0.0)
                     Rotate(self._angle, 0.0, 0.0, 1.0)
@@ -535,7 +557,7 @@ class PcbPanel(OffScreenScatter):
             size = (round_float(panel_width), round_float(height_bottom))
             bottom.set(pos, size)
         for c in range(0, self._columns):
-            bottom = self._shapes.get(c, self._rows+1)
+            bottom = self._shapes.get(c, self._rows + 1)
             pos = (0, round_float(panel_height - height_top))
             size = (round_float(panel_width), round_float(height_top))
             bottom.set(pos, size)
@@ -544,7 +566,7 @@ class PcbPanel(OffScreenScatter):
         for r in range(0, self._rows):
             x = 0.0
             for c in range(0, self._columns):
-                main = self._shapes.get(c, r+1)
+                main = self._shapes.get(c, r + 1)
                 pos = (round_float(x), round_float(y))
                 size = (round_float(pcb_width), round_float(pcb_height))
                 main.set(pos, size)

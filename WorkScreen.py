@@ -33,4 +33,3 @@ class WorkScreen(Screen):
     def update_rect(self, *args):
         self.background_rect.size = (self.size[0], self.size[1])
         self._app.resize(self.background_rect.size)
-        self._app.calculate_pcb_fit_scale()
