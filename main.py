@@ -80,8 +80,8 @@ class PanelizerApp(App):
         self._size = (100, 100)
 
         self._show_panel = False
-        self._panels_x = 2
-        self._panels_y = 2
+        self._panels_x = INITIAL_COLUMNS
+        self._panels_y = INITIAL_ROWS
         self._panelization_str = '{}x{}'.format(self._panels_x, self._panels_y)
 
         self._bites_x = PCB_PANEL_BITES_X

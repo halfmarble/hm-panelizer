@@ -16,6 +16,9 @@
 from typing import Final
 from kivy.graphics import Color
 
+INITIAL_ROWS: Final             = 2
+INITIAL_COLUMNS: Final          = 2
+
 # the ratio of the pcb board to the available window size at 100% zoom
 FIT_SCALE: Final                = 0.9
 
@@ -43,3 +46,6 @@ PCB_BOTTOM_SILK_COLOR: Final =      Color(0.95, 0.95, 0.95, 1.00)
 PCB_PASTE_COLOR: Final =            Color(0.55, 0.55, 0.55, 1.00)
 PCB_DRILL_NPH_COLOR: Final =        Color(0.10, 0.10, 0.10, 0.80)
 PCB_DRILL_COLOR: Final =            Color(0.10, 0.10, 0.10, 0.90)
+
+PCB_BITE_GOOD_COLOR: Final =        Color(0.25, 0.85, 0.25, 0.75)
+PCB_BITE_BAD_COLOR: Final =         Color(0.85, 0.25, 0.25, 0.75)

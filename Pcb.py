@@ -17,13 +17,13 @@ import os
 import math
 from os.path import join
 from kivy.uix.image import Image
-from kivy.graphics import Fbo, Color, Line, Rectangle, ClearBuffers, ClearColor
-
+from kivy.graphics import Rectangle
 
 from Constants import *
 
 
 class Pcb:
+
     _colors = [
         PCB_MASK_COLOR,
         PCB_OUTLINE_COLOR,
@@ -123,6 +123,10 @@ class Pcb:
         else:
             if layer in self._layers:
                 self._layers.remove(layer)
+
+    @property
+    def mask(self):
+        return self._images[0]
 
     @property
     def size_pixels(self):
