@@ -27,7 +27,7 @@ PCB_PANEL_TOP_RAIL_MM: Final    = 10
 PCB_PANEL_BOTTOM_RAIL_MM: Final = 10
 
 PCB_PANEL_BITES_SIZE_MM: Final  = 5
-PCB_PANEL_BITES_X: Final        = 2
+PCB_PANEL_BITES_X: Final        = 3
 PCB_PANEL_BITES_Y: Final        = 0
 
 GRID_BACKGROUND_COLOR: Final =      Color(0.95, 0.95, 0.95, 1.0)

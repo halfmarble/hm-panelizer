@@ -29,7 +29,7 @@ from kivy.clock import Clock
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 
-from Constants import *
+from AppSettings import *
 from Utilities import *
 from GridRenderer import *
 from OffScreenImage import *
@@ -84,8 +84,8 @@ class PanelizerApp(App):
         self._panels_y = INITIAL_ROWS
         self._panelization_str = '{}x{}'.format(self._panels_x, self._panels_y)
 
-        self._bites_x = PCB_PANEL_BITES_X
-        self._bites_y = PCB_PANEL_BITES_Y
+        self._bites_x = AppSettings.bites_x
+        self._bites_y = AppSettings.bites_y
 
     def build(self):
         self.title = 'hmPanelizer'
@@ -112,7 +112,7 @@ class PanelizerApp(App):
 
         self._pcb_board = PcbBoard(root=self._surface, pcb=self._pcb, shader=fs_mask)
         self._pcb_board.activate()
-        self._pcb_panel = PcbPanel(root=self._surface, pcb=self._pcb, shader=fs_mask)
+        self._pcb_panel = PcbPanel(parent=self, root=self._surface, pcb=self._pcb, shader=fs_mask)
         self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle, self._bites_x, self._bites_y)
         self.update_status()
         #Clock.schedule_interval(self.timer_callback, 0.1)
@@ -200,6 +200,7 @@ class PanelizerApp(App):
         status.text += '  panel pcb count: {},'.format(self._panels_x*self._panels_y)
         status.text += '  panel size: {}mm x {}mm,'.format(round(self._pcb_panel.size_mm[0], 2),
                                                            round(self._pcb_panel.size_mm[1], 2))
+        status.text += '  {}valid layout.'.format('in' if not self._pcb_panel.valid_layout else '')
 
     def update_zoom_title(self):
         self._zoom_str = self._zoom_values_properties[self._zoom_values_index]
