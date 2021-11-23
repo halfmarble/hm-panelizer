@@ -41,14 +41,6 @@ from PcbPanel import *
 from WorkScreen import *
 from UI import *
 
-FS_TEXTURE: Final = '''
-$HEADER$
-void main(void) {
-    gl_FragColor = texture2D(texture0, tex_coord0);
-}
-'''
-
-
 class PanelizerApp(App):
     _zoom_values_index = 5
     _zoom_values = [500, 300, 200, 150, 125, 100, 90, 80, 70, 60, 50, 40, 30, 20, 10]
@@ -111,9 +103,9 @@ class PanelizerApp(App):
         self._pcb = Pcb(path)
         self._pixels_per_cm = self._pcb.pixels_per_cm
 
-        self._pcb_board = PcbBoard(root=self._surface, pcb=self._pcb, shader=FS_TEXTURE)
+        self._pcb_board = PcbBoard(root=self._surface, pcb=self._pcb)
         self._pcb_board.activate()
-        self._pcb_panel = PcbPanel(parent=self, root=self._surface, pcb=self._pcb, shader=FS_TEXTURE)
+        self._pcb_panel = PcbPanel(parent=self, root=self._surface, pcb=self._pcb)
         self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle, self._bites_x, self._bites_y)
         self.update_status()
         # Clock.schedule_interval(self.timer_callback, 0.1)

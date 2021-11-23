@@ -24,14 +24,22 @@ from Utilities import *
 from OffScreenImage import *
 
 
+FS_MASK: Final = '''
+$HEADER$
+void main(void) {
+    gl_FragColor = vec4(frag_color.r, frag_color.g, frag_color.b, texture2D(texture0, tex_coord0).a);
+}
+'''
+
 GOOD_COLOR: Final = Color(PCB_BITE_GOOD_COLOR.r, PCB_BITE_GOOD_COLOR.g, PCB_BITE_GOOD_COLOR.b, 1.0)
-BAD_COLOR: Final  = Color(PCB_BITE_BAD_COLOR.r, PCB_BITE_BAD_COLOR.g, PCB_BITE_BAD_COLOR.b, 1.0)
+BAD_COLOR: Final = Color(PCB_BITE_BAD_COLOR.r, PCB_BITE_BAD_COLOR.g, PCB_BITE_BAD_COLOR.b, 1.0)
 
 
 class PcbPrimitive:
 
-    def __init__(self, primitive, good):
+    def __init__(self, primitive, edge, good):
         self._primitive = primitive
+        self._edge = edge
         if good:
             self._color = GOOD_COLOR
         else:
@@ -40,6 +48,10 @@ class PcbPrimitive:
     @property
     def primitive(self):
         return self._primitive
+
+    @property
+    def edge(self):
+        return self._edge
 
     @property
     def r(self):
@@ -71,6 +83,7 @@ class PcbOutline:
         self._max_y = 0.0
 
         segments = path.split("\n")
+
         for s in segments:
             parts = s.split(" ")
             if parts[0] == 'Line:':
@@ -86,22 +99,27 @@ class PcbOutline:
                 y2 = str_to_float(parts[4])
                 self._min_y = min(self._min_y, y2)
                 self._max_y = max(self._max_y, y2)
+
+        for s in segments:
+            parts = s.split(" ")
+            if parts[0] == 'Line:':
+                x1 = str_to_float(parts[1])
+                y1 = str_to_float(parts[2])
+                x2 = str_to_float(parts[3])
+                y2 = str_to_float(parts[4])
                 line = Line(points=[x1, y1, x2, y2])
-                x_delta = abs(x1-x2)
-                y_delta = abs(y1-y2)
+                x_delta = abs(x1 - x2)
+                y_delta = abs(y1 - y2)
                 if x_delta < y_delta:
-                    self._vertical.append(PcbPrimitive(line, x_delta == 0.0))
+                    edge = (x1 == self._min_x or x1 == self._max_x) and (x2 == self._min_x or x2 == self._max_x)
+                    good = x_delta == 0.0
+                    self._vertical.append(PcbPrimitive(line, edge, good))
                 else:
-                    self._horizontal.append(PcbPrimitive(line, y_delta == 0.0))
-            # else:
-            #     print("arc")
+                    edge = (y1 == self._min_y or y1 == self._max_y) and (y2 == self._min_y or y2 == self._max_y)
+                    good = y_delta == 0.0
+                    self._horizontal.append(PcbPrimitive(line, edge, good))
+
         self._scale = size / max(self._max_x, self._max_y)
-        print("size: {}".format(size))
-        print("self._min_x: {}".format(self._min_x))
-        print("self._min_y: {}".format(self._min_y))
-        print("self._max_x: {}".format(self._max_x))
-        print("self._max_y: {}".format(self._max_y))
-        print("self._scale: {}".format(self._scale))
 
     def paint(self, fbo, size):
         scale = 1.0 / self._scale
@@ -112,10 +130,16 @@ class PcbOutline:
             Scale(self._scale, self._scale, 1.0)
             for line in self._horizontal:
                 Color(line.r, line.g, line.b, line.a)
-                Line(points=line.primitive.points, width=thickness)
+                width = thickness
+                if line.edge:
+                    width *= 2.0
+                Line(points=line.primitive.points, width=width, cap='none')
             for line in self._vertical:
                 Color(line.r, line.g, line.b, line.a)
-                Line(points=line.primitive.points, width=thickness)
+                width = thickness
+                if line.edge:
+                    width *= 2.0
+                Line(points=line.primitive.points, width=width, cap='none')
 
     @property
     def min_x(self):
@@ -133,13 +157,6 @@ class PcbOutline:
     def max_y(self):
         return self._max_y
 
-
-FS_MASK: Final = '''
-$HEADER$
-void main(void) {
-    gl_FragColor = frag_color * texture2D(texture0, tex_coord0).a;
-}
-'''
 
 class Pcb:
     _colors = [

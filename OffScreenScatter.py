@@ -22,7 +22,7 @@ from kivy.graphics.transformation import Matrix
 
 class OffScreenScatter(Scatter):
 
-    def __init__(self, client, pos=(0, 0), size=(100, 100), shader=None, **kwargs):
+    def __init__(self, client, pos=(0, 0), size=(100, 100), **kwargs):
         self.pos = pos
         self.size = size
         self.size_hint = (None, None)
@@ -42,8 +42,6 @@ class OffScreenScatter(Scatter):
         self._client = client
 
         self._fbo = Fbo(size=self.size, use_parent_projection=False, mipmap=True)
-        if shader is not None:
-            self._fbo.shader.fs = shader
 
         self._image = Image(size=size, texture=self._fbo.texture)
         self.add_widget(self._image)

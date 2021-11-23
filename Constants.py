@@ -32,24 +32,24 @@ PCB_PANEL_BITES_SIZE_MM: Final  = 5
 PCB_PANEL_BITES_X: Final        = 2
 PCB_PANEL_BITES_Y: Final        = 0
 
-PCB_OUTLINE_WIDTH: Final        = 2.5
+PCB_OUTLINE_WIDTH: Final        = 1.5
 
-GRID_BACKGROUND_COLOR: Final =      Color(0.95, 0.95, 0.95, 1.0)
-GRID_MAJOR_COLOR: Final =           Color(0.50, 0.50, 0.50, 1.0)
-GRID_MINOR_COLOR: Final =           Color(0.80, 0.80, 0.80, 1.0)
+GRID_BACKGROUND_COLOR: Final    = Color(0.95, 0.95, 0.95, 1.0)
+GRID_MAJOR_COLOR: Final         = Color(0.50, 0.50, 0.50, 1.0)
+GRID_MINOR_COLOR: Final         = Color(0.80, 0.80, 0.80, 1.0)
 
-PCB_MASK_COLOR: Final =             Color(0.15, 0.35, 0.15, 1.00)
-PCB_OUTLINE_COLOR: Final =          Color(0.00, 0.00, 0.00, 1.00)
-PCB_TOP_PASTE_COLOR: Final =        Color(0.55, 0.55, 0.55, 1.00)
-PCB_TOP_SILK_COLOR: Final =         Color(0.95, 0.95, 0.95, 1.00)
-PCB_TOP_MASK_COLOR: Final =         Color(0.75, 0.65, 0.00, 1.00)
-PCB_TOP_TRACES_COLOR: Final =       Color(0.00, 0.50, 0.00, 0.50)
-PCB_BOTTOM_TRACES_COLOR: Final =    Color(0.00, 0.50, 0.00, 0.50)
-PCB_BOTTOM_MASK_COLOR: Final =      Color(0.75, 0.65, 0.00, 1.00)
-PCB_BOTTOM_SILK_COLOR: Final =      Color(0.95, 0.95, 0.95, 1.00)
-PCB_BOTTOM_PASTE_COLOR: Final =     Color(0.55, 0.55, 0.55, 1.00)
-PCB_DRILL_NPH_COLOR: Final =        Color(0.10, 0.10, 0.10, 0.80)
-PCB_DRILL_COLOR: Final =            Color(0.10, 0.10, 0.10, 0.90)
+PCB_MASK_COLOR: Final           = Color(0.15, 0.35, 0.15, 1.00)
+PCB_OUTLINE_COLOR: Final        = Color(0.00, 0.00, 0.00, 1.00)
+PCB_TOP_PASTE_COLOR: Final      = Color(0.55, 0.55, 0.55, 1.00)
+PCB_TOP_SILK_COLOR: Final       = Color(0.95, 0.95, 0.95, 1.00)
+PCB_TOP_MASK_COLOR: Final       = Color(0.75, 0.65, 0.00, 1.00)
+PCB_TOP_TRACES_COLOR: Final     = Color(0.00, 0.50, 0.00, 0.50)
+PCB_BOTTOM_TRACES_COLOR: Final  = Color(0.00, 0.50, 0.00, 0.50)
+PCB_BOTTOM_MASK_COLOR: Final    = Color(0.75, 0.65, 0.00, 1.00)
+PCB_BOTTOM_SILK_COLOR: Final    = Color(0.95, 0.95, 0.95, 1.00)
+PCB_BOTTOM_PASTE_COLOR: Final   = Color(0.55, 0.55, 0.55, 1.00)
+PCB_DRILL_NPH_COLOR: Final      = Color(0.10, 0.10, 0.10, 0.80)
+PCB_DRILL_COLOR: Final          = Color(0.65, 0.55, 0.00, 0.50)
 
-PCB_BITE_GOOD_COLOR: Final =        Color(0.25, 0.85, 0.25, 0.75)
-PCB_BITE_BAD_COLOR: Final =         Color(0.85, 0.25, 0.25, 0.75)
+PCB_BITE_GOOD_COLOR: Final      = Color(0.25, 0.85, 0.25, 0.75)
+PCB_BITE_BAD_COLOR: Final       = Color(0.85, 0.25, 0.25, 0.75)

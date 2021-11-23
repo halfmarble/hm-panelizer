@@ -541,7 +541,7 @@ class PcbShape:
 
 class PcbPanel(OffScreenScatter):
 
-    def __init__(self, parent, root, pcb, shader, **kwargs):
+    def __init__(self, parent, root, pcb, **kwargs):
         self._parent = parent
         self._root = root
         self._pcb = pcb
@@ -563,7 +563,7 @@ class PcbPanel(OffScreenScatter):
 
         self._valid_layout = False
 
-        super(PcbPanel, self).__init__(pcb, (0, 0), pcb.size_pixels, shader, **kwargs)
+        super(PcbPanel, self).__init__(pcb, (0, 0), pcb.size_pixels, **kwargs)
 
     def activate(self):
         if not self._active:
@@ -704,14 +704,16 @@ class PcbPanel(OffScreenScatter):
             top = self._shapes.get(0, self._rows + 1)
             Rectangle(pos=top.pos, size=top.size)
 
+            Color(1, 1, 1, 1)
             for r in range(0, self._rows):
                 for c in range(0, self._columns):
-                    # pos_main = (round_float(x), round_float(y))
+                    main = self._shapes.get(c, r + 1)
+
+                    # pos_main = (round_float(main.x), round_float(main.y))
                     # size_main = (round_float(pcb_width), round_float(pcb_height))
                     # Color(0.5, 0.5, 0.5, 0.25)
                     # Rectangle(pos=pos_main, size=size_main)
 
-                    main = self._shapes.get(c, r + 1)
                     PushMatrix()
                     Translate(main.x + pcb_width / 2.0, main.y + pcb_height / 2.0, 0.0)
                     Rotate(self._angle, 0.0, 0.0, 1.0)
