@@ -214,6 +214,15 @@ BoxLayout:
                 bold: True
                 font_size: 20
             LayerButton:
+                id: _pcb
+                text: 'Pcb'
+                state: 'down'
+                on_state: app.layer_toggle(0, self.state);
+            LayerButton:
+                id: _outline_verified
+                text: 'Outline (verified)'
+                on_state: app.layer_toggle(12, self.state);
+            LayerButton:
                 id: _top1
                 text: 'Top traces'
                 state: 'down'

@@ -16,6 +16,7 @@
 from os.path import dirname
 
 from kivy import Config
+
 Config.set('graphics', 'width', '1400')
 Config.set('graphics', 'height', '900')
 Config.set('graphics', 'minimum_width', '1000')
@@ -40,15 +41,15 @@ from PcbPanel import *
 from WorkScreen import *
 from UI import *
 
-fs_mask: Final = '''
+FS_TEXTURE: Final = '''
 $HEADER$
 void main(void) {
-    gl_FragColor = frag_color * texture2D(texture0, tex_coord0).a;
+    gl_FragColor = texture2D(texture0, tex_coord0);
 }
 '''
 
-class PanelizerApp(App):
 
+class PanelizerApp(App):
     _zoom_values_index = 5
     _zoom_values = [500, 300, 200, 150, 125, 100, 90, 80, 70, 60, 50, 40, 30, 20, 10]
     _zoom_str = '{}%'.format(_zoom_values[_zoom_values_index])
@@ -110,12 +111,12 @@ class PanelizerApp(App):
         self._pcb = Pcb(path)
         self._pixels_per_cm = self._pcb.pixels_per_cm
 
-        self._pcb_board = PcbBoard(root=self._surface, pcb=self._pcb, shader=fs_mask)
+        self._pcb_board = PcbBoard(root=self._surface, pcb=self._pcb, shader=FS_TEXTURE)
         self._pcb_board.activate()
-        self._pcb_panel = PcbPanel(parent=self, root=self._surface, pcb=self._pcb, shader=fs_mask)
+        self._pcb_panel = PcbPanel(parent=self, root=self._surface, pcb=self._pcb, shader=FS_TEXTURE)
         self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle, self._bites_x, self._bites_y)
         self.update_status()
-        #Clock.schedule_interval(self.timer_callback, 0.1)
+        # Clock.schedule_interval(self.timer_callback, 0.1)
 
     def panelize(self):
         self._show_panel = self.root.ids._panelization_button.state == 'down'
@@ -197,7 +198,7 @@ class PanelizerApp(App):
         else:
             status.text += '  size: {}mm x {}mm,'.format(round(self._pcb.size_mm[1], 2),
                                                          round(self._pcb.size_mm[0], 2))
-        status.text += '  panel pcb count: {},'.format(self._panels_x*self._panels_y)
+        status.text += '  panel pcb count: {},'.format(self._panels_x * self._panels_y)
         status.text += '  panel size: {}mm x {}mm,'.format(round(self._pcb_panel.size_mm[0], 2),
                                                            round(self._pcb_panel.size_mm[1], 2))
         status.text += '  {}valid layout.'.format('in' if not self._pcb_panel.valid_layout else '')
@@ -261,6 +262,7 @@ class PanelizerApp(App):
 
     def settings_bites(self):
         print('settings_bites')
+
 
 if __name__ == '__main__':
     PanelizerApp().run()

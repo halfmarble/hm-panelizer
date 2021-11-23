@@ -38,3 +38,8 @@ def calculate_fit_scale(scale, size_mm, size_pixels):
 
 def round_float(value):
     return int(math.ceil(value))
+
+
+def str_to_float(value):
+    return float(value.replace(',', ''))
+

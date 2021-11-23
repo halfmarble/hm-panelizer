@@ -16,6 +16,8 @@
 from typing import Final
 from kivy.graphics import Color
 
+VERSION_STR: Final              = 'hm-panelizer 1.0.0'
+
 INITIAL_ROWS: Final             = 2
 INITIAL_COLUMNS: Final          = 2
 
@@ -27,8 +29,10 @@ PCB_PANEL_TOP_RAIL_MM: Final    = 10
 PCB_PANEL_BOTTOM_RAIL_MM: Final = 10
 
 PCB_PANEL_BITES_SIZE_MM: Final  = 5
-PCB_PANEL_BITES_X: Final        = 3
+PCB_PANEL_BITES_X: Final        = 2
 PCB_PANEL_BITES_Y: Final        = 0
+
+PCB_OUTLINE_WIDTH: Final        = 2.5
 
 GRID_BACKGROUND_COLOR: Final =      Color(0.95, 0.95, 0.95, 1.0)
 GRID_MAJOR_COLOR: Final =           Color(0.50, 0.50, 0.50, 1.0)
@@ -43,7 +47,7 @@ PCB_TOP_TRACES_COLOR: Final =       Color(0.00, 0.50, 0.00, 0.50)
 PCB_BOTTOM_TRACES_COLOR: Final =    Color(0.00, 0.50, 0.00, 0.50)
 PCB_BOTTOM_MASK_COLOR: Final =      Color(0.75, 0.65, 0.00, 1.00)
 PCB_BOTTOM_SILK_COLOR: Final =      Color(0.95, 0.95, 0.95, 1.00)
-PCB_PASTE_COLOR: Final =            Color(0.55, 0.55, 0.55, 1.00)
+PCB_BOTTOM_PASTE_COLOR: Final =     Color(0.55, 0.55, 0.55, 1.00)
 PCB_DRILL_NPH_COLOR: Final =        Color(0.10, 0.10, 0.10, 0.80)
 PCB_DRILL_COLOR: Final =            Color(0.10, 0.10, 0.10, 0.90)
 
