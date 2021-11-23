@@ -97,7 +97,7 @@ class PanelizerApp(App):
         self._grid = OffScreenImage(client=self._grid_renderer, shader=None)
         self._surface.add_widget(self._grid)
 
-        self.load_pcb(join(dirname(__file__), 'data', 'example_pcb', 'NEAToBOARD'))
+        self.load_pcb(join(dirname(__file__), DEMO_PCB_PATH_STR))
 
     def load_pcb(self, path):
         self._pcb = Pcb(path)
@@ -114,7 +114,6 @@ class PanelizerApp(App):
         self._show_panel = self.root.ids._panelization_button.state == 'down'
         if self._show_panel:
             self._pcb_board.deactivate()
-
             self._pcb_panel.deactivate()
             self.update_scale()
             self.calculate_pcb_fit_scale()
@@ -123,17 +122,17 @@ class PanelizerApp(App):
             self._pcb_panel.activate()
         else:
             self._pcb_panel.deactivate()
-
             self.update_scale()
             self.center()
             self._pcb_board.activate()
         self.update_status()
+        self.calculate_pcb_fit_scale()
 
     def panelize_column(self, add):
         if add:
             self._panels_x += 1
-            if self._panels_x > 99:
-                self._panels_x = 99
+            if self._panels_x > MAX_COLUMNS:
+                self._panels_x = MAX_COLUMNS
                 beep()
                 print('WARNING: clamping self.panels_x: {}'.format(self._panels_x))
         else:
@@ -147,8 +146,8 @@ class PanelizerApp(App):
     def panelize_row(self, add):
         if add:
             self._panels_y += 1
-            if self._panels_y > 99:
-                self._panels_y = 99
+            if self._panels_y > MAX_ROWS:
+                self._panels_y = MAX_ROWS
                 beep()
                 print('WARNING: clamping self.panels_y: {}'.format(self._panels_y))
         else:
@@ -193,7 +192,8 @@ class PanelizerApp(App):
         status.text += '  panel pcb count: {},'.format(self._panels_x * self._panels_y)
         status.text += '  panel size: {}mm x {}mm,'.format(round(self._pcb_panel.size_mm[0], 2),
                                                            round(self._pcb_panel.size_mm[1], 2))
-        status.text += '  {}valid layout.'.format('in' if not self._pcb_panel.valid_layout else '')
+        status.text += '  {}valid layout,'.format('in' if not self._pcb_panel.valid_layout else '')
+        status.text += '  {}valid pcb.'.format('in' if not self._pcb.valid else '')
 
     def update_zoom_title(self):
         self._zoom_str = self._zoom_values_properties[self._zoom_values_index]

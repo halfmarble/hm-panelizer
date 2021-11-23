@@ -82,6 +82,8 @@ class PcbOutline:
         self._min_y = 1000000.0
         self._max_y = 0.0
 
+        self._valid = True
+
         segments = path.split("\n")
 
         for s in segments:
@@ -113,10 +115,14 @@ class PcbOutline:
                 if x_delta < y_delta:
                     edge = (x1 == self._min_x or x1 == self._max_x) and (x2 == self._min_x or x2 == self._max_x)
                     good = x_delta == 0.0
+                    if edge and not good:
+                        self._valid = False
                     self._vertical.append(PcbPrimitive(line, edge, good))
                 else:
                     edge = (y1 == self._min_y or y1 == self._max_y) and (y2 == self._min_y or y2 == self._max_y)
                     good = y_delta == 0.0
+                    if edge and not good:
+                        self._valid = False
                     self._horizontal.append(PcbPrimitive(line, edge, good))
 
         self._scale = size / max(self._max_x, self._max_y)
@@ -140,6 +146,10 @@ class PcbOutline:
                 if line.edge:
                     width *= 2.0
                 Line(points=line.primitive.points, width=width, cap='none')
+
+    @property
+    def valid(self):
+        return self._valid
 
     @property
     def min_x(self):
@@ -202,6 +212,8 @@ class Pcb:
         with open(join(path, '1_outline.txt')) as file:
             outline_path = file.read()
         pcb = PcbOutline(outline_path, max(self._size_pixels[0], self._size_pixels[1]))
+        self._valid = pcb.valid
+
         colored_outline = OffScreenImage(pcb, None)
         self._size_mm = (pcb.max_x, pcb.max_y)
         self._size_rounded_mm = (math.ceil(self._size_mm[0]), math.ceil(self._size_mm[1]))
@@ -301,6 +313,10 @@ class Pcb:
         else:
             if layer in self._layers:
                 self._layers.remove(layer)
+
+    @property
+    def valid(self):
+        return self._valid
 
     @property
     def mask(self):

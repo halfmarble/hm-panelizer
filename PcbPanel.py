@@ -38,7 +38,19 @@ class PcbMask:
         self._pixels_w = int(mask.texture_size[0])
         self._pixels_h = int(mask.texture_size[1])
 
-        if angle != 0.0:
+        if angle == 0.0:
+            self._pixels_w = int(mask.texture_size[0])
+            self._pixels_h = int(mask.texture_size[1])
+            fbo = Fbo(size=(self._pixels_w, self._pixels_h))
+            mask.texture.flip_vertical()
+            fbo.clear()
+            with fbo:
+                Color(1, 1, 1, 1)
+                Rectangle(size=(self._pixels_w, self._pixels_h), texture=mask.texture)
+            fbo.draw()
+            mask.texture.flip_vertical()
+            self._pixels = fbo.pixels
+        else:
             self._pixels_w = int(mask.texture_size[0])
             self._pixels_h = int(mask.texture_size[1])
             fbo = Fbo(size=(self._pixels_w, self._pixels_h))

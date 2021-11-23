@@ -15,11 +15,17 @@
 
 from typing import Final
 from kivy.graphics import Color
+from posixpath import join
 
 VERSION_STR: Final              = 'hm-panelizer 1.0.0'
 
+DEMO_PCB_PATH_STR: Final        = join('data', 'example_pcb', 'NEAToBOARD')
+#DEMO_PCB_PATH_STR: Final        = join('data', 'example_pcb', 'NEAToBOARD_OLD')
+
 INITIAL_ROWS: Final             = 2
 INITIAL_COLUMNS: Final          = 2
+MAX_ROWS: Final                 = 99
+MAX_COLUMNS: Final              = 99
 
 # the ratio of the pcb board to the available window size at 100% zoom
 FIT_SCALE: Final                = 0.9
