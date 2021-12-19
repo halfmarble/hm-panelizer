@@ -180,13 +180,14 @@ class Pcb:
         PCB_BOTTOM_MASK_COLOR,
         PCB_BOTTOM_SILK_COLOR,
         PCB_BOTTOM_PASTE_COLOR,
-        PCB_DRILL_NPH_COLOR,
-        PCB_DRILL_COLOR,
+        PCB_DRILL_NPTH_COLOR,
+        PCB_DRILL_PTH_COLOR,
     ]
 
     _layers_always = [1]
     _layers_top = [2, 3, 4, 5]
     _layers_bottom = [6, 7, 8, 9]
+    _layers_verify = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
     def colored_mask(self, mask, color):
         image = Image()
@@ -206,10 +207,10 @@ class Pcb:
     def __init__(self, path, **kwargs):
         self._name = path.split(os.path.sep)[-1]
 
-        mask = Image(source=join(path, '0_outline_mask.png'))
+        mask = Image(source=join(path, 'outlinemask.png'))
         self._size_pixels = mask.texture_size
 
-        with open(join(path, '1_outline.txt')) as file:
+        with open(join(path, 'outlinepath.txt')) as file:
             outline_path = file.read()
         pcb = PcbOutline(outline_path, max(self._size_pixels[0], self._size_pixels[1]))
         self._valid = pcb.valid
@@ -222,38 +223,38 @@ class Pcb:
 
         self._images.append(self.colored_mask(mask, PCB_MASK_COLOR))
 
-        mask = Image(source=join(path, '1_outline.png'))
+        mask = Image(source=join(path, 'outline.png'))
         self._images.append(self.colored_mask(mask, PCB_TOP_PASTE_COLOR))
 
-        mask = Image(source=join(path, '2_toppaste.png'))
+        mask = Image(source=join(path, 'toppaste.png'))
         self._images.append(self.colored_mask(mask, PCB_TOP_PASTE_COLOR))
 
-        mask = Image(source=join(path, '3_topsilk.png'))
+        mask = Image(source=join(path, 'topsilk.png'))
         self._images.append(self.colored_mask(mask, PCB_TOP_SILK_COLOR))
 
-        mask = Image(source=join(path, '4_topmask.png'))
+        mask = Image(source=join(path, 'topmask.png'))
         self._images.append(self.colored_mask(mask, PCB_TOP_MASK_COLOR))
 
-        mask = Image(source=join(path, '5_top.png'))
+        mask = Image(source=join(path, 'top.png'))
         self._images.append(self.colored_mask(mask, PCB_TOP_TRACES_COLOR))
 
-        mask = Image(source=join(path, '6_bottom.png'))
+        mask = Image(source=join(path, 'bottom.png'))
         self._images.append(self.colored_mask(mask, PCB_BOTTOM_TRACES_COLOR))
 
-        mask = Image(source=join(path, '7_bottommask.png'))
+        mask = Image(source=join(path, 'bottommask.png'))
         self._images.append(self.colored_mask(mask, PCB_BOTTOM_MASK_COLOR))
 
-        mask = Image(source=join(path, '8_bottomsilk.png'))
+        mask = Image(source=join(path, 'bottomsilk.png'))
         self._images.append(self.colored_mask(mask, PCB_BOTTOM_SILK_COLOR))
 
-        mask = Image(source=join(path, '9_bottompaste.png'))
+        mask = Image(source=join(path, 'bottompaste.png'))
         self._images.append(self.colored_mask(mask, PCB_BOTTOM_PASTE_COLOR))
 
-        mask = Image(source=join(path, '10_drill.png'))
-        self._images.append(self.colored_mask(mask, PCB_DRILL_NPH_COLOR))
+        mask = Image(source=join(path, 'drillnpth.png'))
+        self._images.append(self.colored_mask(mask, PCB_DRILL_NPTH_COLOR))
 
-        mask = Image(source=join(path, '11_drill.png'))
-        self._images.append(self.colored_mask(mask, PCB_DRILL_COLOR))
+        mask = Image(source=join(path, 'drillpth.png'))
+        self._images.append(self.colored_mask(mask, PCB_DRILL_PTH_COLOR))
 
         colored_outline.paint(self._size_pixels)
         self._images.append(colored_outline)
@@ -309,6 +310,21 @@ class Pcb:
                 for top in self._layers_top:
                     if top in self._layers:
                         self._layers.remove(top)
+            elif layer == 12:
+                ids._pcb.state = 'normal'
+                ids._top1.state = 'normal'
+                ids._top2.state = 'normal'
+                ids._top3.state = 'normal'
+                ids._top4.state = 'normal'
+                ids._bottom1.state = 'normal'
+                ids._bottom2.state = 'normal'
+                ids._bottom3.state = 'normal'
+                ids._bottom4.state = 'normal'
+                ids._drillnpth.state = 'normal'
+                ids._drillpth.state = 'normal'
+                for l in self._layers_verify:
+                    if l in self._layers:
+                        self._layers.remove(l)
             self._layers.append(layer)
         else:
             if layer in self._layers:

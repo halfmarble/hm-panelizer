@@ -258,11 +258,13 @@ BoxLayout:
                 text: 'Bottom paste'
                 on_state: app.layer_toggle(9, self.state)
             LayerButton:
-                text: 'Drill NPH'
+                id: _drillnpth
+                text: 'Drill NPTH'
                 state: 'down'
                 on_state: app.layer_toggle(10, self.state)
             LayerButton:
-                text: 'Drill'
+                id: _drillpth
+                text: 'Drill PTH'
                 state: 'down'
                 on_state: app.layer_toggle(11, self.state)
             Widget:

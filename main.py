@@ -223,7 +223,7 @@ class PanelizerApp(App):
         self._pcb_board.paint()
         self._pcb_panel.paint()
         self.update_status()
-        self.panelize()
+        #self.panelize()
 
     def resize(self, size):
         self._size = size
