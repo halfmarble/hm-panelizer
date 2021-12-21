@@ -14,10 +14,12 @@ import hm_gerber_tool.rs274x
 import hm_gerber_tool.excellon
 import hm_gerber_ex.dxf
 
+
 class Composition(object):
     def __init__(self, settings = None, comments = None):
         self.settings = settings
         self.comments = comments if comments != None else []
+
 
 class GerberComposition(Composition):
     APERTURE_ID_BIAS = 10
@@ -97,7 +99,6 @@ class GerberComposition(Composition):
         if not self.settings:
             self.settings = file.settings
 
-
     def _register_aperture_macro(self, statement):
         name = statement.name
         newname = name
@@ -113,6 +114,7 @@ class GerberComposition(Composition):
         statement.d = len(self.apertures) + self.APERTURE_ID_BIAS
         self.apertures.append(statement)
         return statement.d
+
 
 class DrillComposition(Composition):
     def __init__(self, settings=None, comments=None):
@@ -132,6 +134,7 @@ class DrillComposition(Composition):
     def dump(self, path):
         def statements():
             for t in self.tools:
+                stmt = ToolSelectionStmt(t.number)
                 yield ToolSelectionStmt(t.number).to_excellon(self.settings)
                 for h in self.hits:
                     if h.tool.number == t.number:

@@ -17,6 +17,7 @@ from hm_gerber_tool.cam import FileSettings
 from hm_gerber_tool.utils import inch, metric, write_gerber_value, parse_gerber_value
 from hm_gerber_ex.utility import rotate
 
+
 def loads(data, filename=None, settings=None, tools=None, format=None):
     if not settings:
         settings = FileSettings(**detect_excellon_format(data))
@@ -27,6 +28,7 @@ def loads(data, filename=None, settings=None, tools=None, format=None):
     file = ExcellonParser(settings, tools).parse_raw(data, filename)
     return ExcellonFileEx.from_file(file)
 
+
 def write_excellon_header(file, settings, tools):
     file.write('M48\nFMAT,2\nICI,OFF\n%s\n' %
                UnitStmtEx(settings.units, settings.zeros, settings.format).to_excellon(settings))
@@ -36,6 +38,7 @@ def write_excellon_header(file, settings, tools):
 
 
 class ExcellonFileEx(ExcellonFile):
+
     @classmethod
     def from_file(cls, file):
         def correct_statements():
@@ -115,12 +118,10 @@ class ExcellonFileEx(ExcellonFile):
             rout_statements = []
             for stmt in statements:
                 if isinstance(stmt, ToolSelectionStmt):
-                    print('>>>>>>>>>>>')
-                    print(' file.tools: {}'.format(file.tools))
-                    print(' stmt: {}'.format(stmt))
-                    print(' stmt.tool: {}'.format(stmt.tool))
-                    current_tool = file.tools[stmt.tool]
-                    print(' current_tool: {}'.format(current_tool))
+                    if file.tools.get(stmt.tool, None) is not None:
+                        current_tool = file.tools[stmt.tool]
+                    else:
+                        print('!!! WARNING skipping tool {} (used without previous definition)'.format(stmt.tool))
                 elif isinstance(stmt, DrillModeStmt):
                     rout = make_rout(status, rout_statements)
                     rout_statements = []

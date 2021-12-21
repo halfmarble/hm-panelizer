@@ -33,12 +33,10 @@ from .excellon_tool import ExcellonToolDefinitionParser
 from .primitives import Drill, Slot
 from .utils import inch, metric
 
-
 try:
     from cStringIO import StringIO
 except(ImportError):
     from io import StringIO
-
 
 
 def read(filename):
@@ -59,6 +57,7 @@ def read(filename):
         data = f.read()
     settings = FileSettings(**detect_excellon_format(data))
     return ExcellonParser(settings).parse(filename)
+
 
 def loads(data, filename=None, settings=None, tools=None):
     """ Read data from string and return an ExcellonFile
@@ -96,6 +95,7 @@ class DrillHit(object):
         Center position of the drill.
 
     """
+
     def __init__(self, tool, position):
         self.tool = tool
         self.position = position
@@ -126,6 +126,7 @@ class DrillHit(object):
 
     def __str__(self):
         return 'Hit (%f, %f) {%s}' % (self.position[0], self.position[1], self.tool)
+
 
 class DrillSlot(object):
     """
@@ -199,9 +200,7 @@ class ExcellonFile(CamFile):
     """
 
     def __init__(self, statements, tools, hits, settings, filename=None):
-        super(ExcellonFile, self).__init__(statements=statements,
-                                           settings=settings,
-                                           filename=filename)
+        super(ExcellonFile, self).__init__(statements=statements, settings=settings, filename=filename)
         self.tools = tools
         self.hits = hits
 
@@ -289,9 +288,9 @@ class ExcellonFile(CamFile):
                 statement.to_inch()
             for tool in iter(self.tools.values()):
                 tool.to_inch()
-            #for primitive in self.primitives:
+            # for primitive in self.primitives:
             #    primitive.to_inch()
-            #for hit in self.hits:
+            # for hit in self.hits:
             #    hit.to_inch()
             self.units = 'inch'
 
@@ -303,7 +302,7 @@ class ExcellonFile(CamFile):
                 statement.to_metric()
             for tool in iter(self.tools.values()):
                 tool.to_metric()
-            #for primitive in self.primitives:
+            # for primitive in self.primitives:
             #    print("Converting to metric: {}".format(primitive))
             #    primitive.to_metric()
             #    print(primitive)
@@ -316,7 +315,7 @@ class ExcellonFile(CamFile):
             statement.offset(x_offset, y_offset)
         for primitive in self.primitives:
             primitive.offset(x_offset, y_offset)
-        for hit in self. hits:
+        for hit in self.hits:
             hit.offset(x_offset, y_offset)
 
     def path_length(self, tool_number=None):
@@ -331,7 +330,7 @@ class ExcellonFile(CamFile):
                               else positions[num])
             lengths[num] = 0.0 if lengths.get(num) is None else lengths[num]
             lengths[num] = lengths[
-                num] + math.hypot(*tuple(map(operator.sub, positions[num], hit.position)))
+                               num] + math.hypot(*tuple(map(operator.sub, positions[num], hit.position)))
             positions[num] = hit.position
 
         if tool_number is None:
@@ -378,6 +377,7 @@ class ExcellonParser(object):
     settings : FileSettings or dict-like
         Excellon file settings to use when interpreting the excellon file.
     """
+
     def __init__(self, settings=None, ext_tools=None):
         self.notation = 'absolute'
         self.units = 'inch'
@@ -436,8 +436,7 @@ class ExcellonParser(object):
             self._parse_line(line.strip())
         for stmt in self.statements:
             stmt.units = self.units
-        return ExcellonFile(self.statements, self.tools, self.hits,
-                            self._settings(), filename)
+        return ExcellonFile(self.statements, self.tools, self.hits, self._settings(), filename)
 
     def _parse_line(self, line):
         # skip empty lines
@@ -707,7 +706,8 @@ class ExcellonParser(object):
                     if not self.active_tool:
                         self.active_tool = self._get_tool(1)
 
-                    self.hits.append(DrillSlot(self.active_tool, (stmt.x_start, stmt.y_start), (stmt.x_end, stmt.y_end), DrillSlot.TYPE_G85))
+                    self.hits.append(DrillSlot(self.active_tool, (stmt.x_start, stmt.y_start), (stmt.x_end, stmt.y_end),
+                                               DrillSlot.TYPE_G85))
                     self.active_tool._hit()
             else:
                 stmt = CoordinateStmt.from_excellon(line, self._settings())
@@ -795,6 +795,7 @@ class ExcellonParser(object):
 
         return tool
 
+
 def detect_excellon_format(data=None, filename=None):
     """ Detect excellon file decimal format and zero-suppression settings.
 
@@ -813,13 +814,14 @@ def detect_excellon_format(data=None, filename=None):
     results = {}
     detected_zeros = None
     detected_format = None
-    zeros_options = ('leading', 'trailing', )
+    zeros_options = ('leading', 'trailing',)
     format_options = ((2, 4), (2, 5), (3, 3),)
 
-    if True:
-      # works for KiCad
-      print("\nWARNING assuming number format [leading (3, 3)] in drill files, if not correct, then the drill holes might be wrong - double check!\n")
-      return {'format': format_options[2], 'zeros': zeros_options[0]}
+    # if True:
+    #     # works for KiCad
+    #     print("!!! WARNING assuming number format [leading (3, 3)] in drill files, "
+    #           "if not correct, then the drill holes might be wrong - double check!")
+    #     return {'format': format_options[2], 'zeros': zeros_options[0]}
 
     if data is None and filename is None:
         raise ValueError('Either data or filename arguments must be provided')

@@ -299,26 +299,20 @@ class ToolSelectionStmt(ExcellonStatement):
             tool = int(line[:2])
             compensation_index = int(line[2:])
 
-        return cls(line, tool, compensation_index, **kwargs)
+        return cls(tool, compensation_index, **kwargs)
 
-    def __init__(self, line, tool, compensation_index=None, **kwargs):
+    def __init__(self, tool, compensation_index=None, **kwargs):
         super(ToolSelectionStmt, self).__init__(**kwargs)
-        self.line = line
         tool = int(tool)
         compensation_index = (int(compensation_index) if compensation_index is not None else None)
         self.tool = tool
         self.compensation_index = compensation_index
-        print('********* {}'.format(self))
 
     def to_excellon(self, settings=None):
         stmt = 'T%02d' % self.tool
         if self.compensation_index is not None:
             stmt += '%02d' % self.compensation_index
         return stmt
-
-    def __str__(self):
-        return "<ToolSelectionStmt: tool={}, compensation_index={}, line={}, [{}]>".format(
-            self.tool, self.compensation_index, self.line, self.to_excellon())
 
 
 class NextToolSelectionStmt(ExcellonStatement):

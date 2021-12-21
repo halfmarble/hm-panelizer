@@ -20,16 +20,66 @@ import sys
 sys.path.append('.')
 
 import hm_gerber_ex
+
 from hm_gerber_ex import GerberComposition, DrillComposition
 from hm_gerber_tool.utils import listdir
 
-extensions = ['.gtl']
-#extensions = ['.gm1', '.gbl', '.gbo', '.gbp', '.gbs', '.gtl', '.gto', '.gtp', '.gts', '.drl']
-# '.gm1'
+
+def is_pth(name):
+    if '-npth' in name.lower():
+        return False
+    else:
+        return True
+
+
+def add_mousebite_drill(ctx):
+    # file = hm_gerber_ex.read('mousebites.drl')
+    # file.draw_mode = DxfFile.DM_MOUSE_BITES
+    # file.to_metric()
+    # file.width = 0.5
+    # file.format = (3, 3)
+    # ctx.merge(file)
+    pass
+
+
+def add_rails_and_mousebite_cutouts(ctx):
+    # base = hm_gerber_ex.rectangle(width=100, height=100, left=0, bottom=0, units='metric')
+    # base.draw_mode = DxfFile.DM_LINE
+    # ctx.merge(base)
+    pass
+
+
+# we process drl files twice - once for 'pth' and the other for 'npth'
+extensions = [
+    '.gm1',
+    '.gbl',
+    '.gbo',
+    '.gbp',
+    '.gbs',
+    '.gtl',
+    '.gto',
+    '.gtp',
+    '.gts',
+    '.drl',
+    '.drl',
+]
+
+extensions_to_names = {
+    '.gm1': 'edge_cuts',
+    '.gbl': 'bottom_copper',
+    '.gbo': 'bottom_silk',
+    '.gbp': 'bottom_paste',
+    '.gbs': 'bottom_mask',
+    '.gtl': 'top_copper',
+    '.gto': 'top_silk',
+    '.gtp': 'top_paste',
+    '.gts': 'top_mask',
+    '.drl': 'drill',
+}
 
 boards = [
-    ('pcb/',  0, 0, 0),
-#    ('pcb/', 65, 0, 0),
+    ('pcb/',  0, 0, 90),
+    ('pcb/', 10, 0, 0),
 ]
 
 output = 'panelized'
@@ -41,6 +91,11 @@ try:
 except FileExistsError:
     pass
 
+board_count = len(boards)
+pth_count = 0
+npth_count = 0
+
+# ext
 for ext in extensions:
     print('PROCESS: {}'.format(ext))
 
@@ -49,43 +104,53 @@ for ext in extensions:
     else:
         ctx = GerberComposition()
 
+    file = None
+
+    # board
     for directory, x_offset, y_offset, angle in boards:
         directory = os.path.abspath(directory)
         if not os.path.isdir(directory):
             raise TypeError('{} is not a directory.'.format(directory))
 
+        # ext in board
         for filename in listdir(directory, True, True):
             filename_ext = os.path.splitext(filename)[1].lower()
             if ext == filename_ext:
+
+                if ext == '.drl':
+                    # first process all 'pth' drill files, then all 'npth' drill files
+                    if pth_count < board_count:
+                        if not is_pth(filename):
+                            continue
+                        else:
+                            pth_count += 1
+                    elif pth_count == board_count:
+                        if is_pth(filename):
+                            continue
+                        else:
+                            npth_count += 1
+
+                print('MERGING: {}'.format(filename))
                 file = hm_gerber_ex.read(os.path.join(os.path.dirname(__file__), directory, filename))
                 file.to_metric()
                 if angle != 0.0:
                     file.rotate(angle)
                 file.offset(x_offset, y_offset)
                 ctx.merge(file)
-                print('.')
-                break
+                if ext != '.drl':
+                    break
 
-    # if ext != '.drl':
-    #     file = hm_gerber_ex.read(outline)
-    #     ctx.merge(file)
-    # else:
-    #     file = hm_gerber_ex.read(mousebites)
-    #     file.draw_mode = DxfFile.DM_MOUSE_BITES
-    #     file.to_metric()
-    #     file.width = 0.5
-    #     file.format = (3, 3)
-    #     ctx.merge(file)
-
-    ctx.dump(os.path.join(os.path.dirname(__file__), output, pcb + ext))
-    print('DONE\n')
-
-# output_text('generating GML: ')
-# file = hm_gerber_ex.read(outline)
-# file.write(outputs + '.GML')
-# output_text('.')
-# ctx = GerberComposition()
-# base = hm_gerber_ex.rectangle(width=100, height=100, left=0, bottom=0, units='metric')
-# base.draw_mode = DxfFile.DM_LINE
-# ctx.merge(base)
-# output_text('. end\n')
+    if file is not None:
+        new_name = extensions_to_names.get(ext, 'unknown')
+        if ext == '.drl':
+            if is_pth(file.filename):
+                new_name += '_pth'
+            else:
+                new_name += '_npth'
+                add_mousebite_drill(ctx)
+        elif ext == '.gm1':
+            add_rails_and_mousebite_cutouts(ctx)
+        ctx.dump(os.path.join(os.path.dirname(__file__), output, new_name + ext))
+        print('DONE\n')
+    else:
+        print('SKIPPED (do not know how to handle)\n')

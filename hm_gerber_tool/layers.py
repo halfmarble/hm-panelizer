@@ -55,13 +55,13 @@ from .ipc356 import IPCNetlist
 Hint = namedtuple('Hint', 'layer ext name regex content')
 
 hints = [
-    Hint(layer='top',
+    Hint(layer='top_copper',
          ext=['gtl', 'cmp', 'top', ],
          name=['art01', 'top', 'GTL', 'layer1', 'soldcom', 'comp', 'F.Cu', ],
          regex='',
          content=[]
          ),
-    Hint(layer='bottom',
+    Hint(layer='bottom_copper',
          ext=['gbl', 'sld', 'bot', 'sol', 'bottom', ],
          name=['art02', 'bottom', 'bot', 'GBL', 'layer2', 'soldsold', 'B.Cu', ],
          regex='',
@@ -74,43 +74,43 @@ hints = [
          regex='',
          content=[]
          ),
-    Hint(layer='topsilk',
+    Hint(layer='top_silk',
          ext=['gto', 'sst', 'plc', 'ts', 'skt', 'topsilk', ],
          name=['sst01', 'topsilk', 'silk', 'slk', 'sst', 'F.SilkS', 'F.Silkscreen'],
          regex='',
          content=[]
          ),
-    Hint(layer='bottomsilk',
+    Hint(layer='bottom_silk',
          ext=['gbo', 'ssb', 'pls', 'bs', 'skb', 'bottomsilk', ],
          name=['bsilk', 'ssb', 'botsilk', 'bottomsilk', 'B.SilkS', 'B.Silkscreen'],
          regex='',
          content=[]
          ),
-    Hint(layer='topmask',
+    Hint(layer='top_mask',
          ext=['gts', 'stc', 'tmk', 'smt', 'tr', 'topmask', ],
          name=['sm01', 'cmask', 'tmask', 'mask1', 'maskcom', 'topmask', 'mst', 'F.Mask', ],
          regex='',
          content=[]
          ),
-    Hint(layer='bottommask',
+    Hint(layer='bottom_mask',
          ext=['gbs', 'sts', 'bmk', 'smb', 'br', 'bottommask', ],
          name=['sm', 'bmask', 'mask2', 'masksold', 'botmask', 'bottommask', 'msb', 'B.Mask', ],
          regex='',
          content=[]
          ),
-    Hint(layer='toppaste',
+    Hint(layer='top_paste',
          ext=['gtp', 'tm', 'toppaste', ],
          name=['sp01', 'toppaste', 'pst', 'F.Paste'],
          regex='',
          content=[]
          ),
-    Hint(layer='bottompaste',
+    Hint(layer='bottom_paste',
          ext=['gbp', 'bm', 'bottompaste', ],
          name=['sp02', 'botpaste', 'bottompaste', 'psb', 'B.Paste', ],
          regex='',
          content=[]
          ),
-    Hint(layer='outline',
+    Hint(layer='edge_cuts',
          ext=['gm1', 'gm2', 'gm3', 'gml', 'gko', 'outline'],
          name=['BDR', 'GML', 'border', 'out', 'outline', 'Edge.Cuts', ],
          regex='',
@@ -128,27 +128,21 @@ hints = [
          regex='',
          content=[]
          ),
-    Hint(layer='topdrawing',
+    Hint(layer='top_drawing',
          ext=[''],
          name=['F_Fab', ],
          regex='',
          content=[]
          ),
-    Hint(layer='bottomdrawing',
+    Hint(layer='bottom_drawing',
          ext=[''],
          name=['B_Fab', ],
          regex='',
          content=[]
          ),
-    Hint(layer='pdrill',
+    Hint(layer='drill',
          ext=['drl', 'txt'],
-         name=['PTH', ],
-         regex='',
-         content=[]
-         ),
-    Hint(layer='npdrill',
-         ext=['drl'],
-         name=['NPTH', ],
+         name=['PTH', 'NPTH'],
          regex='',
          content=[]
          ),
@@ -211,9 +205,9 @@ def guess_layer_class_by_content(filename):
 
 def sort_layers(layers, from_top=True):
     #print('<PCBLayer: layers {}>'.format(layers))
-    layer_order = ['outline', 'toppaste', 'topsilk', 'topmask', 'top',
-                   'internal', 'bottom', 'bottommask', 'bottomsilk',
-                   'bottompaste', 'pdrill', 'npdrill', 'topdrawing', 'bottomdrawing', ]
+    layer_order = ['edge_cuts', 'top_paste', 'top_silk', 'top_mask', 'top_copper',
+                   'internal', 'bottom_copper', 'bottom_mask', 'bottom_silk',
+                   'bottom_paste', 'top_drawing', 'bottom_drawing', ]
     append_after = ['drill', 'drawing']
 
     output = []
@@ -306,7 +300,7 @@ class DrillLayer(PCBLayer):
     def __init__(self, filename=None, cam_source=None, layers=None, **kwargs):
         super(DrillLayer, self).__init__(filename, 'drill', cam_source, **kwargs)
         self.layers = layers if layers is not None else ['top', 'bottom']
-        self.type = "npth" if "npth" in filename.lower() else "pth"
+        self.type = "_npth" if "npth" in filename.lower() else "_pth"
 
     def name(self):
         return '{}{}'.format(self.layer_class, self.type)

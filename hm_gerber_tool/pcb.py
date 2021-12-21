@@ -90,8 +90,7 @@ class PCB(object):
     @property
     def top_layers(self):
         board_layers = [l for l in reversed(self.layers) if l.layer_class in
-                        ('topsilk')]
-        # ('topsilk', 'topmask', 'top')]
+        ('top_silk', 'top_mask', 'top_copper')]
         drill_layers = [l for l in self.drill_layers if 'top' in l.layers]
         # Drill layer goes under soldermask for proper rendering of tented vias
         return [board_layers[0]] + drill_layers + board_layers[1:]
@@ -99,23 +98,25 @@ class PCB(object):
     @property
     def bottom_layers(self):
         board_layers = [l for l in self.layers if l.layer_class in
-                        ('bottomsilk', 'bottommask', 'bottom')]
+                        ('bottom_silk', 'bottom_mask', 'bottom_copper')]
         drill_layers = [l for l in self.drill_layers if 'bottom' in l.layers]
         # Drill layer goes under soldermask for proper rendering of tented vias
         return [board_layers[0]] + drill_layers + board_layers[1:]
 
     @property
     def drill_layers(self):
-        return [l for l in self.layers if l.layer_class in ('drill', 'ndrill', 'npdrill')]
+        return [l for l in self.layers if l.layer_class in
+                ('drill', 'drill_pth', 'drill_npth')]
 
     @property
     def copper_layers(self):
-        return list(reversed([layer for layer in self.layers if layer.layer_class in ('top', 'bottom', 'internal')]))
+        return list(reversed([layer for layer in self.layers if layer.layer_class in
+                              ('top_copper', 'bottom_copper', 'internal')]))
 
     @property
-    def outline_layer(self):
+    def edge_cuts_layer(self):
         for layer in self.layers:
-            if layer.layer_class == 'outline':
+            if layer.layer_class == 'edge_cuts':
                 return layer
 
     @property
@@ -123,7 +124,7 @@ class PCB(object):
         """ Number of *COPPER* layers
         """
         return len([l for l in self.layers if l.layer_class in
-                    ('top', 'bottom', 'internal')])
+                    ('top_copper', 'bottom_copper', 'internal')])
 
     @property
     def metric(self):
@@ -134,11 +135,11 @@ class PCB(object):
         bounds = None
         if bounds is None:
             for layer in self.layers:
-                if layer.layer_class == 'outline':
+                if layer.layer_class == 'edge_cuts':
                     bounds = layer.bounds
         if bounds is None:
             for layer in self.layers:
-                if layer.layer_class == 'top':
+                if layer.layer_class == 'top_copper':
                     bounds = layer.bounds
         return bounds
 

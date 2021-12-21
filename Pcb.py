@@ -207,10 +207,10 @@ class Pcb:
     def __init__(self, path, **kwargs):
         self._name = path.split(os.path.sep)[-1]
 
-        mask = Image(source=join(path, 'outlinemask.png'))
+        mask = Image(source=join(path, 'edge_cuts_mask.png'))
         self._size_pixels = mask.texture_size
 
-        with open(join(path, 'outlinepath.txt')) as file:
+        with open(join(path, 'edge_cuts_path.txt')) as file:
             outline_path = file.read()
         pcb = PcbOutline(outline_path, max(self._size_pixels[0], self._size_pixels[1]))
         self._valid = pcb.valid
@@ -223,37 +223,37 @@ class Pcb:
 
         self._images.append(self.colored_mask(mask, PCB_MASK_COLOR))
 
-        mask = Image(source=join(path, 'outline.png'))
+        mask = Image(source=join(path, 'edge_cuts.png'))
         self._images.append(self.colored_mask(mask, PCB_TOP_PASTE_COLOR))
 
-        mask = Image(source=join(path, 'toppaste.png'))
+        mask = Image(source=join(path, 'top_paste.png'))
         self._images.append(self.colored_mask(mask, PCB_TOP_PASTE_COLOR))
 
-        mask = Image(source=join(path, 'topsilk.png'))
+        mask = Image(source=join(path, 'top_silk.png'))
         self._images.append(self.colored_mask(mask, PCB_TOP_SILK_COLOR))
 
-        mask = Image(source=join(path, 'topmask.png'))
+        mask = Image(source=join(path, 'top_mask.png'))
         self._images.append(self.colored_mask(mask, PCB_TOP_MASK_COLOR))
 
-        mask = Image(source=join(path, 'top.png'))
+        mask = Image(source=join(path, 'top_copper.png'))
         self._images.append(self.colored_mask(mask, PCB_TOP_TRACES_COLOR))
 
-        mask = Image(source=join(path, 'bottom.png'))
+        mask = Image(source=join(path, 'bottom_copper.png'))
         self._images.append(self.colored_mask(mask, PCB_BOTTOM_TRACES_COLOR))
 
-        mask = Image(source=join(path, 'bottommask.png'))
+        mask = Image(source=join(path, 'bottom_mask.png'))
         self._images.append(self.colored_mask(mask, PCB_BOTTOM_MASK_COLOR))
 
-        mask = Image(source=join(path, 'bottomsilk.png'))
+        mask = Image(source=join(path, 'bottom_silk.png'))
         self._images.append(self.colored_mask(mask, PCB_BOTTOM_SILK_COLOR))
 
-        mask = Image(source=join(path, 'bottompaste.png'))
+        mask = Image(source=join(path, 'bottom_paste.png'))
         self._images.append(self.colored_mask(mask, PCB_BOTTOM_PASTE_COLOR))
 
-        mask = Image(source=join(path, 'drillnpth.png'))
+        mask = Image(source=join(path, 'drill_npth.png'))
         self._images.append(self.colored_mask(mask, PCB_DRILL_NPTH_COLOR))
 
-        mask = Image(source=join(path, 'drillpth.png'))
+        mask = Image(source=join(path, 'drill_pth.png'))
         self._images.append(self.colored_mask(mask, PCB_DRILL_PTH_COLOR))
 
         colored_outline.paint(self._size_pixels)
