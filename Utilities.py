@@ -67,11 +67,7 @@ def is_desktop():
 
 
 def load_image(path, name):
-    print('load_image')
-    print(' path: {}'.format(path))
-    print(' name: {}'.format(name))
     full_path = os.path.join(path, name)
-    print(' full_path: {}'.format(full_path))
     image = None
     if os.path.isfile(full_path):
         try:
@@ -88,6 +84,15 @@ def load_file(path, name):
     except FileNotFoundError:
         text = None
     return text
+
+
+def rmrf(directory):
+    for root, dirs, files in os.walk(directory, topdown=False):
+        for name in files:
+            os.remove(os.path.join(root, name))
+        for name in dirs:
+            os.rmdir(os.path.join(root, name))
+    shutil.rmtree(directory, ignore_errors=True)
 
 
 def calculate_fit_scale(scale, size_mm, size_pixels):

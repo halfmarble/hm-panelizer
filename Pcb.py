@@ -76,6 +76,9 @@ class PcbPrimitive:
 class PcbOutline:
 
     def __init__(self, path, size):
+
+        self._valid = True
+
         self._vertical = []
         self._horizontal = []
         self._arcs = []
@@ -84,8 +87,6 @@ class PcbOutline:
         self._max_x = 0.0
         self._min_y = 1000000.0
         self._max_y = 0.0
-
-        self._valid = True
 
         if path is not None:
             segments = path.split("\n")
@@ -119,14 +120,10 @@ class PcbOutline:
                     if x_delta < y_delta:
                         edge = (x1 == self._min_x or x1 == self._max_x) and (x2 == self._min_x or x2 == self._max_x)
                         good = x_delta == 0.0
-                        if edge and not good:
-                            self._valid = False
                         self._vertical.append(PcbPrimitive(line, edge, good))
                     else:
                         edge = (y1 == self._min_y or y1 == self._max_y) and (y2 == self._min_y or y2 == self._max_y)
                         good = y_delta == 0.0
-                        if edge and not good:
-                            self._valid = False
                         self._horizontal.append(PcbPrimitive(line, edge, good))
 
             self._scale = size / max(self._max_x, self._max_y)
@@ -215,9 +212,11 @@ class Pcb:
         return image
 
     def __init__(self, path, name, **kwargs):
-        print('PCB()')
-        print(' path: {}'.format(path))
-        print(' name: {}'.format(name))
+        # print('PCB()')
+        # print(' path: {}'.format(path))
+        # print(' name: {}'.format(name))
+
+        self.invalid_reason = None
 
         if name is not None:
             self._name = name
@@ -228,17 +227,34 @@ class Pcb:
         if image is not None:
             self._size_pixels = image.texture_size
         else:
-            self._size_pixels = (32, 32)
+            self.invalid_reason = 'Missing \"edge_cuts_mask.png\"'
+            self._size_pixels = (1, 1)
+            fallbacks = ['edge_cuts.png', 'top_copper.png', 'bottom_copper.png', 'top_mask.png', 'bottom_mask.png']
+            for f in fallbacks:
+                image = load_image(path, f)
+                if image is not None:
+                    image._fbo = Fbo(use_parent_projection=False, mipmap=True)
+                    image._fbo.size = image.texture_size
+                    with image._fbo:
+                        Color(0, 0, 0, 1)
+                        Rectangle(size=image.texture_size, pos=(0, 0))
+                    image._fbo.draw()
+                    image.texture = image._fbo.texture
+                    self._size_pixels = image.texture_size
+                    break
 
         outline_path = load_file(path, 'edge_cuts_mask.txt')
         if outline_path is not None:
             pcb = PcbOutline(outline_path, max(self._size_pixels[0], self._size_pixels[1]))
             colored_outline = OffScreenImage(pcb, None)
             self._valid = pcb.valid
+            if not self._valid:
+                self.invalid_reason = 'unknown'
         else:
-            pcb = PcbOutline(outline_path, 0)
+            pcb = PcbOutline(None, max(self._size_pixels[0], self._size_pixels[1]))
             colored_outline = None
             self._valid = False
+            self.invalid_reason = 'Missing \"edge cuts (.gm1)\"'
 
         self._size_mm = (pcb.max_x, pcb.max_y)
         self._size_rounded_mm = (math.ceil(self._size_mm[0]), math.ceil(self._size_mm[1]))

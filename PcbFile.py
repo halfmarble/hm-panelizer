@@ -35,7 +35,7 @@ def log_text(progressbar, text=None, value=None):
         print(text)
 
 
-def generate_pcb_data_layers(cwd, pcb_rel_path, data_rel_path, size=1024, progressbar=None):
+def generate_pcb_data_layers(cwd, pcb_rel_path, data_rel_path, size=1024, progressbar=None, board_name=None):
     pcb_path = os.path.abspath(os.path.join(cwd, pcb_rel_path))
     data_path = os.path.abspath(os.path.join(cwd, data_rel_path))
 
@@ -47,7 +47,9 @@ def generate_pcb_data_layers(cwd, pcb_rel_path, data_rel_path, size=1024, progre
         pass
 
     print('\n')
-    text = 'Reading PCB \"{}\"...'.format(pcb_path)
+    if board_name is None:
+        board_name = pcb_path
+    text = 'Reading PCB \"{}\"'.format(board_name)
     log_text(progressbar, text, progressbar_value)
     pcb = PCB.from_directory(pcb_path, verbose=True)
     print('\n')

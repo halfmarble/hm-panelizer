@@ -75,7 +75,8 @@ class PanelizerApp(App):
         self._finish_load_selected = None
         self._load_popup = None
         self._progress = None
-        self._popup = None
+        self._error_popup = None
+        self._settings_popup = None
         if platform == 'win':
             self._root_path = dirname(expanduser('~'))
         else:
@@ -120,8 +121,9 @@ class PanelizerApp(App):
         self._screen.add_widget(self._surface, False)
         self.root.ids._screen_manager.switch_to(self._screen)
 
-        self._progress = Progress(title='Progress')
-        self._popup = Settings(title='Settings')
+        self._progress = Progress(title='Progress loading PCB')
+        self._error_popup = Error(title='Error loading PCB')
+        self._settings_popup = Settings(title='Settings')
 
         self._grid = OffScreenImage(client=self._grid_renderer, shader=None)
         self._surface.add_widget(self._grid)
@@ -129,6 +131,9 @@ class PanelizerApp(App):
         self.load_pcb(join(dirname(__file__), DEMO_PCB_PATH_STR), None)
 
     def load_pcb(self, path, name):
+        self.root.ids._panelization_button.state = 'normal'
+        self.rotate(True)
+
         if self._pcb_board is not None:
             self._pcb_board.deactivate()
             self._pcb_board = None
@@ -143,28 +148,34 @@ class PanelizerApp(App):
             self._pcb_board.activate()
             self._pcb_panel = PcbPanel(parent=self, root=self._surface, pcb=self._pcb)
             self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle, self._bites_x, self._bites_y)
-            self.update_status()
-            self.panelize()
         else:
-            self._pcb = None
+            self._pixels_per_cm = self._pcb.pixels_per_cm
+            self._pcb_board = PcbBoard(root=self._surface, pcb=self._pcb)
+            self._pcb_board.activate()
 
         self.update_status()
-
+        self.panelize()
         # Clock.schedule_interval(self.timer_callback, 0.1)
+
+        return self._pcb.invalid_reason
 
     def panelize(self):
         if self._pcb is not None:
             self._show_panel = self.root.ids._panelization_button.state == 'down'
             if self._show_panel:
                 self._pcb_board.deactivate()
-                self._pcb_panel.deactivate()
+                if self._pcb_panel is not None:
+                    self._pcb_panel.deactivate()
                 self.update_scale()
                 self.calculate_pcb_fit_scale()
-                self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle, self._bites_x, self._bites_y)
+                if self._pcb_panel is not None:
+                    self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle, self._bites_x, self._bites_y)
                 self.center()
-                self._pcb_panel.activate()
+                if self._pcb_panel is not None:
+                    self._pcb_panel.activate()
             else:
-                self._pcb_panel.deactivate()
+                if self._pcb_panel is not None:
+                    self._pcb_panel.deactivate()
                 self.update_scale()
                 self.center()
                 self._pcb_board.activate()
@@ -206,7 +217,8 @@ class PanelizerApp(App):
     def calculate_pcb_fit_scale(self):
         if self._pcb is not None:
             self._board_scale_fit = calculate_fit_scale(FIT_SCALE, self._size, self._pcb.size_pixels)
-            self._panel_scale_fit = calculate_fit_scale(FIT_SCALE, self._size, self._pcb_panel.size_pixels)
+            if self._pcb_panel is not None:
+                self._panel_scale_fit = calculate_fit_scale(FIT_SCALE, self._size, self._pcb_panel.size_pixels)
             self.update_scale()
 
     def update_scale(self):
@@ -214,7 +226,8 @@ class PanelizerApp(App):
             self._scale = self._zoom_values[self._zoom_values_index]
 
             self._pcb_board.set_scale(self._board_scale_fit * self._scale)
-            self._pcb_panel.set_scale(self._panel_scale_fit * self._scale)
+            if self._pcb_panel is not None:
+                self._pcb_panel.set_scale(self._panel_scale_fit * self._scale)
 
             if self._show_panel:
                 pixels_per_cm_scaled = (self._pixels_per_cm * self._panel_scale_fit * self._scale) / 100.0
@@ -229,18 +242,21 @@ class PanelizerApp(App):
         self.root.ids._panelization_label.text = self._panelization_str
         status = self.root.ids._status_label
         status.text = ''
+        units = ''
+        if self._pcb.valid:
+            units = 'mm'
         if self._pcb is not None:
             status.text += '  PCB: {},'.format(self._pcb.board_name)
             if self._angle == 0.0:
-                status.text += '  size: {}mm x {}mm,'.format(round(self._pcb.size_mm[0], 2),
-                                                             round(self._pcb.size_mm[1], 2))
+                status.text += '  size: {}{} x {}{},'.format(round(self._pcb.size_mm[0], 2), units,
+                                                             round(self._pcb.size_mm[1], 2), units)
             else:
-                status.text += '  size: {}mm x {}mm,'.format(round(self._pcb.size_mm[1], 2),
-                                                             round(self._pcb.size_mm[0], 2))
+                status.text += '  size: {}{} x {}{},'.format(round(self._pcb.size_mm[1], 2), units,
+                                                             round(self._pcb.size_mm[0], 2), units)
             status.text += '  panel pcb count: {},'.format(self._panels_x * self._panels_y)
-            status.text += '  panel size: {}mm x {}mm,'.format(round(self._pcb_panel.size_mm[0], 2),
-                                                               round(self._pcb_panel.size_mm[1], 2))
-            status.text += '  {}valid layout,'.format('in' if not self._pcb_panel.valid_layout else '')
+        if self._pcb_panel is not None:
+            status.text += '  panel size: {}{} x {}{},'.format(round(self._pcb_panel.size_mm[0], 2), units,
+                                                               round(self._pcb_panel.size_mm[1], 2), units)
             status.text += '  {}valid pcb.'.format('in' if not self._pcb.valid else '')
         else:
             status.text += '  Invalid PCB'
@@ -275,7 +291,8 @@ class PanelizerApp(App):
         if self._pcb is not None:
             self._pcb.set_layer(self.root.ids, layer, state)
             self._pcb_board.paint()
-            self._pcb_panel.paint()
+            if self._pcb_panel is not None:
+                self._pcb_panel.paint()
             self.update_status()
             # self.panelize()
 
@@ -300,17 +317,14 @@ class PanelizerApp(App):
         self._grid.paint(self._size)
         if self._pcb is not None:
             self._pcb_board.center(self._size, self._angle)
-            self._pcb_panel.center(self._size, self._angle)
+            if self._pcb_panel is not None:
+                self._pcb_panel.center(self._size, self._angle)
             self.update_status()
 
     def dismiss_load_popup(self):
         self._load_popup.dismiss()
 
     def load_finish(self, time):
-        print('load_finish_tick')
-        print(' time {}'.format(time))
-        print(' self._finish_load_selected {}'.format(self._finish_load_selected))
-
         path = self._finish_load_selected
 
         temp_zip_dir = None
@@ -318,14 +332,12 @@ class PanelizerApp(App):
         filename_ext = os.path.splitext(path)[1].lower()
         if filename_ext == '.zip':
             temp_zip_dir = tempfile.TemporaryDirectory().name
+            print('creating temporary zip directory', temp_zip_dir)
             try:
                 os.mkdir(temp_zip_dir)
             except FileExistsError:
                 pass
-            print('created temporary zip directory', temp_zip_dir)
-            # TODO extract zip file here
             unzip_file(temp_zip_dir, path)
-
             path = temp_zip_dir
         else:
             if not os.path.isdir(path):
@@ -333,27 +345,24 @@ class PanelizerApp(App):
 
         if os.path.isdir(path):
             temp_dir = tempfile.TemporaryDirectory().name
+            print('creating temporary directory', temp_dir)
             try:
                 os.mkdir(temp_dir)
             except FileExistsError:
                 pass
-            print('created temporary directory', temp_dir)
+            generate_pcb_data_layers(path, '.', temp_dir, 1024, self._progress, filename_only)
+            error_msg = self.load_pcb(temp_dir, filename_only)
+            if ALLOW_DIR_DELETIONS:
+                print('deleting temporary directory', temp_dir)
+                rmrf(temp_dir)
 
-            generate_pcb_data_layers(path, '.', temp_dir, 1024, self._progress)
-            self.load_pcb(temp_dir, filename_only)
-            print('deleting temporary directory', temp_dir)
-            try:
-                os.rmdir(path)
-            except:
-                pass
-
-        if temp_zip_dir is not None:
-            try:
-                os.rmdir(temp_zip_dir)
-            except:
-                pass
+        if temp_zip_dir is not None and ALLOW_DIR_DELETIONS:
+            print('deleting temporary zip directory', temp_zip_dir)
+            rmrf(temp_zip_dir)
 
         self._progress.dismiss()
+        if error_msg is not None:
+            self.error_open(error_msg)
 
     def load(self, path, filename):
         # print('load')
@@ -395,11 +404,19 @@ class PanelizerApp(App):
     def save_pcb_to_disk(self):
         pass
 
+    def error_open(self, text):
+        label = self._error_popup.ids._error_label
+        label.text = text
+        self._error_popup.open()
+
+    def error_close(self):
+        self._error_popup.dismiss()
+
     def settings_open(self):
-        self._popup.open()
+        self._settings_popup.open()
 
     def settings_close(self):
-        self._popup.dismiss()
+        self._settings_popup.dismiss()
 
     def settings_bites(self):
         print('settings_bites')

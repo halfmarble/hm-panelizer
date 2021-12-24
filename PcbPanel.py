@@ -168,9 +168,9 @@ class BiteWidget(OffScreenScatter):
     def repaint(self):
         self.paint()
         # TODO: is there a better way to repaint?
-        if self.parent is not None:
-            self.deactivate()
-            self.activate()
+        # if self.parent is not None:
+        #     self.deactivate()
+        #     self.activate()
 
     def validate_pos(self):
         # TODO" assumes horizontal layout

@@ -19,6 +19,8 @@ from posixpath import join
 
 VERSION_STR: Final              = 'hm-panelizer 1.0.0'
 
+ALLOW_DIR_DELETIONS: Final      = True
+
 DEMO_PCB_PATH_STR: Final        = join('data', 'example_pcb', 'NEAToBOARD')
 #DEMO_PCB_PATH_STR: Final        = join('data', 'example_pcb', 'NEAToBOARD_OLD')
 

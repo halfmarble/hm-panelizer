@@ -48,3 +48,8 @@ class Settings(Popup):
 
 class Progress(Popup):
     pass
+
+
+class Error(Popup):
+    pass
+

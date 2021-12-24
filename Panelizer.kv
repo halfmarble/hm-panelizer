@@ -47,6 +47,24 @@
             on_release: app.settings_close()
 
 
+<Error@Popup>:
+    auto_dismiss: True
+    size_hint: (None, None)
+    size: (600, 200)
+    BoxLayout:
+        orientation: "vertical"
+        Label:
+            id: _error_label
+            size_hint_y: 0.8
+            bold: True
+            font_size: 16
+            text: ''
+        Button:
+            size_hint_y: 0.2
+            text: 'OK'
+            on_release: app.error_close()
+
+
 <Progress@Popup>:
     auto_dismiss: False
     size_hint: (None, None)
