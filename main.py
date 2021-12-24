@@ -313,8 +313,6 @@ class PanelizerApp(App):
 
         path = self._finish_load_selected
 
-        os.path.dirname(__file__)
-
         temp_zip_dir = None
         filename_only = os.path.basename(os.path.splitext(path)[0])
         filename_ext = os.path.splitext(path)[1].lower()
@@ -326,6 +324,7 @@ class PanelizerApp(App):
                 pass
             print('created temporary zip directory', temp_zip_dir)
             # TODO extract zip file here
+            unzip_file(temp_zip_dir, path)
 
             path = temp_zip_dir
         else:

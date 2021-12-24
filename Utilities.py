@@ -15,11 +15,29 @@
 import os
 import sys
 import math
+import os
+import shutil
+import zipfile
 from os.path import join
 
 import kivy
 from kivy.base import EventLoop
 from kivy.uix.image import Image
+
+
+def unzip_file(dst_folder, src_zip):
+    with zipfile.ZipFile(src_zip) as zip_file:
+        for member in zip_file.namelist():
+            filename = os.path.basename(member)
+            # skip directories
+            if not filename:
+                continue
+
+            # copy file (taken from zipfile's extract)
+            source = zip_file.open(member)
+            target = open(os.path.join(dst_folder, filename), "wb")
+            with source, target:
+                shutil.copyfileobj(source, target)
 
 
 def redraw_window():
