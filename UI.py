@@ -20,6 +20,7 @@ from kivy.uix.popup import Popup
 class LayerButton(ToggleButton):
     pass
 
+
 class Settings(Popup):
     pass
 
@@ -43,3 +44,7 @@ class Settings(Popup):
     #     Rectangle:
     #         pos: self.pos
     #         size: self.size
+
+
+class Progress(Popup):
+    pass

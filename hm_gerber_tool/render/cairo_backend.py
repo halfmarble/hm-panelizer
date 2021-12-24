@@ -370,7 +370,7 @@ class GerberCairoContext(GerberContext):
         else:
             return value / 25.4
 
-    def get_outline_mask(self, layer, filename, bounds=None, verbose=False):
+    def get_outline_mask(self, layer, filename=None, bounds=None, verbose=False):
         if layer is None:
             print('WARNING: can not get outline from None layer')
             return
@@ -412,7 +412,7 @@ class GerberCairoContext(GerberContext):
         self.flatten_render_layer()
 
         if filename is not None:
-            self.dump(filename)
+            self.dump(filename+'.png')
 
         m = layer.metric
         xrange = bounds[0]
@@ -445,9 +445,14 @@ class GerberCairoContext(GerberContext):
                     sa = self.mm(m, s.start_angle)
                     ea = self.mm(m, s.end_angle)
                     _string += 'Arc: {}, {}, {}, {}, {}, {}, {}, {}, {}\n'.format(sx, sy, ex, ey, cx, cy, r, sa, ea)
+
+        if filename is not None:
+            with open(filename + '.txt', "w") as text_file:
+                text_file.write(_string)
+
         return _string
 
-    def render_clipped_layer(self, layer, clip_to_outline, filename, theme=THEMES['default'], bounds=None,
+    def render_clipped_layer(self, layer, clip_to_outline, filename=None, theme=THEMES['default'], bounds=None,
                              background=True, verbose=False):
         if verbose:
             print('\n[Render]: render_clipped_layer()')
@@ -494,7 +499,8 @@ class GerberCairoContext(GerberContext):
         else:
             self.output_surface_ctx.paint()
 
-        self.dump(filename, verbose)
+        if filename is not None:
+            self.dump(filename + '.png', verbose)
 
     def dump(self, filename=None, verbose=False):
         """ Save image as `filename`

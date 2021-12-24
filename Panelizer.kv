@@ -47,6 +47,53 @@
             on_release: app.settings_close()
 
 
+<Progress@Popup>:
+    auto_dismiss: False
+    size_hint: (None, None)
+    size: (800, 150)
+    RelativeLayout:
+        ProgressBar:
+            id: _progress_bar
+            min: 0
+            max: 1
+            pos: 0, 0
+        Label:
+            id: _progress_bar_label
+            text: 'something'
+            bold: True
+            font_size: 16
+            pos: 10, -20
+
+
+<LoadDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Label:
+                id: _file_chooser_cwd
+                title_color: 1.0, 0.0, 0.0, 1.0
+                background_normal: ''
+                background_color: .2, .2, .2, 1
+                color: .6, .6, .6, 1
+                text: _file_chooser.path
+                bold: True
+                font_size: 16
+        FileChooserIconView:
+            id: _file_chooser
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.cancel()
+            Button:
+                text: "Load"
+                on_release: _file_chooser.cancel();root.load(_file_chooser.path, _file_chooser.selection)
+
 BoxLayout:
     orientation: 'vertical'
 
@@ -58,6 +105,23 @@ BoxLayout:
             ActionPrevious:
                 with_previous: False
                 size_hint: (1.0, 1.0)
+
+            ActionSeparator:
+
+            ActionButton:
+                id: _load_button
+                text: 'Load PCB'
+                icon: 'data/icons/load.png'
+                size_hint_max: (32, 32)
+                size_hint: (1.0, 1.0)
+                on_release: app.load_pcb_from_disk()
+            ActionButton:
+                id: _save_button
+                text: 'Save PCB panel'
+                icon: 'data/icons/save.png'
+                size_hint_max: (32, 32)
+                size_hint: (1.0, 1.0)
+                on_release: app.save_pcb_to_disk()
 
             ActionSeparator:
 

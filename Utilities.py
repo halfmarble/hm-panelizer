@@ -12,9 +12,29 @@
 
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import os
 import sys
 import math
+from os.path import join
+
+import kivy
+from kivy.base import EventLoop
+from kivy.uix.image import Image
+
+
+def redraw_window():
+    kivy.core.window.Window.canvas.ask_update()
+    EventLoop.idle()
+
+
+def update_progressbar(widget, text=None, value=None):
+    if value is not None:
+        progressbar = widget.ids._progress_bar
+        progressbar.value = min(value, 1.0)
+    if text is not None:
+        label = widget.ids._progress_bar_label
+        label.text = text
+    redraw_window()
 
 
 def beep():
@@ -23,9 +43,33 @@ def beep():
 
 
 def is_desktop():
-    if platform in ('linux', 'windows', 'macosx'):
+    if sys.platform in ('linux', 'windows', 'macosx'):
         return True
     return False
+
+
+def load_image(path, name):
+    print('load_image')
+    print(' path: {}'.format(path))
+    print(' name: {}'.format(name))
+    full_path = os.path.join(path, name)
+    print(' full_path: {}'.format(full_path))
+    image = None
+    if os.path.isfile(full_path):
+        try:
+            image = Image(source=full_path)
+        except:
+            image = None
+    return image
+
+
+def load_file(path, name):
+    try:
+        with open(join(path, name)) as file:
+            text = file.read()
+    except FileNotFoundError:
+        text = None
+    return text
 
 
 def calculate_fit_scale(scale, size_mm, size_pixels):

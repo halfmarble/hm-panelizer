@@ -18,7 +18,7 @@
 
 # .APR	            Aperture File
 # .APT	            Aperture File
-# .EXTREP	            Extension Report of Gerber Files
+# .EXTREP	        Extension Report of Gerber Files
 # .REP	            Report of Individual Layer Used Aperture List
 # .RUL	            DRC Rules
 # .GKO	            Keep Out Layer

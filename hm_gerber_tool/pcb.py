@@ -106,7 +106,7 @@ class PCB(object):
     @property
     def drill_layers(self):
         return [l for l in self.layers if l.layer_class in
-                ('drill', 'drill_pth', 'drill_npth')]
+                ('drill')]
 
     @property
     def copper_layers(self):

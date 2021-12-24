@@ -16,6 +16,9 @@
 import os
 import math
 from os.path import join
+
+import kivy
+from kivy.base import EventLoop
 from kivy.uix.image import Image
 from kivy.graphics import Scale, Rectangle, Line
 
@@ -84,48 +87,53 @@ class PcbOutline:
 
         self._valid = True
 
-        segments = path.split("\n")
+        if path is not None:
+            segments = path.split("\n")
 
-        for s in segments:
-            parts = s.split(" ")
-            if parts[0] == 'Line:':
-                x1 = str_to_float(parts[1])
-                self._min_x = min(self._min_x, x1)
-                self._max_x = max(self._max_x, x1)
-                y1 = str_to_float(parts[2])
-                self._min_y = min(self._min_y, y1)
-                self._max_y = max(self._max_y, y1)
-                x2 = str_to_float(parts[3])
-                self._min_x = min(self._min_x, x2)
-                self._max_x = max(self._max_x, x2)
-                y2 = str_to_float(parts[4])
-                self._min_y = min(self._min_y, y2)
-                self._max_y = max(self._max_y, y2)
+            for s in segments:
+                parts = s.split(" ")
+                if parts[0] == 'Line:':
+                    x1 = str_to_float(parts[1])
+                    self._min_x = min(self._min_x, x1)
+                    self._max_x = max(self._max_x, x1)
+                    y1 = str_to_float(parts[2])
+                    self._min_y = min(self._min_y, y1)
+                    self._max_y = max(self._max_y, y1)
+                    x2 = str_to_float(parts[3])
+                    self._min_x = min(self._min_x, x2)
+                    self._max_x = max(self._max_x, x2)
+                    y2 = str_to_float(parts[4])
+                    self._min_y = min(self._min_y, y2)
+                    self._max_y = max(self._max_y, y2)
 
-        for s in segments:
-            parts = s.split(" ")
-            if parts[0] == 'Line:':
-                x1 = str_to_float(parts[1])
-                y1 = str_to_float(parts[2])
-                x2 = str_to_float(parts[3])
-                y2 = str_to_float(parts[4])
-                line = Line(points=[x1, y1, x2, y2])
-                x_delta = abs(x1 - x2)
-                y_delta = abs(y1 - y2)
-                if x_delta < y_delta:
-                    edge = (x1 == self._min_x or x1 == self._max_x) and (x2 == self._min_x or x2 == self._max_x)
-                    good = x_delta == 0.0
-                    if edge and not good:
-                        self._valid = False
-                    self._vertical.append(PcbPrimitive(line, edge, good))
-                else:
-                    edge = (y1 == self._min_y or y1 == self._max_y) and (y2 == self._min_y or y2 == self._max_y)
-                    good = y_delta == 0.0
-                    if edge and not good:
-                        self._valid = False
-                    self._horizontal.append(PcbPrimitive(line, edge, good))
+            for s in segments:
+                parts = s.split(" ")
+                if parts[0] == 'Line:':
+                    x1 = str_to_float(parts[1])
+                    y1 = str_to_float(parts[2])
+                    x2 = str_to_float(parts[3])
+                    y2 = str_to_float(parts[4])
+                    line = Line(points=[x1, y1, x2, y2])
+                    x_delta = abs(x1 - x2)
+                    y_delta = abs(y1 - y2)
+                    if x_delta < y_delta:
+                        edge = (x1 == self._min_x or x1 == self._max_x) and (x2 == self._min_x or x2 == self._max_x)
+                        good = x_delta == 0.0
+                        if edge and not good:
+                            self._valid = False
+                        self._vertical.append(PcbPrimitive(line, edge, good))
+                    else:
+                        edge = (y1 == self._min_y or y1 == self._max_y) and (y2 == self._min_y or y2 == self._max_y)
+                        good = y_delta == 0.0
+                        if edge and not good:
+                            self._valid = False
+                        self._horizontal.append(PcbPrimitive(line, edge, good))
 
-        self._scale = size / max(self._max_x, self._max_y)
+            self._scale = size / max(self._max_x, self._max_y)
+        else:
+            self._scale = 1.0
+            self._max_x = 1.0
+            self._max_y = 1.0
 
     def paint(self, fbo, size):
         scale = 1.0 / self._scale
@@ -190,73 +198,90 @@ class Pcb:
     _layers_verify = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
     def colored_mask(self, mask, color):
-        image = Image()
-        image.size = self._size_pixels
-        fbo = Fbo()
-        fbo.shader.fs = FS_MASK
-        fbo.size = image.size
-        with fbo:
-            ClearColor(0, 0, 0, 0)
-            ClearBuffers()
-            Color(color.r, color.g, color.b, color.a)
-            Rectangle(texture=mask.texture, size=mask.texture_size, pos=(0, 0))
-        fbo.draw()
-        image.texture = fbo.texture
+        image = None
+        if mask is not None:
+            image = Image()
+            image.size = self._size_pixels
+            fbo = Fbo()
+            fbo.shader.fs = FS_MASK
+            fbo.size = image.size
+            with fbo:
+                ClearColor(0, 0, 0, 0)
+                ClearBuffers()
+                Color(color.r, color.g, color.b, color.a)
+                Rectangle(texture=mask.texture, size=mask.texture_size, pos=(0, 0))
+            fbo.draw()
+            image.texture = fbo.texture
         return image
 
-    def __init__(self, path, **kwargs):
-        self._name = path.split(os.path.sep)[-1]
+    def __init__(self, path, name, **kwargs):
+        print('PCB()')
+        print(' path: {}'.format(path))
+        print(' name: {}'.format(name))
 
-        mask = Image(source=join(path, 'edge_cuts_mask.png'))
-        self._size_pixels = mask.texture_size
+        if name is not None:
+            self._name = name
+        else:
+            self._name = os.path.basename(path)
 
-        with open(join(path, 'edge_cuts_path.txt')) as file:
-            outline_path = file.read()
-        pcb = PcbOutline(outline_path, max(self._size_pixels[0], self._size_pixels[1]))
-        self._valid = pcb.valid
+        image = load_image(path, 'edge_cuts_mask.png')
+        if image is not None:
+            self._size_pixels = image.texture_size
+        else:
+            self._size_pixels = (32, 32)
 
-        colored_outline = OffScreenImage(pcb, None)
+        outline_path = load_file(path, 'edge_cuts_mask.txt')
+        if outline_path is not None:
+            pcb = PcbOutline(outline_path, max(self._size_pixels[0], self._size_pixels[1]))
+            colored_outline = OffScreenImage(pcb, None)
+            self._valid = pcb.valid
+        else:
+            pcb = PcbOutline(outline_path, 0)
+            colored_outline = None
+            self._valid = False
+
         self._size_mm = (pcb.max_x, pcb.max_y)
         self._size_rounded_mm = (math.ceil(self._size_mm[0]), math.ceil(self._size_mm[1]))
 
         self._images = []
 
-        self._images.append(self.colored_mask(mask, PCB_MASK_COLOR))
+        self._images.append(self.colored_mask(image, PCB_MASK_COLOR))
 
-        mask = Image(source=join(path, 'edge_cuts.png'))
-        self._images.append(self.colored_mask(mask, PCB_TOP_PASTE_COLOR))
+        image = load_image(path, 'edge_cuts.png')
+        self._images.append(self.colored_mask(image, PCB_TOP_PASTE_COLOR))
 
-        mask = Image(source=join(path, 'top_paste.png'))
-        self._images.append(self.colored_mask(mask, PCB_TOP_PASTE_COLOR))
+        image = load_image(path, 'top_paste.png')
+        self._images.append(self.colored_mask(image, PCB_TOP_PASTE_COLOR))
 
-        mask = Image(source=join(path, 'top_silk.png'))
-        self._images.append(self.colored_mask(mask, PCB_TOP_SILK_COLOR))
+        image = load_image(path, 'top_silk.png')
+        self._images.append(self.colored_mask(image, PCB_TOP_SILK_COLOR))
 
-        mask = Image(source=join(path, 'top_mask.png'))
-        self._images.append(self.colored_mask(mask, PCB_TOP_MASK_COLOR))
+        image = load_image(path, 'top_mask.png')
+        self._images.append(self.colored_mask(image, PCB_TOP_MASK_COLOR))
 
-        mask = Image(source=join(path, 'top_copper.png'))
-        self._images.append(self.colored_mask(mask, PCB_TOP_TRACES_COLOR))
+        image = load_image(path, 'top_copper.png')
+        self._images.append(self.colored_mask(image, PCB_TOP_TRACES_COLOR))
 
-        mask = Image(source=join(path, 'bottom_copper.png'))
-        self._images.append(self.colored_mask(mask, PCB_BOTTOM_TRACES_COLOR))
+        image = load_image(path, 'bottom_copper.png')
+        self._images.append(self.colored_mask(image, PCB_BOTTOM_TRACES_COLOR))
 
-        mask = Image(source=join(path, 'bottom_mask.png'))
-        self._images.append(self.colored_mask(mask, PCB_BOTTOM_MASK_COLOR))
+        image = load_image(path, 'bottom_mask.png')
+        self._images.append(self.colored_mask(image, PCB_BOTTOM_MASK_COLOR))
 
-        mask = Image(source=join(path, 'bottom_silk.png'))
-        self._images.append(self.colored_mask(mask, PCB_BOTTOM_SILK_COLOR))
+        image = load_image(path, 'bottom_silk.png')
+        self._images.append(self.colored_mask(image, PCB_BOTTOM_SILK_COLOR))
 
-        mask = Image(source=join(path, 'bottom_paste.png'))
-        self._images.append(self.colored_mask(mask, PCB_BOTTOM_PASTE_COLOR))
+        image = load_image(path, 'bottom_paste.png')
+        self._images.append(self.colored_mask(image, PCB_BOTTOM_PASTE_COLOR))
 
-        mask = Image(source=join(path, 'drill_npth.png'))
-        self._images.append(self.colored_mask(mask, PCB_DRILL_NPTH_COLOR))
+        image = load_image(path, 'drill_npth.png')
+        self._images.append(self.colored_mask(image, PCB_DRILL_NPTH_COLOR))
 
-        mask = Image(source=join(path, 'drill_pth.png'))
-        self._images.append(self.colored_mask(mask, PCB_DRILL_PTH_COLOR))
+        image = load_image(path, 'drill_pth.png')
+        self._images.append(self.colored_mask(image, PCB_DRILL_PTH_COLOR))
 
-        colored_outline.paint(self._size_pixels)
+        if colored_outline is not None:
+            colored_outline.paint(self._size_pixels)
         self._images.append(colored_outline)
 
         self._layers = [0, 1, 3, 4, 5, 10, 11]
@@ -270,7 +295,8 @@ class Pcb:
         if yes:
             with fbo:
                 image = self._images[layer]
-                Rectangle(texture=image.texture, size=image.texture_size, pos=(0, 0))
+                if image is not None:
+                    Rectangle(texture=image.texture, size=image.texture_size, pos=(0, 0))
 
     def paint(self, fbo):
         with fbo:
