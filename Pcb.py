@@ -254,7 +254,7 @@ class Pcb:
             pcb = PcbOutline(None, max(self._size_pixels[0], self._size_pixels[1]))
             colored_outline = None
             self._valid = False
-            self.invalid_reason = 'Missing \"edge cuts (.gm1)\"'
+            self.invalid_reason = 'Need either \"edge_cuts.grbl\" or \"outline.gm1\"'
 
         self._size_mm = (pcb.max_x, pcb.max_y)
         self._size_rounded_mm = (math.ceil(self._size_mm[0]), math.ceil(self._size_mm[1]))

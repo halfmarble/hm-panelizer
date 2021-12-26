@@ -12,6 +12,7 @@
 
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os.path
 import tempfile
 from os import listdir
 from os.path import dirname
@@ -19,10 +20,13 @@ from os.path import dirname
 from kivy import Config
 from kivy.uix.filechooser import FileChooserIconView
 
+Config.set('kivy', 'keyboard_mode', 'system')
+
 Config.set('graphics', 'width', '1550')
 Config.set('graphics', 'height', '1024')
 Config.set('graphics', 'minimum_width', '800')
 Config.set('graphics', 'minimum_height', '800')
+
 
 from kivy.app import App
 from kivy.factory import Factory
@@ -56,6 +60,11 @@ class LoadDialog(FloatLayout):
     cancel = ObjectProperty(None)
 
 
+class SaveDialog(FloatLayout):
+    save = ObjectProperty(None)
+    cancel = ObjectProperty(None)
+
+
 Factory.register('LoadDialog', cls=LoadDialog)
 
 
@@ -73,15 +82,20 @@ class PanelizerApp(App):
         super(PanelizerApp, self).__init__(**kwargs)
 
         self._finish_load_selected = None
-        self._load_popup = None
-        self._progress = None
-        self._error_popup = None
-        self._settings_popup = None
+        self._finish_save_selected = None
+
         if platform == 'win':
             self._root_path = dirname(expanduser('~'))
         else:
             self._root_path = expanduser('~')
-        self._file_path = self._root_path
+        self._load_file_path = self._root_path
+        self._save_folder_path = self._root_path
+
+        self._load_popup = None
+        self._save_popup = None
+        self._progress = None
+        self._error_popup = None
+        self._settings_popup = None
 
         self._screen = None
         self._surface = None
@@ -121,9 +135,9 @@ class PanelizerApp(App):
         self._screen.add_widget(self._surface, False)
         self.root.ids._screen_manager.switch_to(self._screen)
 
-        self._progress = Progress(title='Progress loading PCB')
-        self._error_popup = Error(title='Error loading PCB')
-        self._settings_popup = Settings(title='Settings')
+        self._progress = Progress(title='Progress processing PCB')
+        self._error_popup = Error(title='Error')
+        self._settings_popup = Settings(title='Panelizing settings')
 
         self._grid = OffScreenImage(client=self._grid_renderer, shader=None)
         self._surface.add_widget(self._grid)
@@ -341,7 +355,7 @@ class PanelizerApp(App):
             path = temp_zip_dir
         else:
             if not os.path.isdir(path):
-                path = self._file_path
+                path = self._load_file_path
 
         if os.path.isdir(path):
             temp_dir = tempfile.TemporaryDirectory().name
@@ -364,25 +378,25 @@ class PanelizerApp(App):
         if error_msg is not None:
             self.error_open(error_msg)
 
-    def load(self, path, filename):
+    def load(self, path, selection):
         # print('load')
         # print(' path {}'.format(path))
-        # print(' filename {}'.format(filename))
+        # print(' selection {}'.format(selection))
         # print(' self._root_path {}'.format(self._root_path))
 
         if self._root_path in path:
-            self._file_path = path
+            self._load_file_path = path
             self._finish_load_selected = path
-            if len(filename) > 0:
-                self._file_path = os.path.dirname(os.path.abspath(filename[0]))
+            if len(selection) > 0:
+                self._load_file_path = os.path.dirname(os.path.abspath(selection[0]))
+        self._finish_load_selected = self._load_file_path
 
-        self._finish_load_selected = self._file_path
-        if len(filename) > 0:
-            if self._root_path in filename[0]:
-                self._finish_load_selected = os.path.abspath(filename[0])
+        if len(selection) > 0:
+            if self._root_path in selection[0]:
+                self._finish_load_selected = os.path.abspath(selection[0])
         if os.path.isfile(self._finish_load_selected):
-            filename_ext = os.path.splitext(self._finish_load_selected)[1].lower()
-            if filename_ext != '.zip':
+            selection_ext = os.path.splitext(self._finish_load_selected)[1].lower()
+            if selection_ext != '.zip':
                 self._finish_load_selected = os.path.dirname(self._finish_load_selected)
 
         self.dismiss_load_popup()
@@ -393,16 +407,62 @@ class PanelizerApp(App):
 
     def load_pcb_from_disk(self):
         content = LoadDialog(load=self.load, cancel=self.dismiss_load_popup)
-        file_chooser = content.ids._file_chooser
+        file_chooser = content.ids._load_file_chooser
         file_chooser.rootpath = self._root_path
-        file_chooser.path = self._file_path
+        file_chooser.path = self._load_file_path
         file_chooser.dirselect = True
 
         self._load_popup = Popup(title="Select folder with PCB gerber files or .zip archive file", content=content, size_hint=(0.9, 0.9))
         self._load_popup.open()
 
+    def save_finish(self, time):
+        path = self._finish_save_selected
+        print('save_finish')
+        print(' path {}'.format(path))
+
+        Clock.schedule_once(self._progress.dismiss, 5)
+        #self._progress.dismiss()
+
+    def dismiss_save_popup(self):
+        self._save_popup.dismiss()
+
+    def save(self, path, selection, foldername):
+        # print('save')
+        # print(' path {}'.format(path))
+        # print(' selection {}'.format(selection))
+        # print(' foldername {}'.format(foldername))
+        # print(' self._root_path {}'.format(self._root_path))
+
+        if len(selection) > 0:
+            if self._root_path in selection[0]:
+                self._save_folder_path = selection[0]
+                if not os.path.isdir(self._save_folder_path) and os.path.isfile(self._save_folder_path):
+                    self._save_folder_path = os.path.dirname(selection[0])
+        if foldername is not None and len(foldername) > 0:
+            self._finish_save_selected = os.path.join(self._save_folder_path, foldername)
+        else:
+            self._finish_save_selected = os.path.join(self._save_folder_path, "pcb_panelized")
+
+        self.dismiss_save_popup()
+
+        if os.path.isdir(self._finish_save_selected):
+            string = truncate_str_middle(self._finish_save_selected, 60)
+            self.error_open("Folder {} already exists!".format(string))
+        else:
+            Clock.schedule_once(self.save_finish, 1.0)
+            self._progress.open()
+            update_progressbar(self._progress, 'Saving PCB ...', 0.0)
+
     def save_pcb_to_disk(self):
-        pass
+        content = SaveDialog(save=self.save, cancel=self.dismiss_save_popup)
+        file_chooser = content.ids._save_file_chooser
+        file_chooser.rootpath = self._root_path
+        file_chooser.path = self._save_folder_path
+        file_chooser.dirselect = True
+
+        self._save_popup = Popup(title="Select folder where to save the PCB panel", content=content, size_hint=(0.9, 0.9))
+        self._save_popup.open()
+
 
     def error_open(self, text):
         label = self._error_popup.ids._error_label

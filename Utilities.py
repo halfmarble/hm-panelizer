@@ -25,6 +25,17 @@ from kivy.base import EventLoop
 from kivy.uix.image import Image
 
 
+def truncate_str_middle(s, n):
+    if len(s) <= n:
+        # string is already short-enough
+        return s
+    # half of the size, minus the 3 .'s
+    n_2 = int(n / 2 - 3)
+    # whatever's left
+    n_1 = int(n - n_2 - 3)
+    return '{0}...{1}'.format(s[:n_1], s[-n_2:])
+
+
 def unzip_file(dst_folder, src_zip):
     with zipfile.ZipFile(src_zip) as zip_file:
         for member in zip_file.namelist():

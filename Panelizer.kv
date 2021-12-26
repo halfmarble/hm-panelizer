@@ -50,12 +50,13 @@
 <Error@Popup>:
     auto_dismiss: True
     size_hint: (None, None)
-    size: (600, 200)
+    size: (800, 200)
     BoxLayout:
         orientation: "vertical"
         Label:
             id: _error_label
             size_hint_y: 0.8
+            multiline: True
             bold: True
             font_size: 16
             text: ''
@@ -92,16 +93,15 @@
             size_hint_y: None
             height: 30
             Label:
-                id: _file_chooser_cwd
                 title_color: 1.0, 0.0, 0.0, 1.0
                 background_normal: ''
                 background_color: .2, .2, .2, 1
                 color: .6, .6, .6, 1
-                text: _file_chooser.path
+                text: _load_file_chooser.path
                 bold: True
                 font_size: 16
         FileChooserIconView:
-            id: _file_chooser
+            id: _load_file_chooser
         BoxLayout:
             size_hint_y: None
             height: 30
@@ -110,7 +110,51 @@
                 on_release: root.cancel()
             Button:
                 text: "Load"
-                on_release: _file_chooser.cancel();root.load(_file_chooser.path, _file_chooser.selection)
+                on_release: _load_file_chooser.cancel();root.load(_load_file_chooser.path, _load_file_chooser.selection)
+
+
+<SaveDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        BoxLayout:
+            orientation: "vertical"
+            size_hint_y: None
+            height: 60
+            BoxLayout:
+                height: 30
+                Label:
+                    size_hint_x: 0.05
+                    bold: True
+                    font_size: 16
+                    text: "Save as:"
+                TextInput:
+                    id: _save_file_name
+                    size_hint_x: 0.95
+                    multiline: False
+                    halign: "left"
+                    text: "pcb_panelized"
+            Label:
+                title_color: 1.0, 0.0, 0.0, 1.0
+                background_normal: ''
+                background_color: .2, .2, .2, 1
+                color: .6, .6, .6, 1
+                text: _save_file_chooser.path
+                bold: True
+                font_size: 16
+        FileChooserIconView:
+            id: _save_file_chooser
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.cancel()
+            Button:
+                text: "Save"
+                on_release: _save_file_chooser.cancel();root.save(_save_file_chooser.path, _save_file_chooser.selection, _save_file_name.text)
+
 
 BoxLayout:
     orientation: 'vertical'
