@@ -213,6 +213,7 @@ class Line(Primitive):
         self._end = end
         self.aperture = aperture
         self._to_convert = ['start', 'end', 'aperture']
+        self.to_metric()
 
     @property
     def flashed(self):
@@ -334,6 +335,7 @@ class Arc(Primitive):
         self.aperture = aperture
         self._quadrant_mode = quadrant_mode
         self._to_convert = ['start', 'end', 'center', 'aperture']
+        self.to_metric()
 
     @property
     def flashed(self):
@@ -536,6 +538,7 @@ class Circle(Primitive):
         self.hole_width = hole_width
         self.hole_height = hole_height
         self._to_convert = ['position', 'diameter', 'hole_diameter', 'hole_width', 'hole_height']
+        self.to_metric()
 
     @property
     def flashed(self):
@@ -615,6 +618,7 @@ class Ellipse(Primitive):
         self._width = width
         self._height = height
         self._to_convert = ['position', 'width', 'height']
+        self.to_metric()
 
     @property
     def flashed(self):
@@ -694,6 +698,7 @@ class Rectangle(Primitive):
         # TODO These are probably wrong when rotated
         self._lower_left = None
         self._upper_right = None
+        self.to_metric()
 
     @property
     def flashed(self):
@@ -807,6 +812,7 @@ class Diamond(Primitive):
         self._width = width
         self._height = height
         self._to_convert = ['position', 'width', 'height']
+        self.to_metric()
 
     @property
     def flashed(self):
@@ -885,6 +891,7 @@ class ChamferRectangle(Primitive):
         self._chamfer = chamfer
         self._corners = corners if corners is not None else [True] * 4
         self._to_convert = ['position', 'width', 'height', 'chamfer']
+        self.to_metric()
 
     @property
     def flashed(self):
@@ -1006,6 +1013,7 @@ class RoundRectangle(Primitive):
         self._radius = radius
         self._corners = corners
         self._to_convert = ['position', 'width', 'height', 'radius']
+        self.to_metric()
 
     @property
     def flashed(self):
@@ -1092,6 +1100,7 @@ class Obround(Primitive):
         self.hole_width = hole_width
         self.hole_height = hole_height
         self._to_convert = ['position', 'width', 'height', 'hole_diameter', 'hole_width', 'hole_height' ]
+        self.to_metric()
 
     @property
     def flashed(self):
@@ -1192,6 +1201,7 @@ class Polygon(Primitive):
         self.hole_width = hole_width
         self.hole_height = hole_height
         self._to_convert = ['position', 'radius', 'hole_diameter', 'hole_width', 'hole_height']
+        self.to_metric()
 
     @property
     def flashed(self):
@@ -1288,6 +1298,7 @@ class AMGroup(Primitive):
         self._position = None
         self._to_convert = ['_position', 'primitives']
         self.stmt = stmt
+        self.to_metric()
 
     def to_inch(self):
         if self.units == 'metric':
@@ -1390,6 +1401,8 @@ class Outline(Primitive):
         if self.primitives[0].start != self.primitives[-1].end:
             raise ValueError('Outline must be closed')
 
+        self.to_metric()
+
     @property
     def flashed(self):
         return True
@@ -1462,6 +1475,7 @@ class Region(Primitive):
         for p in self.primitives:
             p.level_polarity = self.level_polarity
         self._to_convert = ['primitives']
+        self.to_metric()
 
     @property
     def flashed(self):
@@ -1497,6 +1511,7 @@ class RoundButterfly(Primitive):
         self.position = position
         self.diameter = diameter
         self._to_convert = ['position', 'diameter']
+        self.to_metric()
 
         # TODO This does not reset bounding box correctly
 
@@ -1530,6 +1545,7 @@ class SquareButterfly(Primitive):
         self.position = position
         self.side = side
         self._to_convert = ['position', 'side']
+        self.to_metric()
 
         # TODO This does not reset bounding box correctly
 
@@ -1573,6 +1589,7 @@ class Donut(Primitive):
             self.height = outer_diameter
 
         self._to_convert = ['position', 'width', 'height', 'inner_diameter', 'outer_diameter']
+        self.to_metric()
 
         # TODO This does not reset bounding box correctly
 
@@ -1616,6 +1633,7 @@ class SquareRoundDonut(Primitive):
         self.inner_diameter = inner_diameter
         self.outer_diameter = outer_diameter
         self._to_convert = ['position', 'inner_diameter', 'outer_diameter']
+        self.to_metric()
 
     @property
     def flashed(self):
@@ -1640,6 +1658,7 @@ class Drill(Primitive):
         self._position = position
         self._diameter = diameter
         self._to_convert = ['position', 'diameter']
+        self.to_metric()
 
     @property
     def flashed(self):
@@ -1697,6 +1716,7 @@ class Slot(Primitive):
         self.end = end
         self.diameter = diameter
         self._to_convert = ['start', 'end', 'diameter']
+        self.to_metric()
 
     @property
     def flashed(self):

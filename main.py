@@ -155,7 +155,7 @@ class PanelizerApp(App):
             self._pcb_panel.deactivate()
             self._pcb_panel = None
 
-        self._pcb = Pcb(path, name)
+        self._pcb = Pcb(self.root.ids, path, name)
         if self._pcb.valid:
             self._pixels_per_cm = self._pcb.pixels_per_cm
             self._pcb_board = PcbBoard(root=self._surface, pcb=self._pcb)
@@ -260,6 +260,7 @@ class PanelizerApp(App):
         if self._pcb.valid:
             units = 'mm'
         if self._pcb is not None:
+            #self.root.ids._save_button.disabled = False
             status.text += '  PCB: {},'.format(self._pcb.board_name)
             if self._angle == 0.0:
                 status.text += '  size: {}{} x {}{},'.format(round(self._pcb.size_mm[0], 2), units,
@@ -267,13 +268,17 @@ class PanelizerApp(App):
             else:
                 status.text += '  size: {}{} x {}{},'.format(round(self._pcb.size_mm[1], 2), units,
                                                              round(self._pcb.size_mm[0], 2), units)
-            status.text += '  panel pcb count: {},'.format(self._panels_x * self._panels_y)
-        if self._pcb_panel is not None:
-            status.text += '  panel size: {}{} x {}{},'.format(round(self._pcb_panel.size_mm[0], 2), units,
-                                                               round(self._pcb_panel.size_mm[1], 2), units)
-            status.text += '  {}valid pcb.'.format('in' if not self._pcb.valid else '')
+            status.text += '  {}valid pcb, '.format('in' if not self._pcb.valid else '')
+            if self._pcb_panel is not None:
+                # self.root.ids._save_button.disabled = True
+                status.text += '  panel pcb count: {},'.format(self._panels_x * self._panels_y)
+                status.text += '  panel size: {}{} x {}{},'.format(round(self._pcb_panel.size_mm[0], 2), units,
+                                                                   round(self._pcb_panel.size_mm[1], 2), units)
+                status.text += '  {}valid layout.'.format('in' if not self._pcb_panel.valid_layout else '')
+            else:
+                status.text += '  invalid layout.'
         else:
-            status.text += '  Invalid PCB'
+            status.text = '  Invalid PCB.'
 
     def update_zoom_title(self):
         if self._pcb is not None:
@@ -304,7 +309,8 @@ class PanelizerApp(App):
     def layer_toggle(self, layer, state):
         if self._pcb is not None:
             self._pcb.set_layer(self.root.ids, layer, state)
-            self._pcb_board.paint()
+            if self._pcb_board is not None:
+                self._pcb_board.paint()
             if self._pcb_panel is not None:
                 self._pcb_panel.paint()
             self.update_status()
@@ -412,7 +418,8 @@ class PanelizerApp(App):
         file_chooser.path = self._load_file_path
         file_chooser.dirselect = True
 
-        self._load_popup = Popup(title="Select folder with PCB gerber files or .zip archive file", content=content, size_hint=(0.9, 0.9))
+        self._load_popup = Popup(title="Select folder with PCB gerber files or .zip archive file to load",
+                                 content=content, size_hint=(0.9, 0.9))
         self._load_popup.open()
 
     def save_finish(self, time):
@@ -454,15 +461,21 @@ class PanelizerApp(App):
             update_progressbar(self._progress, 'Saving PCB ...', 0.0)
 
     def save_pcb_to_disk(self):
-        content = SaveDialog(save=self.save, cancel=self.dismiss_save_popup)
-        file_chooser = content.ids._save_file_chooser
-        file_chooser.rootpath = self._root_path
-        file_chooser.path = self._save_folder_path
-        file_chooser.dirselect = True
+        if self._pcb_panel is not None:
+            if self._pcb_panel.valid_layout:
+                content = SaveDialog(save=self.save, cancel=self.dismiss_save_popup)
+                file_chooser = content.ids._save_file_chooser
+                file_chooser.rootpath = self._root_path
+                file_chooser.path = self._save_folder_path
+                file_chooser.dirselect = True
 
-        self._save_popup = Popup(title="Select folder where to save the PCB panel", content=content, size_hint=(0.9, 0.9))
-        self._save_popup.open()
-
+                self._save_popup = Popup(title="Select folder where to save the PCB panel",
+                                         content=content, size_hint=(0.9, 0.9))
+                self._save_popup.open()
+            else:
+                self.error_open("Invalid PCB panel layout")
+        else:
+            self.error_open("Invalid PCB board")
 
     def error_open(self, text):
         label = self._error_popup.ids._error_label

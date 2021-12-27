@@ -211,10 +211,23 @@ class Pcb:
             image.texture = fbo.texture
         return image
 
-    def __init__(self, path, name, **kwargs):
+    def __init__(self, ids, path, name, **kwargs):
         # print('PCB()')
         # print(' path: {}'.format(path))
         # print(' name: {}'.format(name))
+
+        ids._pcb.state = 'down'
+        ids._outline_verified.state = 'normal'
+        ids._top1.state = 'down'
+        ids._top2.state = 'normal'
+        ids._top3.state = 'down'
+        ids._top4.state = 'down'
+        ids._bottom1.state = 'normal'
+        ids._bottom2.state = 'normal'
+        ids._bottom3.state = 'normal'
+        ids._bottom4.state = 'normal'
+        ids._drillnpth.state = 'down'
+        ids._drillpth.state = 'down'
 
         self.invalid_reason = None
 
@@ -254,7 +267,7 @@ class Pcb:
             pcb = PcbOutline(None, max(self._size_pixels[0], self._size_pixels[1]))
             colored_outline = None
             self._valid = False
-            self.invalid_reason = 'Need either \"edge_cuts.grbl\" or \"outline.gm1\"'
+            self.invalid_reason = 'Found neither \"edge_cuts.grbl\" nor \"outline.gm1\"'
 
         self._size_mm = (pcb.max_x, pcb.max_y)
         self._size_rounded_mm = (math.ceil(self._size_mm[0]), math.ceil(self._size_mm[1]))

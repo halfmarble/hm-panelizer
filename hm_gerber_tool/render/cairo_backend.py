@@ -553,6 +553,7 @@ class GerberCairoContext(GerberContext):
         self.invert = settings.invert
         self.new_render_layer(mirror=settings.mirror)
         for prim in layer.primitives:
+            #print('{}'.format(prim))
             self.render(prim)
         self.flatten_render_layer(settings.color, settings.alpha)
 

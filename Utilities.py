@@ -84,7 +84,7 @@ def load_image(path, name):
         try:
             image = Image(source=full_path)
         except:
-            image = None
+            image = Image(size=(32,32))
     return image
 
 
