@@ -69,8 +69,8 @@ Factory.register('LoadDialog', cls=LoadDialog)
 
 
 class PanelizerApp(App):
-    _zoom_values_index = 5
-    _zoom_values = [500, 300, 200, 150, 125, 100, 90, 80, 70, 60, 50, 40, 30, 20, 10]
+    _zoom_values = [500, 300, 200, 175, 150, 125, 100, 90, 80, 70, 60, 50, 40, 30, 20, 10]
+    _zoom_values_index = _zoom_values.index(100)
     _zoom_str = '{}%'.format(_zoom_values[_zoom_values_index])
     _zoom_values_properties = ListProperty([])
 
@@ -120,8 +120,8 @@ class PanelizerApp(App):
         self._panels_y = INITIAL_ROWS
         self._panelization_str = '{}x{}'.format(self._panels_x, self._panels_y)
 
-        self._bites_x = AppSettings.bites_x
-        self._bites_y = AppSettings.bites_y
+        self._bites_x = AppSettings.bites_count_x
+        self._bites_y = AppSettings.bites_count_y
 
     def build(self):
         self.title = 'hmPanelizer'
@@ -161,6 +161,8 @@ class PanelizerApp(App):
             self._pcb_board = PcbBoard(root=self._surface, pcb=self._pcb)
             self._pcb_board.activate()
             self._pcb_panel = PcbPanel(parent=self, root=self._surface, pcb=self._pcb)
+            self._panels_x = INITIAL_COLUMNS
+            self._panels_y = INITIAL_ROWS
             self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle, self._bites_x, self._bites_y)
         else:
             self._pixels_per_cm = self._pcb.pixels_per_cm
@@ -239,7 +241,8 @@ class PanelizerApp(App):
         if self._pcb is not None:
             self._scale = self._zoom_values[self._zoom_values_index]
 
-            self._pcb_board.set_scale(self._board_scale_fit * self._scale)
+            if self._pcb_board is not None:
+                self._pcb_board.set_scale(self._board_scale_fit * self._scale)
             if self._pcb_panel is not None:
                 self._pcb_panel.set_scale(self._panel_scale_fit * self._scale)
 
@@ -336,7 +339,8 @@ class PanelizerApp(App):
     def center(self):
         self._grid.paint(self._size)
         if self._pcb is not None:
-            self._pcb_board.center(self._size, self._angle)
+            if self._pcb_board is not None:
+                self._pcb_board.center(self._size, self._angle)
             if self._pcb_panel is not None:
                 self._pcb_panel.center(self._size, self._angle)
             self.update_status()

@@ -25,9 +25,8 @@ class AppSettings:
         self._top = 0
         self._bottom = 0
         self._bite = 0
-        self._bites_x = 0
-        self._bites_x = 0
-        self._bites_y = 0
+        self._bites_count_x = 0
+        self._bites_count_y = 0
 
         self.reset()
 
@@ -36,8 +35,8 @@ class AppSettings:
         self._bottom = PCB_PANEL_BOTTOM_RAIL_MM
         self._gap = PCB_PANEL_GAP_MM
         self._bite = PCB_PANEL_BITES_SIZE_MM
-        self._bites_x = PCB_PANEL_BITES_X
-        self._bites_y = PCB_PANEL_BITES_Y
+        self._bites_count_x = PCB_PANEL_BITES_COUNT_X
+        self._bites_count_y = PCB_PANEL_BITES_COUNT_Y
 
     @property
     def top(self):
@@ -56,12 +55,12 @@ class AppSettings:
         return self._bite
 
     @property
-    def bites_x(self):
-        return self._bites_x
+    def bites_count_x(self):
+        return self._bites_count_x
 
     @property
-    def bites_y(self):
-        return self._bites_y
+    def bites_count_y(self):
+        return self._bites_count_y
 
 
 AppSettings = AppSettings()

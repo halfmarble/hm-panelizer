@@ -1,4 +1,4 @@
-# Copyright 2021 HalfMarble LLC
+# Copyright 2021,2022 HalfMarble LLC
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ VERSION_STR: Final              = 'hm-panelizer 1.0.0'
 ALLOW_DIR_DELETIONS: Final      = True
 
 DEMO_PCB_PATH_STR: Final        = join('data', 'example_pcb', 'NEAToBOARD')
-#DEMO_PCB_PATH_STR: Final        = join('data', 'example_pcb', 'NEAToBOARD_OLD')
 
 INITIAL_ROWS: Final             = 2
 INITIAL_COLUMNS: Final          = 2
@@ -37,8 +36,8 @@ PCB_PANEL_TOP_RAIL_MM: Final    = 10
 PCB_PANEL_BOTTOM_RAIL_MM: Final = 10
 
 PCB_PANEL_BITES_SIZE_MM: Final  = 5
-PCB_PANEL_BITES_X: Final        = 2
-PCB_PANEL_BITES_Y: Final        = 0
+PCB_PANEL_BITES_COUNT_X: Final  = 2
+PCB_PANEL_BITES_COUNT_Y: Final  = 0
 
 PCB_OUTLINE_WIDTH: Final        = 1.5
 

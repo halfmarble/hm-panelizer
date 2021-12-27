@@ -216,19 +216,6 @@ class Pcb:
         # print(' path: {}'.format(path))
         # print(' name: {}'.format(name))
 
-        ids._pcb.state = 'down'
-        ids._outline_verified.state = 'normal'
-        ids._top1.state = 'down'
-        ids._top2.state = 'normal'
-        ids._top3.state = 'down'
-        ids._top4.state = 'down'
-        ids._bottom1.state = 'normal'
-        ids._bottom2.state = 'normal'
-        ids._bottom3.state = 'normal'
-        ids._bottom4.state = 'normal'
-        ids._drillnpth.state = 'down'
-        ids._drillpth.state = 'down'
-
         self.invalid_reason = None
 
         if name is not None:
@@ -262,12 +249,12 @@ class Pcb:
             colored_outline = OffScreenImage(pcb, None)
             self._valid = pcb.valid
             if not self._valid:
-                self.invalid_reason = 'unknown'
+                self.invalid_reason = 'Invalid PCB'
         else:
             pcb = PcbOutline(None, max(self._size_pixels[0], self._size_pixels[1]))
             colored_outline = None
             self._valid = False
-            self.invalid_reason = 'Found neither \"edge_cuts.grbl\" nor \"outline.gm1\"'
+            self.invalid_reason = 'No outline (no \"edge_cuts.grbl\" or \"outline.gm1\" found)'
 
         self._size_mm = (pcb.max_x, pcb.max_y)
         self._size_rounded_mm = (math.ceil(self._size_mm[0]), math.ceil(self._size_mm[1]))
@@ -314,6 +301,20 @@ class Pcb:
         self._images.append(colored_outline)
 
         self._layers = [0, 1, 3, 4, 5, 10, 11]
+
+        ids._zoom_button.text = '100%'
+        ids._pcb.state = 'down'
+        ids._outline_verified.state = 'normal'
+        ids._top1.state = 'down'
+        ids._top2.state = 'normal'
+        ids._top3.state = 'down'
+        ids._top4.state = 'down'
+        ids._bottom1.state = 'normal'
+        ids._bottom2.state = 'normal'
+        ids._bottom3.state = 'normal'
+        ids._bottom4.state = 'normal'
+        ids._drillnpth.state = 'down'
+        ids._drillpth.state = 'down'
 
     def paint_layer(self, layer, fbo):
         yes = False
