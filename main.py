@@ -23,7 +23,7 @@ from kivy.uix.filechooser import FileChooserIconView
 Config.set('kivy', 'keyboard_mode', 'system')
 
 Config.set('graphics', 'width', '1550')
-Config.set('graphics', 'height', '1024')
+Config.set('graphics', 'height', '800')
 Config.set('graphics', 'minimum_width', '800')
 Config.set('graphics', 'minimum_height', '800')
 
@@ -81,7 +81,6 @@ class PanelizerApp(App):
     def __init__(self, **kwargs):
         super(PanelizerApp, self).__init__(**kwargs)
 
-        self._demo = True
         self._tmp_folders_to_delete = []
         self._current_pcb_folder = None
 
@@ -147,6 +146,13 @@ class PanelizerApp(App):
         self._surface.add_widget(self._grid)
 
         self.load_pcb(join(dirname(__file__), DEMO_PCB_PATH_STR), None)
+        Clock.schedule_once(self.load_real_pcb_board, 2.0)
+
+    def load_real_pcb_board(self, time):
+        demo_real_pcb = '/Users/gerard/PCBs/neatoboardB'
+        if os.path.isdir(demo_real_pcb):
+            self._current_pcb_folder = demo_real_pcb
+            #self.load(demo_real_pcb, [])
 
     def load_pcb(self, path, name):
         self.root.ids._panelization_button.state = 'normal'
@@ -350,7 +356,8 @@ class PanelizerApp(App):
             self.update_status()
 
     def dismiss_load_popup(self):
-        self._load_popup.dismiss()
+        if self._load_popup is not None:
+            self._load_popup.dismiss()
 
     def load_finish(self, time):
         path = self._finish_load_selected
@@ -389,7 +396,6 @@ class PanelizerApp(App):
             self._tmp_folders_to_delete.append(temp_zip_dir)
 
         self._progress.dismiss()
-        self._demo = False
 
         if error_msg is not None:
             self.error_open(error_msg)
@@ -471,8 +477,8 @@ class PanelizerApp(App):
             update_progressbar(self._progress, 'Saving PCB ...', 0.0)
 
     def save_pcb_to_disk(self):
-        if self._demo:
-            self.error_open("Can not save demo board")
+        if self._current_pcb_folder is None:
+            self.error_open("Can not save demo PCB board (no src gerber files available)")
             return
 
         if self._pcb_panel is not None:
@@ -510,7 +516,6 @@ class PanelizerApp(App):
         print('settings_bites')
 
     def cleanup(self):
-        print('cleanup')
         if ALLOW_DIR_DELETIONS and len(self._tmp_folders_to_delete) > 0:
             for folder in self._tmp_folders_to_delete:
                 rmrf(folder)
