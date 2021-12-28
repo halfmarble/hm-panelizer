@@ -81,6 +81,8 @@ class PanelizerApp(App):
     def __init__(self, **kwargs):
         super(PanelizerApp, self).__init__(**kwargs)
 
+        self._demo = True
+
         self._finish_load_selected = None
         self._finish_save_selected = None
 
@@ -385,6 +387,8 @@ class PanelizerApp(App):
             rmrf(temp_zip_dir)
 
         self._progress.dismiss()
+        self._demo = False
+
         if error_msg is not None:
             self.error_open(error_msg)
 
@@ -452,7 +456,7 @@ class PanelizerApp(App):
         if foldername is not None and len(foldername) > 0:
             self._finish_save_selected = os.path.join(self._save_folder_path, foldername)
         else:
-            self._finish_save_selected = os.path.join(self._save_folder_path, "pcb_panelized")
+            self._finish_save_selected = os.path.join(self._save_folder_path, self._pcb.board_name+"_panelized")
 
         self.dismiss_save_popup()
 
@@ -465,6 +469,10 @@ class PanelizerApp(App):
             update_progressbar(self._progress, 'Saving PCB ...', 0.0)
 
     def save_pcb_to_disk(self):
+        if self._demo:
+            self.error_open("Can not save demo board")
+            return
+        
         if self._pcb_panel is not None:
             if self._pcb_panel.valid_layout:
                 content = SaveDialog(save=self.save, cancel=self.dismiss_save_popup)
@@ -472,6 +480,7 @@ class PanelizerApp(App):
                 file_chooser.rootpath = self._root_path
                 file_chooser.path = self._save_folder_path
                 file_chooser.dirselect = True
+                content.ids._save_file_name.text = self._pcb.board_name+'_panelized'
 
                 self._save_popup = Popup(title="Select folder where to save the PCB panel",
                                          content=content, size_hint=(0.9, 0.9))

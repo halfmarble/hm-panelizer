@@ -75,7 +75,7 @@ class PcbPrimitive:
 
 class PcbOutline:
 
-    def __init__(self, path, size):
+    def __init__(self, path, size, verbose=False):
 
         self._valid = True
 
@@ -83,29 +83,38 @@ class PcbOutline:
         self._horizontal = []
         self._arcs = []
 
-        self._min_x = 1000000.0
+        self._min_x = 0.0
         self._max_x = 0.0
-        self._min_y = 1000000.0
+        self._min_y = 0.0
         self._max_y = 0.0
+        self._size = (0, 0)
+
+        self._scale = 0.0
+
+        if verbose:
+            print('PcbOutline:')
 
         if path is not None:
             segments = path.split("\n")
 
             for s in segments:
                 parts = s.split(" ")
-                if parts[0] == 'Line:':
-                    x1 = str_to_float(parts[1])
-                    self._min_x = min(self._min_x, x1)
-                    self._max_x = max(self._max_x, x1)
-                    y1 = str_to_float(parts[2])
-                    self._min_y = min(self._min_y, y1)
-                    self._max_y = max(self._max_y, y1)
-                    x2 = str_to_float(parts[3])
-                    self._min_x = min(self._min_x, x2)
-                    self._max_x = max(self._max_x, x2)
-                    y2 = str_to_float(parts[4])
-                    self._min_y = min(self._min_y, y2)
-                    self._max_y = max(self._max_y, y2)
+                if parts[0] == 'Bounds:':
+                    self._min_x = str_to_float(parts[1])
+                    self._min_y = str_to_float(parts[2])
+                    self._max_x = str_to_float(parts[3])
+                    self._max_y = str_to_float(parts[4])
+                elif parts[0] == 'Size:':
+                    self._size = (str_to_float(parts[1]), str_to_float(parts[2]))
+                    break
+
+            if verbose:
+                print('read from file:')
+                print(' self._min_x: {}'.format(self._min_x))
+                print(' self._min_y: {}'.format(self._min_y))
+                print(' self._max_x: {}'.format(self._max_x))
+                print(' self._max_y: {}'.format(self._max_y))
+                print(' self._size: {}'.format(self._size))
 
             for s in segments:
                 parts = s.split(" ")
@@ -128,9 +137,21 @@ class PcbOutline:
 
             self._scale = size / max(self._max_x, self._max_y)
         else:
-            self._scale = 1.0
+            self._min_x = 0.0
+            self._min_y = 0.0
             self._max_x = 1.0
             self._max_y = 1.0
+            self._size = (1.0, 1.0)
+            self._scale = 1.0
+
+        if verbose:
+            print('final:')
+            print(' self._min_x: {}'.format(self._min_x))
+            print(' self._min_y: {}'.format(self._min_y))
+            print(' self._max_x: {}'.format(self._max_x))
+            print(' self._max_y: {}'.format(self._min_x))
+            print(' self._size: {}'.format(self._size))
+            print(' self._scale: {}'.format(self._scale))
 
     def paint(self, fbo, size):
         scale = 1.0 / self._scale
@@ -171,6 +192,10 @@ class PcbOutline:
     @property
     def max_y(self):
         return self._max_y
+
+    @property
+    def size(self):
+        return self._size
 
 
 class Pcb:
@@ -245,18 +270,19 @@ class Pcb:
 
         outline_path = load_file(path, 'edge_cuts_mask.txt')
         if outline_path is not None:
-            pcb = PcbOutline(outline_path, max(self._size_pixels[0], self._size_pixels[1]))
-            colored_outline = OffScreenImage(pcb, None)
-            self._valid = pcb.valid
+            outline = PcbOutline(outline_path, max(self._size_pixels[0], self._size_pixels[1]))
+            colored_outline = OffScreenImage(outline, None)
+            self._valid = outline.valid
             if not self._valid:
                 self.invalid_reason = 'Invalid PCB'
         else:
-            pcb = PcbOutline(None, max(self._size_pixels[0], self._size_pixels[1]))
+            outline = PcbOutline(None, max(self._size_pixels[0], self._size_pixels[1]))
             colored_outline = None
             self._valid = False
             self.invalid_reason = 'No outline (no \"edge_cuts.grbl\" or \"outline.gm1\" found)'
 
-        self._size_mm = (pcb.max_x, pcb.max_y)
+        self._origin = (outline.min_x, outline.min_y)
+        self._size_mm = outline.size
         self._size_rounded_mm = (math.ceil(self._size_mm[0]), math.ceil(self._size_mm[1]))
 
         self._images = []
@@ -413,3 +439,8 @@ class Pcb:
     @property
     def board_name(self):
         return self._name
+
+    @property
+    def origin_mm(self):
+        return self._origin
+
