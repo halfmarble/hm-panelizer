@@ -82,6 +82,8 @@ class PanelizerApp(App):
         super(PanelizerApp, self).__init__(**kwargs)
 
         self._demo = True
+        self._tmp_folders_to_delete = []
+        self._current_pcb_folder = None
 
         self._finish_load_selected = None
         self._finish_save_selected = None
@@ -358,7 +360,7 @@ class PanelizerApp(App):
         filename_ext = os.path.splitext(path)[1].lower()
         if filename_ext == '.zip':
             temp_zip_dir = tempfile.TemporaryDirectory().name
-            print('creating temporary zip directory', temp_zip_dir)
+            #print('creating temporary zip directory', temp_zip_dir)
             try:
                 os.mkdir(temp_zip_dir)
             except FileExistsError:
@@ -371,20 +373,20 @@ class PanelizerApp(App):
 
         if os.path.isdir(path):
             temp_dir = tempfile.TemporaryDirectory().name
-            print('creating temporary directory', temp_dir)
+            #print('creating temporary directory', temp_dir)
             try:
                 os.mkdir(temp_dir)
             except FileExistsError:
                 pass
+            self._current_pcb_folder = path
             generate_pcb_data_layers(path, '.', temp_dir, 1024, self._progress, filename_only)
             error_msg = self.load_pcb(temp_dir, filename_only)
-            if ALLOW_DIR_DELETIONS:
-                print('deleting temporary directory', temp_dir)
-                rmrf(temp_dir)
+            #print('marking temporary directory for deletion {}', temp_dir)
+            self._tmp_folders_to_delete.append(temp_dir)
 
-        if temp_zip_dir is not None and ALLOW_DIR_DELETIONS:
-            print('deleting temporary zip directory', temp_zip_dir)
-            rmrf(temp_zip_dir)
+        if temp_zip_dir is not None:
+            #print('marking temporary zip directory for deletion {}', temp_zip_dir)
+            self._tmp_folders_to_delete.append(temp_zip_dir)
 
         self._progress.dismiss()
         self._demo = False
@@ -472,7 +474,7 @@ class PanelizerApp(App):
         if self._demo:
             self.error_open("Can not save demo board")
             return
-        
+
         if self._pcb_panel is not None:
             if self._pcb_panel.valid_layout:
                 content = SaveDialog(save=self.save, cancel=self.dismiss_save_popup)
@@ -507,6 +509,15 @@ class PanelizerApp(App):
     def settings_bites(self):
         print('settings_bites')
 
+    def cleanup(self):
+        print('cleanup')
+        if ALLOW_DIR_DELETIONS and len(self._tmp_folders_to_delete) > 0:
+            for folder in self._tmp_folders_to_delete:
+                rmrf(folder)
+
 
 if __name__ == '__main__':
-    PanelizerApp().run()
+    app = PanelizerApp()
+    app.run()
+    app.cleanup()
+
