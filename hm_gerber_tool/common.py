@@ -62,6 +62,8 @@ def loads(data, filename=None):
 
     fmt = detect_file_format(data)
     if fmt == 'rs274x':
+        print('data: {}'.format(data))
+        print('filename: {}'.format(filename))
         return rs274x.loads(data, filename=filename)
     elif fmt == 'excellon':
         return excellon.loads(data, filename=filename)

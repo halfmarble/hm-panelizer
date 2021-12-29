@@ -94,8 +94,8 @@ class GerberCairoContext(GerberContext):
                 height = y_range[1] - y_range[0]
 
             # protect against weirdly defined pcbs (i.e. manually created/tweaked for debugging)
-            width = max(width, 32)
-            height = max(height, 32)
+            width = max(width, 1)
+            height = max(height, 1)
 
             self.native_size = (width, height)
             self.native_origin = (self.bounds[0][0], self.bounds[1][0])

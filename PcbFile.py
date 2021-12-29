@@ -92,3 +92,83 @@ def generate_pcb_data_layers(cwd, pcb_rel_path, data_rel_path, size=1024, progre
 
     print('\n')
 
+
+def generate_float46(value):
+    data = ''
+    float_full_str = '{:0.6f}'.format(value)
+    segments = float_full_str.split('.')
+    for s in segments:
+        data += '{}'.format(s)
+    return data
+
+
+def generate_mouse_bite_gm1_data(origin, size, arc, close):
+    min_x = origin[0]
+    min_y = origin[1]
+    max_x = min_x+size[0]
+    max_y = min_y+size[1]
+
+    data = ''
+    data += '%TF.GenerationSoftware,hm-panelizer*%\n'
+    data += '%TF.SameCoordinates,Original*%\n'
+    data += '%TF.FileFunction,Profile,NP*%\n'
+    data += '%FSLAX46Y46*%\n'
+    data += 'G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*\n'
+    data += 'G04 Created by hm-panelizer*\n\n'
+
+    data += '%MOMM*%\n'
+    data += '%LPD*%\n\n'
+
+    data += 'G04 APERTURE LIST*\n'
+    data += '%TA.AperFunction,Profile*%\n'
+    data += '%ADD10C,0.100000*%\n'
+    data += '%TD*%\n'
+    data += 'G04 APERTURE END LIST*\n'
+    data += 'D10*\n\n'
+
+    data += 'G01*\n'
+    data += 'X{}Y{}D02*\n'.format(generate_float46(min_x), generate_float46(min_y))
+    data += 'G75*\n'
+    data += 'G03*\n'
+    data += 'X{}Y{}I{}J{}D01*\n\n'.format(generate_float46(min_x+arc), generate_float46(min_y+arc),
+                                          generate_float46(0), generate_float46(arc))
+
+    data += 'G01*\n'
+    data += 'X{}Y{}D02*\n'.format(generate_float46(min_x+arc), generate_float46(min_y+arc))
+    data += 'X{}Y{}D01*\n\n'.format(generate_float46(min_x+arc), generate_float46(max_y-arc))
+
+    data += 'G01*\n'
+    data += 'X{}Y{}D02*\n'.format(generate_float46(min_x+arc), generate_float46(max_y-arc))
+    data += 'G75*\n'
+    data += 'G03*\n'
+    data += 'X{}Y{}I{}J{}D01*\n\n'.format(generate_float46(min_x), generate_float46(max_y),
+                                          generate_float46(-arc), generate_float46(0))
+
+    data += 'G01*\n'
+    data += 'X{}Y{}D02*\n'.format(generate_float46(max_x), generate_float46(min_y))
+    data += 'G75*\n'
+    data += 'G02*\n'
+    data += 'X{}Y{}I{}J{}D01*\n\n'.format(generate_float46(max_x-arc), generate_float46(min_y+arc),
+                                          generate_float46(0), generate_float46(arc))
+
+    data += 'G01*\n'
+    data += 'X{}Y{}D02*\n'.format(generate_float46(max_x-arc), generate_float46(min_y+arc))
+    data += 'X{}Y{}D01*\n\n'.format(generate_float46(max_x-arc), generate_float46(max_y-arc))
+
+    data += 'G01*\n'
+    data += 'X{}Y{}D02*\n'.format(generate_float46(max_x-arc), generate_float46(max_y-arc))
+    data += 'G75*\n'
+    data += 'G02*\n'
+    data += 'X{}Y{}I{}J{}D01*\n\n'.format(generate_float46(max_x), generate_float46(max_y),
+                                          generate_float46(arc), generate_float46(0))
+
+    if close:
+        data += 'G01*\n'
+        data += 'X{}Y{}D02*\n'.format(generate_float46(min_x), generate_float46(min_y))
+        data += 'X{}Y{}D01*\n\n'.format(generate_float46(max_x), generate_float46(min_y))
+        data += 'X{}Y{}D02*\n'.format(generate_float46(min_x), generate_float46(max_y))
+        data += 'X{}Y{}D01*\n\n'.format(generate_float46(max_x), generate_float46(max_y))
+
+    data += 'M02*\n'
+
+    return data

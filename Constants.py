@@ -23,8 +23,8 @@ ALLOW_DIR_DELETIONS: Final      = True
 
 DEMO_PCB_PATH_STR: Final        = join('data', 'example_pcb', 'NEAToBOARD')
 
-INITIAL_ROWS: Final             = 2
-INITIAL_COLUMNS: Final          = 2
+INITIAL_ROWS: Final             = 1
+INITIAL_COLUMNS: Final          = 1
 MAX_ROWS: Final                 = 99
 MAX_COLUMNS: Final              = 99
 

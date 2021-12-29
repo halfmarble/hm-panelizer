@@ -128,8 +128,12 @@ class BiteRenderer:
     def paint(self, fbo):
         with fbo:
             c = self._owner.color
-            ClearColor(c.r, c.g, c.b, c.a)
-            ClearBuffers()
+            Color(c.r, c.g, c.b, c.a)
+            w = self._owner.size[0]
+            h = self._owner.size[1]
+            Rectangle(size=self._owner.size, pos=(0, 0))
+            Color(0, 0, 0, 1)
+            Line(circle=(w/2.0, 1.0, 1.0))
 
 
 class BiteWidget(OffScreenScatter):
@@ -237,6 +241,10 @@ class BiteWidget(OffScreenScatter):
         self._connected = value
         if update:
             self.repaint()
+
+    @property
+    def position(self):
+        return self.pos
 
     @property
     def slide(self):

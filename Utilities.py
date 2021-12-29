@@ -121,3 +121,12 @@ def round_float(value):
 def str_to_float(value):
     return float(value.replace(',', ''))
 
+
+def generate_float46(value):
+    data = ''
+    float_full_str = '{:0.6f}'.format(value)
+    segments = float_full_str.split('.')
+    for s in segments:
+        data += '{}'.format(s)
+    return data
+
