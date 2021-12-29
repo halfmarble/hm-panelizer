@@ -126,14 +126,24 @@ class BiteRenderer:
         self._owner = owner
 
     def paint(self, fbo):
+        # radius = 3.0 * AppSettings.bite_hole_radius
+        # space = 3.0 * AppSettings.bite_hole_space
+        image = AppSettings.bites_image
         with fbo:
             c = self._owner.color
             Color(c.r, c.g, c.b, c.a)
-            w = self._owner.size[0]
-            h = self._owner.size[1]
-            Rectangle(size=self._owner.size, pos=(0, 0))
-            Color(0, 0, 0, 1)
-            Line(circle=(w/2.0, 1.0, 1.0))
+            Rectangle(texture=image.texture, size=self._owner.size, pos=(0, 0))
+            # Color(0, 0, 0, 1)
+            # w = self._owner.size[0]
+            # h = self._owner.size[1]
+            # count = int((w/(space+radius)) / 2)
+            # cx = w/2.0
+            # Line(circle=(cx, 1.0, radius))
+            # x = 0
+            # for c in range(0, count):
+            #     x += (space+radius)
+            #     Line(circle=(cx-x, 1.0, radius))
+            #     Line(circle=(cx+x, 1.0, radius))
 
 
 class BiteWidget(OffScreenScatter):

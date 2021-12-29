@@ -82,6 +82,7 @@ class PanelizerApp(App):
         super(PanelizerApp, self).__init__(**kwargs)
 
         self._tmp_folders_to_delete = []
+        self._app_tmp_folder = None
         self._current_pcb_folder = None
 
         self._finish_load_selected = None
@@ -516,9 +517,11 @@ class PanelizerApp(App):
         print('settings_bites')
 
     def cleanup(self):
-        if ALLOW_DIR_DELETIONS and len(self._tmp_folders_to_delete) > 0:
-            for folder in self._tmp_folders_to_delete:
-                rmrf(folder)
+        if ALLOW_DIR_DELETIONS:
+            AppSettings.cleanup()
+            if len(self._tmp_folders_to_delete) > 0:
+                for folder in self._tmp_folders_to_delete:
+                    rmrf(folder)
 
 
 if __name__ == '__main__':

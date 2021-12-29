@@ -19,9 +19,11 @@ import os
 import shutil
 import zipfile
 from os.path import join
+from typing import Final
 
 import kivy
 from kivy.base import EventLoop
+from kivy.graphics import Fbo, ClearColor, ClearBuffers, Color, Rectangle
 from kivy.uix.image import Image
 
 
@@ -84,7 +86,7 @@ def load_image(path, name):
         try:
             image = Image(source=full_path)
         except:
-            image = Image(size=(32,32))
+            image = Image(size=(2, 2))
     return image
 
 
@@ -98,12 +100,13 @@ def load_file(path, name):
 
 
 def rmrf(directory):
-    for root, dirs, files in os.walk(directory, topdown=False):
-        for name in files:
-            os.remove(os.path.join(root, name))
-        for name in dirs:
-            os.rmdir(os.path.join(root, name))
-    shutil.rmtree(directory, ignore_errors=True)
+    if directory is not None:
+        for root, dirs, files in os.walk(directory, topdown=False):
+            for name in files:
+                os.remove(os.path.join(root, name))
+            for name in dirs:
+                os.rmdir(os.path.join(root, name))
+        shutil.rmtree(directory, ignore_errors=True)
 
 
 def calculate_fit_scale(scale, size_mm, size_pixels):
@@ -130,3 +133,28 @@ def generate_float46(value):
         data += '{}'.format(s)
     return data
 
+
+FS_MASK: Final = '''
+$HEADER$
+void main(void) {
+    gl_FragColor = vec4(frag_color.r, frag_color.g, frag_color.b, texture2D(texture0, tex_coord0).a);
+}
+'''
+
+
+def colored_mask(mask, color):
+    image = None
+    if mask is not None:
+        image = Image()
+        image.size = mask.texture_size
+        fbo = Fbo()
+        fbo.shader.fs = FS_MASK
+        fbo.size = image.size
+        with fbo:
+            ClearColor(0, 0, 0, 0)
+            ClearBuffers()
+            Color(color.r, color.g, color.b, color.a)
+            Rectangle(texture=mask.texture, size=mask.texture_size, pos=(0, 0))
+        fbo.draw()
+        image.texture = fbo.texture
+    return image

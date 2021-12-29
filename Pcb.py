@@ -219,23 +219,6 @@ class Pcb:
     _layers_bottom = [6, 7, 8, 9]
     _layers_verify = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
-    def colored_mask(self, mask, color):
-        image = None
-        if mask is not None:
-            image = Image()
-            image.size = self._size_pixels
-            fbo = Fbo()
-            fbo.shader.fs = FS_MASK
-            fbo.size = image.size
-            with fbo:
-                ClearColor(0, 0, 0, 0)
-                ClearBuffers()
-                Color(color.r, color.g, color.b, color.a)
-                Rectangle(texture=mask.texture, size=mask.texture_size, pos=(0, 0))
-            fbo.draw()
-            image.texture = fbo.texture
-        return image
-
     def __init__(self, ids, path, name, **kwargs):
         # print('PCB()')
         # print(' path: {}'.format(path))
@@ -287,40 +270,40 @@ class Pcb:
 
         self._images = []
 
-        self._images.append(self.colored_mask(image, PCB_MASK_COLOR))
+        self._images.append(colored_mask(image, PCB_MASK_COLOR))
 
         image = load_image(path, 'edge_cuts.png')
-        self._images.append(self.colored_mask(image, PCB_TOP_PASTE_COLOR))
+        self._images.append(colored_mask(image, PCB_TOP_PASTE_COLOR))
 
         image = load_image(path, 'top_paste.png')
-        self._images.append(self.colored_mask(image, PCB_TOP_PASTE_COLOR))
+        self._images.append(colored_mask(image, PCB_TOP_PASTE_COLOR))
 
         image = load_image(path, 'top_silk.png')
-        self._images.append(self.colored_mask(image, PCB_TOP_SILK_COLOR))
+        self._images.append(colored_mask(image, PCB_TOP_SILK_COLOR))
 
         image = load_image(path, 'top_mask.png')
-        self._images.append(self.colored_mask(image, PCB_TOP_MASK_COLOR))
+        self._images.append(colored_mask(image, PCB_TOP_MASK_COLOR))
 
         image = load_image(path, 'top_copper.png')
-        self._images.append(self.colored_mask(image, PCB_TOP_TRACES_COLOR))
+        self._images.append(colored_mask(image, PCB_TOP_TRACES_COLOR))
 
         image = load_image(path, 'bottom_copper.png')
-        self._images.append(self.colored_mask(image, PCB_BOTTOM_TRACES_COLOR))
+        self._images.append(colored_mask(image, PCB_BOTTOM_TRACES_COLOR))
 
         image = load_image(path, 'bottom_mask.png')
-        self._images.append(self.colored_mask(image, PCB_BOTTOM_MASK_COLOR))
+        self._images.append(colored_mask(image, PCB_BOTTOM_MASK_COLOR))
 
         image = load_image(path, 'bottom_silk.png')
-        self._images.append(self.colored_mask(image, PCB_BOTTOM_SILK_COLOR))
+        self._images.append(colored_mask(image, PCB_BOTTOM_SILK_COLOR))
 
         image = load_image(path, 'bottom_paste.png')
-        self._images.append(self.colored_mask(image, PCB_BOTTOM_PASTE_COLOR))
+        self._images.append(colored_mask(image, PCB_BOTTOM_PASTE_COLOR))
 
         image = load_image(path, 'drill_npth.png')
-        self._images.append(self.colored_mask(image, PCB_DRILL_NPTH_COLOR))
+        self._images.append(colored_mask(image, PCB_DRILL_NPTH_COLOR))
 
         image = load_image(path, 'drill_pth.png')
-        self._images.append(self.colored_mask(image, PCB_DRILL_PTH_COLOR))
+        self._images.append(colored_mask(image, PCB_DRILL_PTH_COLOR))
 
         if colored_outline is not None:
             colored_outline.paint(self._size_pixels)

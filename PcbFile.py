@@ -25,8 +25,9 @@ from OffScreenImage import *
 
 from hm_gerber_tool import PCB
 from hm_gerber_tool.render import theme
-from hm_gerber_tool.render.cairo_backend import GerberCairoContext
-
+from hm_gerber_tool.layers import PCBLayer
+from hm_gerber_tool.render import GerberCairoContext, theme
+from hm_gerber_tool.common import rs274x
 
 def log_text(progressbar, text=None, value=None):
     if progressbar is not None:
@@ -109,12 +110,12 @@ def generate_mouse_bite_gm1_data(origin, size, arc, close):
     max_y = min_y+size[1]
 
     data = ''
-    data += '%TF.GenerationSoftware,hm-panelizer*%\n'
+    data += '%TF.GenerationSoftware,{}*%\n'.format(APP_STR)
     data += '%TF.SameCoordinates,Original*%\n'
     data += '%TF.FileFunction,Profile,NP*%\n'
     data += '%FSLAX46Y46*%\n'
     data += 'G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*\n'
-    data += 'G04 Created by hm-panelizer*\n\n'
+    data += 'G04 Created by {}*\n\n'.format(APP_STR)
 
     data += '%MOMM*%\n'
     data += '%LPD*%\n\n'
@@ -172,3 +173,16 @@ def generate_mouse_bite_gm1_data(origin, size, arc, close):
     data += 'M02*\n'
 
     return data
+
+
+def generate_mouse_bite_gm1_files(path, origin, size, arc, close):
+    gm1 = generate_mouse_bite_gm1_data(origin=(0, 0), size=(5, 5), arc=1, close=True)
+    data = rs274x.loads(gm1, 'file.gm1')
+    layer = PCBLayer.from_cam(data)
+
+    ctx = GerberCairoContext(128)
+    ctx.get_outline_mask(layer, os.path.join(path, 'edge_cuts_mask'),
+                         bounds=layer.bounds, verbose=layer.bounds)
+
+    ctx.render_clipped_layer(layer, False, os.path.join(path, 'edge_cuts'),
+                             theme.THEMES['Mask'], bounds=layer.bounds, verbose=True)
