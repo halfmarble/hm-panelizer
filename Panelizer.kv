@@ -118,24 +118,33 @@
     BoxLayout:
         size: root.size
         pos: root.pos
-        orientation: "vertical"
+        orientation: 'vertical'
         BoxLayout:
-            orientation: "vertical"
+            orientation: 'vertical'
             size_hint_y: None
-            height: 60
+            height: 100
             BoxLayout:
-                height: 30
+                height: 50
                 Label:
-                    size_hint_x: 0.05
+                    size_hint_x: 0.075
+                    size_hint_y: 0.55
                     bold: True
                     font_size: 16
-                    text: "Save as:"
+                    text: 'Folder name:'
                 TextInput:
                     id: _save_file_name
-                    size_hint_x: 0.95
+                    size_hint_x: 0.75
+                    size_hint_y: 0.6
                     multiline: False
-                    halign: "left"
-                    text: "pcb_panelized"
+                    halign: 'left'
+                    font_size: 16
+                    text: 'pcb_panelized'
+                Label:
+                    size_hint_x: 0.02
+                    size_hint_y: 0.55
+                    bold: True
+                    font_size: 16
+                    text: ''
             Label:
                 title_color: 1.0, 0.0, 0.0, 1.0
                 background_normal: ''

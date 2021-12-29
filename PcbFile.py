@@ -28,6 +28,8 @@ from hm_gerber_tool.render import theme
 from hm_gerber_tool.layers import PCBLayer
 from hm_gerber_tool.render import GerberCairoContext, theme
 from hm_gerber_tool.common import rs274x
+from hm_gerber_tool.common import excellon
+
 
 def log_text(progressbar, text=None, value=None):
     if progressbar is not None:
@@ -170,19 +172,72 @@ def generate_mouse_bite_gm1_data(origin, size, arc, close):
         data += 'X{}Y{}D02*\n'.format(generate_float46(min_x), generate_float46(max_y))
         data += 'X{}Y{}D01*\n\n'.format(generate_float46(max_x), generate_float46(max_y))
 
-    data += 'M02*\n'
+    data += 'M02*\n\n'
 
     return data
 
 
-def generate_mouse_bite_gm1_files(path, origin, size, arc, close):
-    gm1 = generate_mouse_bite_gm1_data(origin=(0, 0), size=(5, 5), arc=1, close=True)
-    data = rs274x.loads(gm1, 'file.gm1')
+def generate_mouse_bite_drl_data(origin, size, radius, gap):
+    min_x = origin[0]
+    min_y = origin[1]
+    max_x = min_x+size[0]
+    max_y = min_y+size[1]
+    w = size[0]
+    h = size[1]
+    diameter = 2.0*radius
+
+    data = ''
+    data += 'M48'
+    data += '; DRILL file {{{}}}\n'.format(APP_STR)
+    data += '; FORMAT={{-:-/ absolute / metric / decimal}}\n'
+    data += '; #@! TF.GenerationSoftware,{}\n'.format(APP_STR)
+    data += '; #@! TF.FileFunction,NonPlated,1,2,NPTH\n'
+    data += 'FMAT,2\n'
+    data += 'METRIC\n\n'
+
+    data += '; #@! TA.AperFunction,NonPlated,NPTH,ComponentDrill\n'
+    data += 'T1C{:0.3f}\n'.format(diameter)
+    data += '%\n'
+    data += 'G90\n'
+    data += 'G05\n'
+    data += 'T1\n'
+
+    unit = (radius + radius + gap)
+    count = int(w / unit) - 1
+    cx = min_x + (w / 2.0)
+    data += 'X{:0.2f}Y{:0.2f}\n'.format(cx, min_y)
+    data += 'X{:0.2f}Y{:0.2f}\n'.format(cx, max_y)
+    x = 0
+    for i in range(0, count):
+        x += gap
+        data += 'X{:0.2f}Y{:0.2f}\n'.format((cx+x), min_y)
+        data += 'X{:0.2f}Y{:0.2f}\n'.format((cx-x), min_y)
+        data += 'X{:0.2f}Y{:0.2f}\n'.format((cx+x), max_y)
+        data += 'X{:0.2f}Y{:0.2f}\n'.format((cx-x), max_y)
+
+    data += 'M30\n\n'
+
+    return data
+
+
+def generate_mouse_bite_gm1_files(path, filename, origin, size, arc, close, pixel_size=128):
+    gm1 = generate_mouse_bite_gm1_data(origin, size, arc, close)
+    data = rs274x.loads(gm1, 'dummy.gm1')
     layer = PCBLayer.from_cam(data)
 
-    ctx = GerberCairoContext(128)
-    ctx.get_outline_mask(layer, os.path.join(path, 'edge_cuts_mask'),
-                         bounds=layer.bounds, verbose=layer.bounds)
+    ctx = GerberCairoContext(pixel_size)
+    ctx.get_outline_mask(layer, os.path.join(path, filename+'_mask'),
+                         bounds=layer.bounds, verbose=False)
 
-    ctx.render_clipped_layer(layer, False, os.path.join(path, 'edge_cuts'),
-                             theme.THEMES['Mask'], bounds=layer.bounds, verbose=True)
+    ctx.render_clipped_layer(layer, False, os.path.join(path, filename),
+                             theme.THEMES['Mask'], bounds=layer.bounds, verbose=False)
+
+
+def generate_mouse_bite_drl_files(path, filename, origin, size, radius, gap, pixel_size=128):
+    drl = generate_mouse_bite_drl_data(origin, size, radius, gap)
+    data = excellon.loads(drl, 'dummy.drl')
+    layer = PCBLayer.from_cam(data)
+
+    ctx = GerberCairoContext(pixel_size)
+    ctx.render_clipped_layer(layer, False, os.path.join(path, filename),
+                             theme.THEMES['Mask'], bounds=layer.bounds, verbose=False)

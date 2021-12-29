@@ -17,7 +17,6 @@ from hm_gerber_tool.cam import FileSettings
 from hm_gerber_tool.utils import inch, metric, write_gerber_value, parse_gerber_value
 from hm_gerber_ex.utility import rotate
 
-
 def loads(data, filename=None, settings=None, tools=None, format=None):
     if not settings:
         settings = FileSettings(**detect_excellon_format(data))
@@ -222,6 +221,7 @@ class ExcellonFileEx(ExcellonFile):
                         f.write(hit.to_excellon(self.settings) + '\n')
             f.write(EndOfProgramStmt().to_excellon() + '\n')
 
+
 class DrillHitEx(DrillHit):
     def to_inch(self):
         self.position = tuple(map(inch, self.position))
@@ -234,6 +234,7 @@ class DrillHitEx(DrillHit):
 
     def to_excellon(self, settings):
         return CoordinateStmtEx(*self.position).to_excellon(settings)
+
 
 class DrillSlotEx(DrillSlot):
     def to_inch(self):
@@ -250,6 +251,7 @@ class DrillSlotEx(DrillSlot):
 
     def to_excellon(self, settings):
         return SlotStmt(*self.start, *self.end).to_excellon(settings)
+
 
 class DrillRout(object):
     MODE_ROUT = 'G00'
@@ -308,6 +310,7 @@ class DrillRout(object):
             if node.center_offset is not None:
                 node.center_offset = rotate(*node.center_offset, angle, (0., 0.))
 
+
 class UnitStmtEx(UnitStmt):
     @classmethod
     def from_statement(cls, stmt):
@@ -327,6 +330,7 @@ class UnitStmtEx(UnitStmt):
                               '0' * format[0], '0' * format[1])
         return stmt
 
+
 class CircularCWModeStmt(ExcellonStatement):
 
     def __init__(self, **kwargs):
@@ -335,6 +339,7 @@ class CircularCWModeStmt(ExcellonStatement):
     def to_excellon(self, settings=None):
         return 'G02'
 
+
 class CircularCCWModeStmt(ExcellonStatement):
 
     def __init__(self, **kwargs):
@@ -342,6 +347,7 @@ class CircularCCWModeStmt(ExcellonStatement):
 
     def to_excellon(self, settings=None):
         return 'G02'
+
 
 class CoordinateStmtEx(CoordinateStmt):
     @classmethod

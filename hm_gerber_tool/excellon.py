@@ -81,7 +81,9 @@ def loads(data, filename=None, settings=None, tools=None):
     # File object should use settings from source file by default.
     if not settings:
         settings = FileSettings(**detect_excellon_format(data))
-    return ExcellonParser(settings, tools).parse_raw(data, filename)
+    parser = ExcellonParser(settings, tools)
+    data = parser.parse_raw(data, filename)
+    return data
 
 
 class DrillHit(object):
@@ -232,6 +234,10 @@ class ExcellonFile(CamFile):
             ymin = min(bbox[1][0], ymin)
             ymax = max(bbox[1][1], ymax)
         return ((xmin, xmax), (ymin, ymax))
+
+    @property
+    def bounds(self):
+        return self.bounding_box
 
     def report(self, filename=None):
         """ Print or save drill report

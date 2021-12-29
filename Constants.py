@@ -17,7 +17,7 @@ from typing import Final
 from kivy.graphics import Color
 from posixpath import join
 
-VERSION_STR: Final              = 'hm-panelizer 1.0.0 beta'
+VERSION_STR: Final              = '1.0.0 beta'
 APP_STR: Final                  = 'hm-panelizer {}'.format(VERSION_STR)
 
 ALLOW_DIR_DELETIONS: Final      = True
@@ -35,6 +35,9 @@ FIT_SCALE: Final                = 0.9
 PCB_PANEL_GAP_MM: Final         = 5
 PCB_PANEL_TOP_RAIL_MM: Final    = 10
 PCB_PANEL_BOTTOM_RAIL_MM: Final = 10
+
+PCB_BITES_HOLE_RADIUS_MM: Final = 0.15
+PCB_BITES_HOLE_SPACE_MM: Final  = 0.6
 
 PCB_PANEL_BITES_SIZE_MM: Final  = 5
 PCB_PANEL_BITES_COUNT_X: Final  = 2
