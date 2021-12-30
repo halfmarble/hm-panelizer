@@ -30,6 +30,12 @@ class PcbRail:
         self._gts = None
         self._gto = None
 
+        self._panels = 0
+        self._origin = (0, 0)
+        self._size = (0, 0)
+        self._vcut = False
+        self._jlc = False
+
         self._tmp_folder = tempfile.TemporaryDirectory().name
         try:
             os.mkdir(self._tmp_folder)
@@ -41,24 +47,33 @@ class PcbRail:
             print('ERROR: PcbRail temp folder is NULL')
             return
 
-        # TODO: is there anything else that's more efficient that we can do here?
-        # without this the rail images do not refresh correctly
-        Cache.remove('kv.image')
-        Cache.remove('kv.texture')
+        if self._panels != panels or self._origin != origin or self._size != size or \
+                self._vcut != vcut or self._jlc != jlc:
+            # TODO: is there anything else that's more efficient that we can do here?
+            # without this the rail images do not refresh correctly
+            Cache.remove('kv.image')
+            Cache.remove('kv.texture')
 
-        bounds = render_rail_gm1(self._tmp_folder, 'rail_edge_cuts',
-                                 origin=origin, size=size, panels=panels, vcut=vcut)
-        render_rail_gtl(bounds, self._tmp_folder, 'rail_top_copper',
-                        origin=origin, size=size)
-        render_rail_gts(bounds, self._tmp_folder, 'rail_top_mask',
-                        origin=origin, size=size)
-        render_rail_gto(bounds, self._tmp_folder, 'rail_top_silk',
-                        origin=origin, size=size, panels=panels, vcut=vcut, jlc=jlc)
+            bounds = render_rail_gm1(self._tmp_folder, 'rail_edge_cuts',
+                                     origin=origin, size=size, panels=panels, vcut=vcut)
+            render_rail_gtl(bounds, self._tmp_folder, 'rail_top_copper',
+                            origin=origin, size=size)
+            render_rail_gts(bounds, self._tmp_folder, 'rail_top_mask',
+                            origin=origin, size=size)
+            render_rail_gto(bounds, self._tmp_folder, 'rail_top_silk',
+                            origin=origin, size=size, panels=panels, vcut=vcut, jlc=jlc)
 
-        self._gm1 = load_image_masked(self._tmp_folder, 'rail_edge_cuts_mask.png', Color(1, 1, 1, 1))
-        self._gtl = load_image_masked(self._tmp_folder, 'rail_top_copper.png', Color(1, 1, 1, 1))
-        self._gts = load_image_masked(self._tmp_folder, 'rail_top_mask.png', Color(1, 1, 1, 1))
-        self._gto = load_image_masked(self._tmp_folder, 'rail_top_silk.png', Color(1, 1, 1, 1))
+            self._gm1 = load_image_masked(self._tmp_folder, 'rail_edge_cuts_mask.png', Color(1, 1, 1, 1))
+            self._gtl = load_image_masked(self._tmp_folder, 'rail_top_copper.png', Color(1, 1, 1, 1))
+            self._gts = load_image_masked(self._tmp_folder, 'rail_top_mask.png', Color(1, 1, 1, 1))
+            self._gto = load_image_masked(self._tmp_folder, 'rail_top_silk.png', Color(1, 1, 1, 1))
+
+            self._panels = panels
+            self._origin = origin
+            self._size = size
+            self._vcut = vcut
+            self._jlc = jlc
+
 
     def paint(self, bottom, top):
         c = PCB_MASK_COLOR
