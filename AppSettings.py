@@ -91,7 +91,7 @@ class AppSettings:
 
     @property
     def bites_image(self):
-        file_name = 'edge_cuts'
+        file_name = 'bites_edge_cuts'
         if self._bites_image is None and self._tmp_folder is not None:
             generate_mouse_bite_gm1_files(self._tmp_folder, file_name,
                                           origin=(0, 0), size=(self._bite, self._gap),
@@ -103,7 +103,7 @@ class AppSettings:
 
     @property
     def bites_holes_image(self):
-        file_name = 'holes_npth'
+        file_name = 'bites_holes_npth'
         if self._bites_holes_image is None and self._tmp_folder is not None:
             generate_mouse_bite_drl_files(self._tmp_folder, file_name,
                                           origin=(0, 0), size=(self._bite, self._gap),

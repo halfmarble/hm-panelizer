@@ -387,7 +387,7 @@ class PanelizerApp(App):
             except FileExistsError:
                 pass
             self._current_pcb_folder = path
-            generate_pcb_data_layers(path, '.', temp_dir, 1024, self._progress, filename_only)
+            generate_pcb_data_layers(path, '.', temp_dir, DEFAULT_PCB_PIXEL_SIZE, self._progress, filename_only)
             error_msg = self.load_pcb(temp_dir, filename_only)
             #print('marking temporary directory for deletion {}', temp_dir)
             self._tmp_folders_to_delete.append(temp_dir)

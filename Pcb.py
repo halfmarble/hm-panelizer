@@ -27,13 +27,6 @@ from Utilities import *
 from OffScreenImage import *
 
 
-FS_MASK: Final = '''
-$HEADER$
-void main(void) {
-    gl_FragColor = vec4(frag_color.r, frag_color.g, frag_color.b, texture2D(texture0, tex_coord0).a);
-}
-'''
-
 GOOD_COLOR: Final = Color(PCB_BITE_GOOD_COLOR.r, PCB_BITE_GOOD_COLOR.g, PCB_BITE_GOOD_COLOR.b, 1.0)
 BAD_COLOR: Final = Color(PCB_BITE_BAD_COLOR.r, PCB_BITE_BAD_COLOR.g, PCB_BITE_BAD_COLOR.b, 1.0)
 

@@ -24,6 +24,8 @@ ALLOW_DIR_DELETIONS: Final      = True
 
 DEMO_PCB_PATH_STR: Final        = join('data', 'example_pcb', 'NEAToBOARD')
 
+DEFAULT_PCB_PIXEL_SIZE: Final   = 2048
+
 INITIAL_ROWS: Final             = 1
 INITIAL_COLUMNS: Final          = 1
 MAX_ROWS: Final                 = 99
@@ -33,14 +35,14 @@ MAX_COLUMNS: Final              = 99
 FIT_SCALE: Final                = 0.9
 
 PCB_PANEL_GAP_MM: Final         = 5
-PCB_PANEL_TOP_RAIL_MM: Final    = 10
-PCB_PANEL_BOTTOM_RAIL_MM: Final = 10
+PCB_PANEL_TOP_RAIL_MM: Final    = 5
+PCB_PANEL_BOTTOM_RAIL_MM: Final = 5
 
 PCB_BITES_HOLE_RADIUS_MM: Final = 0.15
 PCB_BITES_HOLE_SPACE_MM: Final  = 0.6
 
 PCB_PANEL_BITES_SIZE_MM: Final  = 5
-PCB_PANEL_BITES_COUNT_X: Final  = 2
+PCB_PANEL_BITES_COUNT_X: Final  = 3
 PCB_PANEL_BITES_COUNT_Y: Final  = 0
 
 PCB_OUTLINE_WIDTH: Final        = 1.5
