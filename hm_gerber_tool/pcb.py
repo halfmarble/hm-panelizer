@@ -49,7 +49,7 @@ class PCB(object):
                 camfile = gerber_read(os.path.join(directory, filename))
                 layer = PCBLayer.from_cam(camfile)
                 if verbose:
-                    print('[PCB]:  layer {}, [metric units: {}]'.format(layer, layer.metric))
+                    print('[PCB]:  layer {}, bounds {}, [metric units: {}]'.format(layer, layer.bounds, layer.metric))
                 layers.append(layer)
                 name = os.path.splitext(filename)[0]
                 if len(os.path.splitext(filename)) > 1:

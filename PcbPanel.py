@@ -120,7 +120,7 @@ class PcbMask:
         return self.get_mask_alpha(x, y, length)
 
 
-class BiteRenderer:
+class MouseBitesRenderer:
 
     def __init__(self, owner):
         self._owner = owner
@@ -129,10 +129,25 @@ class BiteRenderer:
         with fbo:
             c = self._owner.color
             Color(c.r, c.g, c.b, c.a)
-            Rectangle(texture=AppSettings.bites_image.texture, size=self._owner.size, pos=(0, 0))
+            Rectangle(texture=AppSettings.bites_gm1_image.texture, size=self._owner.size, pos=(0, 0))
             c = PCB_DRILL_NPTH_COLOR
             Color(c.r, c.g, c.b, c.a)
-            Rectangle(texture=AppSettings.bites_holes_image.texture, size=self._owner.size, pos=(0, 0))
+            Rectangle(texture=AppSettings.bites_drl_image.texture, size=self._owner.size, pos=(0, 0))
+
+
+class RailRenderer:
+
+    def __init__(self, owner):
+        self._owner = owner
+
+    def paint(self, fbo):
+        with fbo:
+            c = self._owner.color
+            Color(c.r, c.g, c.b, c.a)
+            Rectangle(texture=AppSettings.bites_gm1_image.texture, size=self._owner.size, pos=(0, 0))
+            c = PCB_DRILL_NPTH_COLOR
+            Color(c.r, c.g, c.b, c.a)
+            Rectangle(texture=AppSettings.bites_drl_image.texture, size=self._owner.size, pos=(0, 0))
 
 
 class BiteWidget(OffScreenScatter):
@@ -150,7 +165,7 @@ class BiteWidget(OffScreenScatter):
         self._disconnected_color = PCB_BITE_BAD_COLOR
         self._moving = False
 
-        super(BiteWidget, self).__init__(BiteRenderer(self))
+        super(BiteWidget, self).__init__(MouseBitesRenderer(self))
 
         if horizontal:
             self.do_translation_x = True
@@ -714,14 +729,28 @@ class PcbPanel(OffScreenScatter):
             ClearColor(0, 0, 0, 0)
             ClearBuffers()
 
+            bottom = self._shapes.get(0, 0)
+            top = self._shapes.get(0, self._rows + 1)
+
             c = PCB_MASK_COLOR
             Color(c.r, c.g, c.b, c.a)
+            Rectangle(texture=AppSettings.rail_gm1_image.texture, pos=bottom.pos, size=bottom.size)
+            Rectangle(texture=AppSettings.rail_gm1_image.texture, pos=top.pos, size=top.size)
 
-            bottom = self._shapes.get(0, 0)
-            Rectangle(pos=bottom.pos, size=bottom.size)
+            c = PCB_TOP_MASK_COLOR
+            Color(c.r, c.g, c.b, c.a)
+            Rectangle(texture=AppSettings.rail_gts_image.texture, pos=bottom.pos, size=bottom.size)
+            Rectangle(texture=AppSettings.rail_gts_image.texture, pos=top.pos, size=top.size)
 
-            top = self._shapes.get(0, self._rows + 1)
-            Rectangle(pos=top.pos, size=top.size)
+            c = PCB_TOP_TRACES_COLOR
+            Color(c.r, c.g, c.b, c.a)
+            Rectangle(texture=AppSettings.rail_gtl_image.texture, pos=bottom.pos, size=bottom.size)
+            Rectangle(texture=AppSettings.rail_gtl_image.texture, pos=top.pos, size=top.size)
+
+            c = PCB_TOP_SILK_COLOR
+            Color(c.r, c.g, c.b, c.a)
+            Rectangle(texture=AppSettings.rail_gto_image.texture, pos=bottom.pos, size=bottom.size)
+            Rectangle(texture=AppSettings.rail_gto_image.texture, pos=top.pos, size=top.size)
 
             Color(1, 1, 1, 1)
             for r in range(0, self._rows):

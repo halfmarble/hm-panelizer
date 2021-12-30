@@ -27,6 +27,9 @@ from kivy.graphics import Fbo, ClearColor, ClearBuffers, Color, Rectangle
 from kivy.uix.image import Image
 
 
+def insert_str(string, str_to_insert, index):
+    return string[:index] + str_to_insert + string[index:]
+
 def truncate_str_middle(s, n):
     if len(s) <= n:
         # string is already short-enough
@@ -87,6 +90,13 @@ def load_image(path, name):
             image = Image(source=full_path)
         except:
             image = Image(size=(2, 2))
+    return image
+
+
+def load_image_masked(path, name, color):
+    image = load_image(path, name)
+    if image is not None:
+        image = colored_mask(image, color)
     return image
 
 
@@ -187,3 +197,4 @@ def size_to_resolution(size, pixels_per_unit, pixels_min, pixels_max):
     resolution = max(resolution, pixels_min)
     resolution = min(resolution, pixels_max)
     return resolution
+

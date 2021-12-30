@@ -107,6 +107,33 @@ def generate_float46(value):
     return data
 
 
+# converts from:
+# X14410952Y3047620D02*
+# to code like:
+#    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+0.4110), generate_float46(oy+3.0476))
+# suitable for generate_*_text_data functions
+def convert_grbl_to_code(path, file_name, offset_x, offset_y):
+    file = load_file(path, file_name)
+    segments = file.split("\n")
+    for s in segments:
+        s = s.replace('X', ' ').replace('Y', ' ').replace('D', ' ')
+        parts = s.split(" ")
+
+        x = parts[1]
+        x = insert_str(x, '.', len(x) - 6)
+        x = str_to_float(x) - offset_x
+        x = '{:+0.4f}'.format(x)
+
+        y = parts[2]
+        y = insert_str(y, '.', len(y) - 6)
+        y = str_to_float(y) - offset_y
+        y = '{:+0.4f}'.format(y)
+
+        d = parts[3]
+
+        print('    data += \'X{{}}Y{{}}D{}\\n\'.format(generate_float46(ox{}), generate_float46(oy{}))'.format(d, x, y))
+
+
 def generate_mouse_bite_gm1_data(origin, size, arc, close):
     min_x = origin[0]
     min_y = origin[1]
@@ -174,8 +201,378 @@ def generate_mouse_bite_gm1_data(origin, size, arc, close):
         data += 'X{}Y{}D02*\n'.format(generate_float46(min_x), generate_float46(max_y))
         data += 'X{}Y{}D01*\n\n'.format(generate_float46(max_x), generate_float46(max_y))
 
-    data += 'M02*\n\n'
+    data += 'M02*\n'
+    return data
 
+
+def generate_rail_gm1_data(origin, size, panels, vcut):
+    min_x = origin[0]
+    min_y = origin[1]
+    max_x = min_x+size[0]
+    max_y = min_y+size[1]
+    width = size[0]
+
+    data = ''
+    data += '%TF.GenerationSoftware,{}*%\n'.format(APP_STR)
+    data += '%TF.SameCoordinates,Original*%\n'
+    data += '%TF.FileFunction,Profile,NP*%\n'
+    data += '%FSLAX46Y46*%\n'
+    data += 'G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*\n'
+    data += 'G04 Created by {}*\n\n'.format(APP_STR)
+
+    data += '%MOMM*%\n'
+    data += '%LPD*%\n\n'
+
+    data += 'G04 APERTURE LIST*\n'
+    data += '%TA.AperFunction,Profile*%\n'
+    data += '%ADD10C,0.100000*%\n'
+    data += '%TD*%\n'
+    data += 'G04 APERTURE END LIST*\n'
+    data += 'D10*\n\n'
+
+    data += 'G01*\n'
+    data += 'X{}Y{}D02*\n'.format(generate_float46(min_x), generate_float46(min_y))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(max_x), generate_float46(min_y))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(max_x), generate_float46(min_y))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(max_x), generate_float46(max_y))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(min_x), generate_float46(max_y))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(max_x), generate_float46(max_y))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(min_x), generate_float46(max_y))
+    data += 'X{}Y{}D01*\n\n'.format(generate_float46(min_x), generate_float46(min_y))
+
+    if vcut and panels > 1:
+        section = width / float(panels)
+        x = min_x
+        for i in range(0, panels-1):
+            x += section
+            data += 'X{}Y{}D02*\n'.format(generate_float46(x), generate_float46(max_y))
+            data += 'X{}Y{}D01*\n'.format(generate_float46(x), generate_float46(min_y))
+            data += '\n\n'
+
+    data += 'M02*\n'
+    return data
+
+
+def generate_jlcjlcjlcjlc_text_data(origin, aperture):
+    ox = origin[0]
+    oy = origin[1]
+
+    data = ''
+    data += 'D{}*\n'.format(aperture)
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+0.4110), generate_float46(oy+0.5476))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.4110), generate_float46(oy-0.1667))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.3633), generate_float46(oy-0.3095))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.2681), generate_float46(oy-0.4048))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.1252), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.0300), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+1.3633), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.8871), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.8871), generate_float46(oy+0.5476))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+2.2681), generate_float46(oy-0.3571))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+2.2205), generate_float46(oy-0.4048))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+2.0776), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+1.9824), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+1.8395), generate_float46(oy-0.4048))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+1.7443), generate_float46(oy-0.3095))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+1.6967), generate_float46(oy-0.2143))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+1.6490), generate_float46(oy-0.0238))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+1.6490), generate_float46(oy+0.1190))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+1.6967), generate_float46(oy+0.3095))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+1.7443), generate_float46(oy+0.4048))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+1.8395), generate_float46(oy+0.5000))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+1.9824), generate_float46(oy+0.5476))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+2.0776), generate_float46(oy+0.5476))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+2.2205), generate_float46(oy+0.5000))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+2.2681), generate_float46(oy+0.4524))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+2.9824), generate_float46(oy+0.5476))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+2.9824), generate_float46(oy-0.1667))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+2.9348), generate_float46(oy-0.3095))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+2.8395), generate_float46(oy-0.4048))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+2.6967), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+2.6014), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+3.9348), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+3.4586), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+3.4586), generate_float46(oy+0.5476))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+4.8395), generate_float46(oy-0.3571))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+4.7919), generate_float46(oy-0.4048))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+4.6490), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+4.5538), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+4.4110), generate_float46(oy-0.4048))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+4.3157), generate_float46(oy-0.3095))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+4.2681), generate_float46(oy-0.2143))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+4.2205), generate_float46(oy-0.0238))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+4.2205), generate_float46(oy+0.1190))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+4.2681), generate_float46(oy+0.3095))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+4.3157), generate_float46(oy+0.4048))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+4.4110), generate_float46(oy+0.5000))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+4.5538), generate_float46(oy+0.5476))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+4.6490), generate_float46(oy+0.5476))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+4.7919), generate_float46(oy+0.5000))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+4.8395), generate_float46(oy+0.4524))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+5.5538), generate_float46(oy+0.5476))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+5.5538), generate_float46(oy-0.1667))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+5.5062), generate_float46(oy-0.3095))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+5.4110), generate_float46(oy-0.4048))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+5.2681), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+5.1729), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+6.5062), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+6.0300), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+6.0300), generate_float46(oy+0.5476))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+7.4110), generate_float46(oy-0.3571))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+7.3633), generate_float46(oy-0.4048))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+7.2205), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+7.1252), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+6.9824), generate_float46(oy-0.4048))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+6.8871), generate_float46(oy-0.3095))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+6.8395), generate_float46(oy-0.2143))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+6.7919), generate_float46(oy-0.0238))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+6.7919), generate_float46(oy+0.1190))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+6.8395), generate_float46(oy+0.3095))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+6.8871), generate_float46(oy+0.4048))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+6.9824), generate_float46(oy+0.5000))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+7.1252), generate_float46(oy+0.5476))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+7.2205), generate_float46(oy+0.5476))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+7.3633), generate_float46(oy+0.5000))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+7.4110), generate_float46(oy+0.4524))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+8.1252), generate_float46(oy+0.5476))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+8.1252), generate_float46(oy-0.1667))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+8.0776), generate_float46(oy-0.3095))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+7.9824), generate_float46(oy-0.4048))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+7.8395), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+7.7443), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+9.0776), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+8.6014), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+8.6014), generate_float46(oy+0.5476))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+9.9824), generate_float46(oy-0.3571))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+9.9348), generate_float46(oy-0.4048))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+9.7919), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+9.6967), generate_float46(oy-0.4524))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+9.5538), generate_float46(oy-0.4048))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+9.4586), generate_float46(oy-0.3095))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+9.4110), generate_float46(oy-0.2143))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+9.3633), generate_float46(oy-0.0238))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+9.3633), generate_float46(oy+0.1190))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+9.4110), generate_float46(oy+0.3095))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+9.4586), generate_float46(oy+0.4048))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+9.5538), generate_float46(oy+0.5000))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+9.6967), generate_float46(oy+0.5476))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+9.7919), generate_float46(oy+0.5476))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+9.9348), generate_float46(oy+0.5000))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+9.9824), generate_float46(oy+0.4524))
+
+    data += '\n'
+    return data
+
+
+def generate_vscore_text_data(origin, aperture):
+    ox = origin[0]
+    oy = origin[1]
+
+    data = ''
+    data += 'D{}*\n'.format(aperture)
+
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+0.0893), generate_float46(oy+0.5500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.8393), generate_float46(oy+0.7833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.0893), generate_float46(oy+1.0167))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+0.8036), generate_float46(oy+1.2167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.8393), generate_float46(oy+1.3167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.8393), generate_float46(oy+1.4833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.8036), generate_float46(oy+1.5500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.7679), generate_float46(oy+1.5833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.6964), generate_float46(oy+1.6167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.6250), generate_float46(oy+1.6167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.5536), generate_float46(oy+1.5833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.5179), generate_float46(oy+1.5500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.4821), generate_float46(oy+1.4833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.4464), generate_float46(oy+1.3500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.4107), generate_float46(oy+1.2833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.3750), generate_float46(oy+1.2500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.3036), generate_float46(oy+1.2167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.2321), generate_float46(oy+1.2167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.1607), generate_float46(oy+1.2500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.1250), generate_float46(oy+1.2833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.0893), generate_float46(oy+1.3500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.0893), generate_float46(oy+1.5167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.1250), generate_float46(oy+1.6167))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+0.7679), generate_float46(oy+2.3167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.8036), generate_float46(oy+2.2833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.8393), generate_float46(oy+2.1833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.8393), generate_float46(oy+2.1167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.8036), generate_float46(oy+2.0167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.7321), generate_float46(oy+1.9500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.6607), generate_float46(oy+1.9167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.5179), generate_float46(oy+1.8833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.4107), generate_float46(oy+1.8833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.2679), generate_float46(oy+1.9167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.1964), generate_float46(oy+1.9500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.1250), generate_float46(oy+2.0167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.0893), generate_float46(oy+2.1167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.0893), generate_float46(oy+2.1833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.1250), generate_float46(oy+2.2833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.1607), generate_float46(oy+2.3167))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+0.0893), generate_float46(oy+2.7500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.0893), generate_float46(oy+2.8833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.1250), generate_float46(oy+2.9500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.1964), generate_float46(oy+3.0167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.3393), generate_float46(oy+3.0500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.5893), generate_float46(oy+3.0500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.7321), generate_float46(oy+3.0167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.8036), generate_float46(oy+2.9500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.8393), generate_float46(oy+2.8833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.8393), generate_float46(oy+2.7500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.8036), generate_float46(oy+2.6833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.7321), generate_float46(oy+2.6167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.5893), generate_float46(oy+2.5833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.3393), generate_float46(oy+2.5833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.1964), generate_float46(oy+2.6167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.1250), generate_float46(oy+2.6833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.0893), generate_float46(oy+2.7500))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+0.8393), generate_float46(oy+3.7500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.4821), generate_float46(oy+3.5167))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+0.8393), generate_float46(oy+3.3500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.0893), generate_float46(oy+3.3500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.0893), generate_float46(oy+3.6167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.1250), generate_float46(oy+3.6833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.1607), generate_float46(oy+3.7167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.2321), generate_float46(oy+3.7500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.3393), generate_float46(oy+3.7500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.4107), generate_float46(oy+3.7167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.4464), generate_float46(oy+3.6833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.4821), generate_float46(oy+3.6167))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.4821), generate_float46(oy+3.3500))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+0.4464), generate_float46(oy+4.0500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.4464), generate_float46(oy+4.2833))
+    data += 'X{}Y{}D02*\n'.format(generate_float46(ox+0.8393), generate_float46(oy+4.3833))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.8393), generate_float46(oy+4.0500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.0893), generate_float46(oy+4.0500))
+    data += 'X{}Y{}D01*\n'.format(generate_float46(ox+0.0893), generate_float46(oy+4.3833))
+
+    data += '\n'
+    return data
+
+
+def generate_rail_gto_data(origin, size, panels, vcut):
+    min_x = origin[0]
+    min_y = origin[1]
+    max_x = min_x+size[0]
+    max_y = min_y+size[1]
+    width = size[0]
+    height = size[1]
+
+    data = ''
+    data += '%TF.GenerationSoftware,{}*%\n'.format(APP_STR)
+    data += '%TF.SameCoordinates,Original*%\n'
+    data += '%TF.FileFunction,Legend,Top*%\n'
+    data += '%TF.FilePolarity,Positive*%\n'
+    data += '%FSLAX46Y46*%\n'
+    data += 'G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*\n'
+    data += 'G04 Created by {}*\n\n'.format(APP_STR)
+
+    data += '%MOMM*%\n'
+    data += '%LPD*%\n\n'
+
+    data += 'G04 APERTURE LIST*\n'
+    data += '%TA.AperFunction,Profile*%\n'
+    data += '%ADD10C,0.150000*%\n'
+    data += '%ADD11C,0.125000*%\n'
+    data += 'G04 APERTURE END LIST*\n\n'
+
+    data += generate_jlcjlcjlcjlc_text_data(origin=(10, height/2.0), aperture=10)
+
+    if vcut and panels > 0:
+        section = width / float(panels)
+        x = min_x
+        for i in range(0, panels - 1):
+            x += section
+            data += 'D10*\n'
+            data += 'X{}Y{}D02*\n'.format(generate_float46(x), generate_float46(max_y))
+            data += 'X{}Y{}D01*\n\n'.format(generate_float46(x), generate_float46(min_y))
+            data += generate_vscore_text_data(origin=(x+0.5, 0.0), aperture=11)
+
+    data += 'M02*\n'
+    return data
+
+
+def generate_rail_gtl_data(origin, size):
+    min_x = origin[0]
+    min_y = origin[1]
+    max_x = min_x+size[0]
+    max_y = min_y+size[1]
+    height = size[1]
+
+    offset = 5
+    y = min_x + (height / 2.0)
+
+    data = ''
+    data += '%TF.GenerationSoftware,{}*%\n'.format(APP_STR)
+    data += '%TF.SameCoordinates,Original*%\n'
+    data += '%TF.FileFunction,Copper,L1,Top*%\n'
+    data += '%TF.FilePolarity,Positive*%\n'
+    data += '%FSLAX46Y46*%\n'
+    data += 'G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*\n'
+    data += 'G04 Created by {}*\n\n'.format(APP_STR)
+
+    data += '%MOMM*%\n'
+    data += '%LPD*%\n\n'
+
+    data += 'G04 APERTURE LIST*\n'
+    data += '%TA.AperFunction,SMDPad,CuDef*%\n'
+    data += '%ADD10C,1.000000*%\n'
+    data += '%TD*%\n'
+    data += 'G04 APERTURE END LIST*\n'
+    data += 'D10*\n\n'
+
+    data += 'G01*\n'
+    data += 'X{}Y{}D03*\n'.format(generate_float46(min_x+offset), generate_float46(y))
+
+    x = min_x
+    while x <= max_x:
+        x += 10
+    x -= 10
+    data += 'X{}Y{}D03*\n'.format(generate_float46(x), generate_float46(y))
+
+    data += 'M02*\n'
+    return data
+
+
+def generate_rail_gts_data(origin, size):
+    min_x = origin[0]
+    min_y = origin[1]
+    max_x = min_x+size[0]
+    max_y = min_y+size[1]
+    height = size[1]
+
+    offset = 5
+    y = min_x + (height / 2.0)
+
+    data = ''
+    data += '%TF.GenerationSoftware,{}*%\n'.format(APP_STR)
+    data += '%TF.SameCoordinates,Original*%\n'
+    data += '%TF.FileFunction,Soldermask,Top*%\n'
+    data += '%TF.FilePolarity,Negative*%\n'
+    data += '%FSLAX46Y46*%\n'
+    data += 'G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*\n'
+    data += 'G04 Created by {}*\n\n'.format(APP_STR)
+
+    data += '%MOMM*%\n'
+    data += '%LPD*%\n\n'
+
+    data += 'G04 APERTURE LIST*\n'
+    data += '%TA.AperFunction,SMDPad,CuDef*%\n'
+    data += '%ADD10C,2.000000*%\n'
+    data += 'G04 APERTURE END LIST*\n'
+    data += 'D10*\n\n'
+
+    data += 'G01*\n'
+    data += 'X{}Y{}D03*\n'.format(generate_float46(min_x+offset), generate_float46(y))
+
+    x = min_x
+    while x <= max_x:
+        x += 10
+    x -= 10
+    data += 'X{}Y{}D03*\n'.format(generate_float46(x), generate_float46(y))
+
+    data += 'M02*\n'
     return data
 
 
@@ -217,29 +614,63 @@ def generate_mouse_bite_drl_data(origin, size, radius, gap):
         data += 'X{:0.2f}Y{:0.2f}\n'.format((cx+x), max_y)
         data += 'X{:0.2f}Y{:0.2f}\n'.format((cx-x), max_y)
 
-    data += 'M30\n\n'
-
+    data += 'M30\n'
     return data
 
 
-def generate_mouse_bite_gm1_files(path, filename, origin, size, arc, close, resolution=128):
+def render_pcb_layer(bounds, layer, path, filename, outline=False, verbose=False):
+    if bounds is None:
+        bounds = layer.bounds
+    size = bounds_to_size(bounds)
+    resolution = size_to_resolution(size, PIXELS_PER_MM, PIXELS_SIZE_MIN, PIXELS_SIZE_MAX)
+    ctx = GerberCairoContext(resolution)
+    if outline:
+        ctx.get_outline_mask(layer, os.path.join(path, filename+'_mask'),
+                             bounds=bounds, verbose=verbose)
+    ctx.render_clipped_layer(layer, False, os.path.join(path, filename),
+                             theme.THEMES['Mask'], bounds=bounds, verbose=verbose)
+
+
+def render_mouse_bite_gm1(path, filename, origin, size, arc, close):
     gm1 = generate_mouse_bite_gm1_data(origin, size, arc, close)
     data = rs274x.loads(gm1, 'dummy.gm1')
     layer = PCBLayer.from_cam(data)
-
-    ctx = GerberCairoContext(resolution)
-    ctx.get_outline_mask(layer, os.path.join(path, filename+'_mask'),
-                         bounds=layer.bounds, verbose=False)
-
-    ctx.render_clipped_layer(layer, False, os.path.join(path, filename),
-                             theme.THEMES['Mask'], bounds=layer.bounds, verbose=False)
+    render_pcb_layer(layer.bounds, layer, path, filename, outline=True)
 
 
-def generate_mouse_bite_drl_files(path, filename, origin, size, radius, gap, resolution=128):
+def render_mouse_bite_drl(path, filename, origin, size, radius, gap):
     drl = generate_mouse_bite_drl_data(origin, size, radius, gap)
     data = excellon.loads(drl, 'dummy.drl')
     layer = PCBLayer.from_cam(data)
+    render_pcb_layer(layer.bounds, layer, path, filename)
 
-    ctx = GerberCairoContext(resolution)
-    ctx.render_clipped_layer(layer, False, os.path.join(path, filename),
-                             theme.THEMES['Mask'], bounds=layer.bounds, verbose=False)
+
+def render_rail_gm1(path, filename, origin, size, panels, vcut):
+    gm1 = generate_rail_gm1_data(origin, size, panels, vcut)
+    data = rs274x.loads(gm1, 'dummy.gm1')
+    layer = PCBLayer.from_cam(data)
+    render_pcb_layer(layer.bounds, layer, path, filename, outline=True)
+    return layer.bounds
+
+
+def render_rail_gtl(bounds, path, filename, origin, size):
+    gtl = generate_rail_gtl_data(origin, size)
+    data = rs274x.loads(gtl, 'dummy.gtl')
+    layer = PCBLayer.from_cam(data)
+    render_pcb_layer(bounds, layer, path, filename)
+
+
+def render_rail_gts(bounds, path, filename, origin, size):
+    gts = generate_rail_gts_data(origin, size)
+    data = rs274x.loads(gts, 'dummy.gts')
+    layer = PCBLayer.from_cam(data)
+    render_pcb_layer(bounds, layer, path, filename)
+
+
+def render_rail_gto(bounds, path, filename, origin, size, panels, vcut):
+    gto = generate_rail_gto_data(origin, size, panels, vcut)
+    data = rs274x.loads(gto, 'dummy.gto')
+    layer = PCBLayer.from_cam(data)
+    render_pcb_layer(bounds, layer, path, filename)
+
+
