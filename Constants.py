@@ -45,13 +45,13 @@ FIT_SCALE: Final                = 0.9
 PCB_PANEL_USE_VCUT: Final       = True
 PCB_PANEL_USE_JLC: Final        = True
 
-PCB_PANEL_GAP_MM: Final         = 5
+PCB_PANEL_GAP_MM: Final         = 2.5
 
 # no less than 5mm
 PCB_PANEL_RAIL_HEIGHT_MM: Final = 5
 
 PCB_PANEL_BITES_SIZE_MM: Final  = 5
-PCB_PANEL_BITES_COUNT_X: Final  = 2
+PCB_PANEL_BITES_COUNT_X: Final  = 3
 
 # leave at 0, unimplemented yet
 PCB_PANEL_BITES_COUNT_Y: Final  = 0
