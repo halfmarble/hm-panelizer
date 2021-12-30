@@ -22,6 +22,8 @@ from Array2D import *
 from Utilities import *
 from Constants import *
 from OffScreenScatter import *
+from PcbMouseBites import *
+from PcbRail import *
 
 
 class PcbKind(Enum):
@@ -127,27 +129,7 @@ class MouseBitesRenderer:
 
     def paint(self, fbo):
         with fbo:
-            c = self._owner.color
-            Color(c.r, c.g, c.b, c.a)
-            Rectangle(texture=AppSettings.bites_gm1_image.texture, size=self._owner.size, pos=(0, 0))
-            c = PCB_DRILL_NPTH_COLOR
-            Color(c.r, c.g, c.b, c.a)
-            Rectangle(texture=AppSettings.bites_drl_image.texture, size=self._owner.size, pos=(0, 0))
-
-
-class RailRenderer:
-
-    def __init__(self, owner):
-        self._owner = owner
-
-    def paint(self, fbo):
-        with fbo:
-            c = self._owner.color
-            Color(c.r, c.g, c.b, c.a)
-            Rectangle(texture=AppSettings.bites_gm1_image.texture, size=self._owner.size, pos=(0, 0))
-            c = PCB_DRILL_NPTH_COLOR
-            Color(c.r, c.g, c.b, c.a)
-            Rectangle(texture=AppSettings.bites_drl_image.texture, size=self._owner.size, pos=(0, 0))
+            PcbMouseBites.paint(self._owner.color, pos=(0, 0), size=self._owner.size)
 
 
 class BiteWidget(OffScreenScatter):
@@ -186,9 +168,9 @@ class BiteWidget(OffScreenScatter):
     def repaint(self):
         self.paint()
         # TODO: is there a better way to repaint?
-        # if self.parent is not None:
-        #     self.deactivate()
-        #     self.activate()
+        if self.parent is not None:
+            self.deactivate()
+            self.activate()
 
     def validate_pos(self):
         # TODO" assumes horizontal layout
@@ -643,12 +625,12 @@ class PcbPanel(OffScreenScatter):
             panel_width += pcb_width
 
         panel_height = 0
-        panel_height += AppSettings.bottom
+        panel_height += AppSettings.rail
         panel_height += AppSettings.gap
         for r in range(0, rows):
             panel_height += pcb_height
             panel_height += AppSettings.gap
-        panel_height += AppSettings.bottom
+        panel_height += AppSettings.rail
 
         self._size_mm = (panel_width, panel_height)
         self._size_pixels = (round_float(panel_width * scale), round_float(panel_height * scale))
@@ -682,8 +664,8 @@ class PcbPanel(OffScreenScatter):
             pcb_width = pcb_client_height
             pcb_height = pcb_client_width
 
-        height_bottom = AppSettings.bottom * scale
-        height_top = AppSettings.top * scale
+        height_bottom = AppSettings.rail * scale
+        height_top = AppSettings.rail * scale
         gap = AppSettings.gap * scale
 
         # we only have 1 top and 1 bottom pcb, but pretend we have as many as columns to
@@ -725,32 +707,21 @@ class PcbPanel(OffScreenScatter):
             pcb_width = pcb_client_height
             pcb_height = pcb_client_width
 
+        panels = self._columns
+        origin = (0, 0)
+        size = (self._size_mm[0], AppSettings.rail)
+        vcut = AppSettings.use_vcut
+        jlc = AppSettings.use_jlc
+
+        PcbRail.render_masks(panels, origin, size, vcut, jlc)
+
         with self._fbo:
             ClearColor(0, 0, 0, 0)
             ClearBuffers()
 
             bottom = self._shapes.get(0, 0)
             top = self._shapes.get(0, self._rows + 1)
-
-            c = PCB_MASK_COLOR
-            Color(c.r, c.g, c.b, c.a)
-            Rectangle(texture=AppSettings.rail_gm1_image.texture, pos=bottom.pos, size=bottom.size)
-            Rectangle(texture=AppSettings.rail_gm1_image.texture, pos=top.pos, size=top.size)
-
-            c = PCB_TOP_MASK_COLOR
-            Color(c.r, c.g, c.b, c.a)
-            Rectangle(texture=AppSettings.rail_gts_image.texture, pos=bottom.pos, size=bottom.size)
-            Rectangle(texture=AppSettings.rail_gts_image.texture, pos=top.pos, size=top.size)
-
-            c = PCB_TOP_TRACES_COLOR
-            Color(c.r, c.g, c.b, c.a)
-            Rectangle(texture=AppSettings.rail_gtl_image.texture, pos=bottom.pos, size=bottom.size)
-            Rectangle(texture=AppSettings.rail_gtl_image.texture, pos=top.pos, size=top.size)
-
-            c = PCB_TOP_SILK_COLOR
-            Color(c.r, c.g, c.b, c.a)
-            Rectangle(texture=AppSettings.rail_gto_image.texture, pos=bottom.pos, size=bottom.size)
-            Rectangle(texture=AppSettings.rail_gto_image.texture, pos=top.pos, size=top.size)
+            PcbRail.paint(bottom, top)
 
             Color(1, 1, 1, 1)
             for r in range(0, self._rows):

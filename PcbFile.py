@@ -451,7 +451,7 @@ def generate_vscore_text_data(origin, aperture):
     return data
 
 
-def generate_rail_gto_data(origin, size, panels, vcut):
+def generate_rail_gto_data(origin, size, panels, vcut, jlc):
     min_x = origin[0]
     min_y = origin[1]
     max_x = min_x+size[0]
@@ -477,7 +477,8 @@ def generate_rail_gto_data(origin, size, panels, vcut):
     data += '%ADD11C,0.125000*%\n'
     data += 'G04 APERTURE END LIST*\n\n'
 
-    data += generate_jlcjlcjlcjlc_text_data(origin=(10, height/2.0), aperture=10)
+    if jlc:
+        data += generate_jlcjlcjlcjlc_text_data(origin=(10, height/2.0), aperture=10)
 
     if vcut and panels > 0:
         section = width / float(panels)
@@ -526,7 +527,7 @@ def generate_rail_gtl_data(origin, size):
     data += 'X{}Y{}D03*\n'.format(generate_float46(min_x+offset), generate_float46(y))
 
     x = min_x
-    while x <= max_x:
+    while x < max_x:
         x += 10
     x -= 10
     data += 'X{}Y{}D03*\n'.format(generate_float46(x), generate_float46(y))
@@ -567,7 +568,7 @@ def generate_rail_gts_data(origin, size):
     data += 'X{}Y{}D03*\n'.format(generate_float46(min_x+offset), generate_float46(y))
 
     x = min_x
-    while x <= max_x:
+    while x < max_x:
         x += 10
     x -= 10
     data += 'X{}Y{}D03*\n'.format(generate_float46(x), generate_float46(y))
@@ -667,8 +668,8 @@ def render_rail_gts(bounds, path, filename, origin, size):
     render_pcb_layer(bounds, layer, path, filename)
 
 
-def render_rail_gto(bounds, path, filename, origin, size, panels, vcut):
-    gto = generate_rail_gto_data(origin, size, panels, vcut)
+def render_rail_gto(bounds, path, filename, origin, size, panels, vcut, jlc):
+    gto = generate_rail_gto_data(origin, size, panels, vcut, jlc)
     data = rs274x.loads(gto, 'dummy.gto')
     layer = PCBLayer.from_cam(data)
     render_pcb_layer(bounds, layer, path, filename)

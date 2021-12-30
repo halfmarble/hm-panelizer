@@ -20,6 +20,9 @@ from os.path import dirname
 from kivy import Config
 from kivy.uix.filechooser import FileChooserIconView
 
+import PcbMouseBites
+import PcbRail
+
 Config.set('kivy', 'keyboard_mode', 'system')
 
 Config.set('graphics', 'width', '1550')
@@ -475,7 +478,7 @@ class PanelizerApp(App):
         else:
             Clock.schedule_once(self.save_finish, 1.0)
             self._progress.open()
-            update_progressbar(self._progress, 'Saving PCB ...', 0.0)
+            update_progressbar(self._progress, 'Saving PCB (simulated, not implemented yet) ...', 0.0)
 
     def save_pcb_to_disk(self):
         if self._current_pcb_folder is None:
@@ -518,7 +521,8 @@ class PanelizerApp(App):
 
     def cleanup(self):
         if ALLOW_DIR_DELETIONS:
-            AppSettings.cleanup()
+            PcbRail.cleanup()
+            PcbMouseBites.cleanup()
             if len(self._tmp_folders_to_delete) > 0:
                 for folder in self._tmp_folders_to_delete:
                     rmrf(folder)
