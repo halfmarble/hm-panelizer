@@ -17,14 +17,21 @@ from typing import Final
 from kivy.graphics import Color
 from posixpath import join
 
-VERSION_STR: Final              = '1.0.0 beta'
+VERSION_STR: Final              = '1.0.0 alpha'
 APP_STR: Final                  = 'hm-panelizer {}'.format(VERSION_STR)
 
 ALLOW_DIR_DELETIONS: Final      = True
 
 DEMO_PCB_PATH_STR: Final        = join('data', 'example_pcb', 'NEAToBOARD')
 
-DEFAULT_PCB_PIXEL_SIZE: Final   = 2048
+# careful: the higher the number the better the resolution, but needs more VRAM
+PIXELS_PER_MM: Final            = 16
+
+PIXELS_SIZE_MIN: Final          = 128
+# super careful (do not go above 4096, unless you have a good GPU and lots of VRAM)
+PIXELS_SIZE_MAX: Final          = 2048
+
+PCB_OUTLINE_WIDTH: Final        = 1.5
 
 INITIAL_ROWS: Final             = 1
 INITIAL_COLUMNS: Final          = 1
@@ -35,17 +42,19 @@ MAX_COLUMNS: Final              = 99
 FIT_SCALE: Final                = 0.9
 
 PCB_PANEL_GAP_MM: Final         = 5
+
+# no less than 5mm
 PCB_PANEL_TOP_RAIL_MM: Final    = 5
 PCB_PANEL_BOTTOM_RAIL_MM: Final = 5
 
-PCB_BITES_HOLE_RADIUS_MM: Final = 0.15
-PCB_BITES_HOLE_SPACE_MM: Final  = 0.6
-
 PCB_PANEL_BITES_SIZE_MM: Final  = 5
 PCB_PANEL_BITES_COUNT_X: Final  = 3
+
+# leave at 0, unsupported
 PCB_PANEL_BITES_COUNT_Y: Final  = 0
 
-PCB_OUTLINE_WIDTH: Final        = 1.5
+PCB_BITES_HOLE_RADIUS_MM: Final = 0.15
+PCB_BITES_HOLE_SPACE_MM: Final  = 0.6
 
 GRID_BACKGROUND_COLOR: Final    = Color(0.95, 0.95, 0.95, 1.0)
 GRID_MAJOR_COLOR: Final         = Color(0.50, 0.50, 0.50, 1.0)

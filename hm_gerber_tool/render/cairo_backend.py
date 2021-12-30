@@ -37,14 +37,16 @@ from ..utils import rotate_point
 
 from io import BytesIO
 
+
 MIN_LINE_WIDTH = 0.75
+
 
 class GerberCairoContext(GerberContext):
 
-    def __init__(self, max_size=800):
+    def __init__(self, resolution=800):
         super(GerberCairoContext, self).__init__()
 
-        self.max_size = max_size
+        self.max_size = resolution
         self.scale = None
         self.bounds = None
         self.native_origin = None

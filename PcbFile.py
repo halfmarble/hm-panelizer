@@ -38,7 +38,7 @@ def log_text(progressbar, text=None, value=None):
         print(text)
 
 
-def generate_pcb_data_layers(cwd, pcb_rel_path, data_rel_path, size=1024, progressbar=None, board_name=None):
+def generate_pcb_data_layers(cwd, pcb_rel_path, data_rel_path, progressbar=None, board_name=None):
     pcb_path = os.path.abspath(os.path.join(cwd, pcb_rel_path))
     data_path = os.path.abspath(os.path.join(cwd, data_rel_path))
 
@@ -63,12 +63,14 @@ def generate_pcb_data_layers(cwd, pcb_rel_path, data_rel_path, size=1024, progre
         log_text(progressbar, text, progressbar_value)
     print('\n')
 
-    ctx = GerberCairoContext(size)
-
     bounds = pcb.board_bounds
     get_outline = True
     clip_to_outline = False
     print_outline = False
+
+    size = bounds_to_size(bounds)
+    resolution = size_to_resolution(size, PIXELS_PER_MM, PIXELS_SIZE_MIN, PIXELS_SIZE_MAX)
+    ctx = GerberCairoContext(resolution)
 
     if get_outline:
         file_path = os.path.join(data_path, 'edge_cuts_mask')
@@ -220,12 +222,12 @@ def generate_mouse_bite_drl_data(origin, size, radius, gap):
     return data
 
 
-def generate_mouse_bite_gm1_files(path, filename, origin, size, arc, close, pixel_size=128):
+def generate_mouse_bite_gm1_files(path, filename, origin, size, arc, close, resolution=128):
     gm1 = generate_mouse_bite_gm1_data(origin, size, arc, close)
     data = rs274x.loads(gm1, 'dummy.gm1')
     layer = PCBLayer.from_cam(data)
 
-    ctx = GerberCairoContext(pixel_size)
+    ctx = GerberCairoContext(resolution)
     ctx.get_outline_mask(layer, os.path.join(path, filename+'_mask'),
                          bounds=layer.bounds, verbose=False)
 
@@ -233,11 +235,11 @@ def generate_mouse_bite_gm1_files(path, filename, origin, size, arc, close, pixe
                              theme.THEMES['Mask'], bounds=layer.bounds, verbose=False)
 
 
-def generate_mouse_bite_drl_files(path, filename, origin, size, radius, gap, pixel_size=128):
+def generate_mouse_bite_drl_files(path, filename, origin, size, radius, gap, resolution=128):
     drl = generate_mouse_bite_drl_data(origin, size, radius, gap)
     data = excellon.loads(drl, 'dummy.drl')
     layer = PCBLayer.from_cam(data)
 
-    ctx = GerberCairoContext(pixel_size)
+    ctx = GerberCairoContext(resolution)
     ctx.render_clipped_layer(layer, False, os.path.join(path, filename),
                              theme.THEMES['Mask'], bounds=layer.bounds, verbose=False)

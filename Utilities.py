@@ -158,3 +158,32 @@ def colored_mask(mask, color):
         fbo.draw()
         image.texture = fbo.texture
     return image
+
+
+def bounds_to_size(bounds, verbose=False):
+    x_bounds = bounds[0]
+    y_bounds = bounds[1]
+    width = abs(x_bounds[1]-x_bounds[0])
+    height = abs(y_bounds[1]-y_bounds[0])
+
+    if verbose:
+        print('bounds_to_size:')
+        print(' bounds: {}'.format(bounds))
+        print(' x_bounds: {}'.format(x_bounds))
+        print(' y_bounds: {}'.format(y_bounds))
+        print(' width: {}'.format(width))
+        print(' height: {}'.format(height))
+
+    return (width, height)
+
+
+def next_power_of_2(x):
+    return 1 if x == 0 else 2**(x - 1).bit_length()
+
+
+def size_to_resolution(size, pixels_per_unit, pixels_min, pixels_max):
+    resolution = pixels_per_unit*int(max(size[0], size[1]))
+    resolution = next_power_of_2(resolution)
+    resolution = max(resolution, pixels_min)
+    resolution = min(resolution, pixels_max)
+    return resolution
