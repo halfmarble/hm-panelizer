@@ -47,7 +47,7 @@ class PcbRail:
             print('ERROR: PcbRail temp folder is NULL')
             return
 
-        if self._panels != panels or self._origin != origin or self._size != size or \
+        if self._gm1 is None or self._panels != panels or self._origin != origin or self._size != size or \
                 self._vcut != vcut or self._jlc != jlc:
             # TODO: is there anything else that's more efficient that we can do here?
             # without this the rail images do not refresh correctly
@@ -74,7 +74,6 @@ class PcbRail:
             self._vcut = vcut
             self._jlc = jlc
 
-
     def paint(self, bottom, top):
         c = PCB_MASK_COLOR
         Color(c.r, c.g, c.b, c.a)
@@ -95,6 +94,12 @@ class PcbRail:
         Color(c.r, c.g, c.b, c.a)
         Rectangle(texture=self._gto.texture, pos=bottom.pos, size=bottom.size)
         Rectangle(texture=self._gto.texture, pos=top.pos, size=top.size)
+
+    def invalidate(self):
+        self._gm1 = None
+        self._gtl = None
+        self._gts = None
+        self._gto = None
 
     def cleanup(self):
         rmrf(self._tmp_folder)

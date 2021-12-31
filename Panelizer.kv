@@ -34,17 +34,160 @@
     height: 32
 
 
+<EmptyLabel>:
+    size_hint_x: 0.1
+    text: ''
+
+
+<TitleLabel>:
+    halign: 'right'
+    bold: True
+    font_size: 16
+    size_hint_x: 0.4
+
+
+<PostLabel>:
+    halign: 'left'
+    bold: True
+    font_size: 16
+    size_hint_x: 0.1
+
+
 <Settings@Popup>:
     auto_dismiss: False
     size_hint: (None, None)
-    size: (400, 400)
-    RelativeLayout:
-        Button:
-            size_hint: None, None
-            size: 100, 32
-            pos: 270, 2
-            text: 'OK'
-            on_release: app.settings_close()
+    size: (512, 512)
+    BoxLayout:
+        orientation: "vertical"
+        BoxLayout:
+            orientation: "vertical"
+            size_hint: 1.0, 0.95
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1.0, 0.15
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1.0, 0.1
+                EmptyLabel:
+                TitleLabel:
+                    text: 'board gap:'
+                TextInput:
+                    id: _gap_setting
+                    size_hint_x: 0.25
+                    multiline: False
+                    text: '{:0.2f}'.format(app._settings._gap)
+                PostLabel:
+                    text: 'mm'
+                EmptyLabel:
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1.0, 0.1
+                EmptyLabel:
+                TitleLabel:
+                    text: 'rails height:'
+                TextInput:
+                    id: _rail_setting
+                    size_hint_x: 0.25
+                    text: '{:d}'.format(int(app._settings._rail))
+                PostLabel:
+                    text: 'mm'
+                EmptyLabel:
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1.0, 0.1
+                EmptyLabel:
+                TitleLabel:
+                    text: 'mouse bites per PCB:'
+                TextInput:
+                    id: _bites_count_setting
+                    size_hint_x: 0.25
+                    text: '{:d}'.format(int(app._settings._bites_count))
+                PostLabel:
+                    text: ''
+                EmptyLabel:
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1.0, 0.1
+                EmptyLabel:
+                TitleLabel:
+                    text: 'mouse bite size:'
+                TextInput:
+                    id: _bite_setting
+                    size_hint_x: 0.25
+                    text: '{:d}'.format(int(app._settings._bite))
+                PostLabel:
+                    text: 'mm'
+                EmptyLabel:
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1.0, 0.1
+                EmptyLabel:
+                TitleLabel:
+                    text: 'mouse bite hole radius:'
+                TextInput:
+                    id: _bite_hole_radius_setting
+                    size_hint_x: 0.25
+                    text: '{:0.2f}'.format(app._settings._bite_hole_radius)
+                PostLabel:
+                    text: 'mm'
+                EmptyLabel:
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1.0, 0.1
+                EmptyLabel:
+                TitleLabel:
+                    text: 'mouse bite hole spacing:'
+                TextInput:
+                    id: _bite_hole_space_setting
+                    size_hint_x: 0.25
+                    text: '{:0.2f}'.format(app._settings._bite_hole_space)
+                PostLabel:
+                    text: 'mm'
+                EmptyLabel:
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1.0, 0.1
+                EmptyLabel:
+                TitleLabel:
+                    text: 'use v-cut:'
+                ToggleButton:
+                    id: _use_vcut_setting
+                    size_hint: 0.25, 0.95
+                    state: 'down' if app._settings._use_vcut else 'normal'
+                    text: 'yes' if self.state == 'down' else 'no'
+                PostLabel:
+                EmptyLabel:
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1.0, 0.1
+                EmptyLabel:
+                TitleLabel:
+                    text: 'use JLC label:'
+                ToggleButton:
+                    id: _use_jlc_setting
+                    size_hint: 0.25, 0.95
+                    state: 'down' if app._settings._use_jlc else 'normal'
+                    text: 'yes' if self.state == 'down' else 'no'
+                PostLabel:
+                EmptyLabel:
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1.0, 0.15
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint: 1.0, 0.1
+            Button:
+                size_hint: 0.33, 0.75
+                text: 'Defaults'
+                on_release: app.settings_default()
+            Button:
+                size_hint: 0.33, 0.75
+                text: 'Cancel'
+                on_release: app.settings_cancel()
+            Button:
+                size_hint: 0.33, 0.75
+                text: 'OK'
+                on_release: app.settings_close()
 
 
 <Error@Popup>:

@@ -27,8 +27,13 @@ from kivy.graphics import Fbo, ClearColor, ClearBuffers, Color, Rectangle
 from kivy.uix.image import Image
 
 
+def clamp(left, value, right):
+    return max(left, min(value, right))
+
+
 def insert_str(string, str_to_insert, index):
     return string[:index] + str_to_insert + string[index:]
+
 
 def truncate_str_middle(s, n):
     if len(s) <= n:

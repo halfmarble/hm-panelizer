@@ -31,24 +31,31 @@ class AppSettings:
         self._bite = 0
         self._bite_hole_radius = 0
         self._bite_hole_space = 0
-        self._bites_count_x = 0
-        self._bites_count_y = 0
+        self._bites_count = 0
         self._use_vcut = False
         self._use_jlc = False
 
-        self.reset()
+        self.default()
 
-
-    def reset(self):
+    def default(self):
         self._rail = PCB_PANEL_RAIL_HEIGHT_MM
         self._gap = PCB_PANEL_GAP_MM
         self._bite_hole_radius = PCB_BITES_HOLE_RADIUS_MM
         self._bite_hole_space = PCB_BITES_HOLE_SPACE_MM
         self._bite = PCB_PANEL_BITES_SIZE_MM
-        self._bites_count_x = PCB_PANEL_BITES_COUNT_X
-        self._bites_count_y = PCB_PANEL_BITES_COUNT_Y
+        self._bites_count = PCB_PANEL_BITES_COUNT_X
         self._use_vcut = PCB_PANEL_USE_VCUT
         self._use_jlc = PCB_PANEL_USE_JLC
+
+    def set(self, gap, rail, bites_count, bite, bite_hole_radius, bite_hole_space, use_vcut, use_jlc):
+        self._gap = clamp(2.5, gap, 10.0)
+        self._rail = clamp(5, rail, 20.0)
+        self._bites_count = int(clamp(1, bites_count, 10))
+        self._bite = clamp(2.5, bite, 10.0)
+        self._bite_hole_radius = clamp(0.1, bite_hole_radius, 1.0)
+        self._bite_hole_space = clamp(0.5, bite_hole_space, 20.0)
+        self._use_vcut = use_vcut
+        self._use_jlc = use_jlc
 
     @property
     def rail(self):
@@ -63,12 +70,8 @@ class AppSettings:
         return self._bite
 
     @property
-    def bites_count_x(self):
-        return self._bites_count_x
-
-    @property
-    def bites_count_y(self):
-        return self._bites_count_y
+    def bites_count(self):
+        return self._bites_count
 
     @property
     def bite_hole_radius(self):

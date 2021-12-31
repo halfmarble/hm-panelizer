@@ -25,10 +25,10 @@ import PcbRail
 
 Config.set('kivy', 'keyboard_mode', 'system')
 
-Config.set('graphics', 'width', '1550')
-Config.set('graphics', 'height', '800')
-Config.set('graphics', 'minimum_width', '800')
-Config.set('graphics', 'minimum_height', '800')
+Config.set('graphics', 'width', '1600')
+Config.set('graphics', 'height', '960')
+Config.set('graphics', 'minimum_width', '1024')
+Config.set('graphics', 'minimum_height', '670')
 
 
 from kivy.app import App
@@ -72,7 +72,7 @@ Factory.register('LoadDialog', cls=LoadDialog)
 
 
 class PanelizerApp(App):
-    _zoom_values = [500, 300, 200, 175, 150, 125, 100, 90, 80, 70, 60, 50, 40, 30, 20, 10]
+    _zoom_values = [500, 300, 200, 175, 150, 125, 110, 100, 90, 80, 70, 60, 50, 40, 30, 20, 10]
     _zoom_values_index = _zoom_values.index(100)
     _zoom_str = '{}%'.format(_zoom_values[_zoom_values_index])
     _zoom_values_properties = ListProperty([])
@@ -83,6 +83,8 @@ class PanelizerApp(App):
 
     def __init__(self, **kwargs):
         super(PanelizerApp, self).__init__(**kwargs)
+
+        self._settings = AppSettings
 
         self._tmp_folders_to_delete = []
         self._app_tmp_folder = None
@@ -127,8 +129,8 @@ class PanelizerApp(App):
         self._panels_y = INITIAL_ROWS
         self._panelization_str = '{}x{}'.format(self._panels_x, self._panels_y)
 
-        self._bites_x = AppSettings.bites_count_x
-        self._bites_y = AppSettings.bites_count_y
+        self._bites_x = AppSettings.bites_count
+        self._bites_y = 0
 
     def build(self):
         self.title = 'hmPanelizer'
@@ -510,14 +512,63 @@ class PanelizerApp(App):
     def error_close(self):
         self._error_popup.dismiss()
 
+    def settings_apply(self):
+        self._settings_popup.ids._gap_setting.text = '{:0.2f}'.format(AppSettings.gap)
+        self._settings_popup.ids._rail_setting.text = '{:d}'.format(int(AppSettings.rail))
+        self._settings_popup.ids._bites_count_setting.text = '{:d}'.format(int(AppSettings.bites_count))
+        self._settings_popup.ids._bite_setting.text = '{:d}'.format(int(AppSettings.bite))
+        self._settings_popup.ids._bite_hole_radius_setting.text = '{:0.2f}'.format(AppSettings.bite_hole_radius)
+        self._settings_popup.ids._bite_hole_space_setting.text = '{:0.2f}'.format(AppSettings.bite_hole_space)
+        self._settings_popup.ids._use_vcut_setting.state = 'down' if AppSettings.use_vcut else 'normal'
+        self._settings_popup.ids._use_jlc_setting.state = 'down' if AppSettings.use_jlc else 'normal'
+
     def settings_open(self):
+        self.settings_apply()
         self._settings_popup.open()
+
+    def settings_default(self):
+        self._settings.default()
+        self.settings_apply()
 
     def settings_close(self):
         self._settings_popup.dismiss()
+        try:
+            gap = float(self._settings_popup.ids._gap_setting.text)
+        except:
+            gap = AppSettings.gap
+        try:
+            rail = float(self._settings_popup.ids._rail_setting.text)
+        except:
+            rail = AppSettings.rail
+        try:
+            bites_count = int(self._settings_popup.ids._bites_count_setting.text)
+        except:
+            bites_count = AppSettings.bites_count
+        try:
+            bite = int(self._settings_popup.ids._bite_setting.text)
+        except:
+            bite = AppSettings.bite
+        try:
+            bite_hole_radius = float(self._settings_popup.ids._bite_hole_radius_setting.text)
+        except:
+            bite_hole_radius = AppSettings.bite_hole_radius
+        try:
+            bite_hole_space = float(self._settings_popup.ids._bite_hole_space_setting.text)
+        except:
+            bite_hole_space = AppSettings.bite_hole_space
+        use_vcut = True if self._settings_popup.ids._use_vcut_setting.state == 'down' else False
+        use_jlc = True if self._settings_popup.ids._use_jlc_setting.state == 'down' else False
 
-    def settings_bites(self):
-        print('settings_bites')
+        AppSettings.set(gap, rail, bites_count, bite, bite_hole_radius, bite_hole_space, use_vcut, use_jlc)
+
+        PcbRail.invalidate()
+        PcbMouseBites.invalidate()
+        self._bites_x = AppSettings.bites_count
+        self._bites_y = 0
+        self.panelize()
+
+    def settings_cancel(self):
+        self._settings_popup.dismiss()
 
     def cleanup(self):
         if ALLOW_DIR_DELETIONS:

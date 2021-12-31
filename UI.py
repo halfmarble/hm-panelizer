@@ -13,11 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+from kivy.uix.label import Label
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.popup import Popup
 
 
 class LayerButton(ToggleButton):
+    pass
+
+
+class EmptyLabel(Label):
+    pass
+
+
+class PostLabel(Label):
+    pass
+
+
+class TitleLabel(Label):
     pass
 
 
