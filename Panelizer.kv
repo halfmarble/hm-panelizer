@@ -330,13 +330,6 @@ BoxLayout:
                 size_hint_max: (32, 32)
                 size_hint: (1.0, 1.0)
                 on_release: app.load_pcb_from_disk()
-            ActionButton:
-                id: _save_button
-                text: 'Save PCB panel'
-                icon: 'data/icons/save.png'
-                size_hint_max: (32, 32)
-                size_hint: (1.0, 1.0)
-                on_release: app.save_pcb_to_disk()
 
             ActionSeparator:
 
@@ -358,14 +351,6 @@ BoxLayout:
 
             ActionSeparator:
 
-            ActionButton:
-                id: _settings_button
-                text: 'Settings'
-                icon: 'data/icons/settings.png'
-                size_hint_max: (32, 32)
-                size_hint: (1.0, 1.0)
-                on_release: app.settings_open()
-
             ActionToggleButton:
                 id: _panelization_button
                 text: 'Panelize'
@@ -374,33 +359,41 @@ BoxLayout:
                 size_hint: (1.0, 1.0)
                 on_release: app.panelize()
             ActionButton:
-                text: 'col-add'
+                id: _settings_button
+                icon: 'data/icons/settings.png'
+                size_hint_max: (32, 32)
+                size_hint: (1.0, 1.0)
+                on_release: app.settings_open()
+            ActionButton:
+                id: _save_button
+                icon: 'data/icons/save.png'
+                size_hint_max: (32, 32)
+                size_hint: (1.0, 1.0)
+                on_release: app.save_panel_to_disk()
+            ActionButton:
                 icon: 'data/icons/minus.png'
                 size_hint_max: (32, 32)
                 size_hint: (1.0, 1.0)
                 on_release: app.panelize_column(False)
             ActionButton:
-                text: 'col-delete'
                 icon: 'data/icons/plus.png'
                 size_hint_max: (32, 32)
                 size_hint: (1.0, 1.0)
                 on_release: app.panelize_column(True)
             ActionLabel:
                 id: _panelization_label
-                color: 0.65, 0.65, 0.65
                 text: app._panelization_str
                 font_size: 20
+                color: 0.65, 0.65, 0.65
                 bold: True
                 size_hint_max: (48, 32)
                 size_hint: (1.0, 1.0)
             ActionButton:
-                text: 'col-add'
                 icon: 'data/icons/minus.png'
                 size_hint_max: (32, 32)
                 size_hint: (1.0, 1.0)
                 on_release: app.panelize_row(False)
             ActionButton:
-                text: 'col-delete'
                 icon: 'data/icons/plus.png'
                 size_hint_max: (32, 32)
                 size_hint: (1.0, 1.0)

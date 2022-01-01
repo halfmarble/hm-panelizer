@@ -482,12 +482,14 @@ class PanelizerApp(App):
             self._progress.open()
             update_progressbar(self._progress, 'Saving PCB (simulated, not implemented yet) ...', 0.0)
 
-    def save_pcb_to_disk(self):
+    def save_panel_to_disk(self):
         if self._current_pcb_folder is None:
             self.error_open("Can not save demo PCB board (no src gerber files available)")
             return
 
         if self._pcb_panel is not None:
+            self.root.ids._panelization_button.state = 'down'
+            self.panelize()
             if self._pcb_panel.valid_layout:
                 content = SaveDialog(save=self.save, cancel=self.dismiss_save_popup)
                 file_chooser = content.ids._save_file_chooser
@@ -523,6 +525,9 @@ class PanelizerApp(App):
         self._settings_popup.ids._use_jlc_setting.state = 'down' if AppSettings.use_jlc else 'normal'
 
     def settings_open(self):
+        if self._pcb_panel is not None:
+            self.root.ids._panelization_button.state = 'down'
+            self.panelize()
         self.settings_apply()
         self._settings_popup.open()
 
