@@ -125,8 +125,7 @@ class PanelizerApp(App):
         self._panels_y = INITIAL_ROWS
         self._panelization_str = '{}x{}'.format(self._panels_x, self._panels_y)
 
-        self._bites_x = AppSettings.bites_count
-        self._bites_y = 0
+        self._bites = AppSettings.bites_count
 
     def build(self):
         self.title = 'hmPanelizer'
@@ -175,7 +174,7 @@ class PanelizerApp(App):
             self._pcb_panel = PcbPanel(parent=self, root=self._surface, pcb=self._pcb)
             self._panels_x = INITIAL_COLUMNS
             self._panels_y = INITIAL_ROWS
-            self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle, self._bites_x, self._bites_y)
+            self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle, self._bites)
         else:
             self._pixels_per_cm = self._pcb.pixels_per_cm
             self._pcb_board = PcbBoard(root=self._surface, pcb=self._pcb)
@@ -197,7 +196,7 @@ class PanelizerApp(App):
                 self.update_scale()
                 self.calculate_pcb_fit_scale()
                 if self._pcb_panel is not None:
-                    self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle, self._bites_x, self._bites_y)
+                    self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle, self._bites)
                 self.center()
                 if self._pcb_panel is not None:
                     self._pcb_panel.activate()
@@ -453,8 +452,13 @@ class PanelizerApp(App):
             self.error_open("Unable to save to {}!".format(path))
             return
 
-        update_progressbar(self._progress, 'exporting mouse bites PCB...', 0.0)
+        update_progressbar(self._progress, 'exporting mouse bites PCB...', 0.1)
         mouse_bites_path = PcbMouseBites.generate_pcb_files()
+        print('generated mouse bite files in {}'.format(mouse_bites_path))
+
+        update_progressbar(self._progress, 'exporting rails PCB...', 0.2)
+        rails_path = PcbRail.generate_pcb_files()
+        print('generated rails files in {}'.format(rails_path))
 
         self._progress.dismiss()
 
@@ -480,10 +484,12 @@ class PanelizerApp(App):
 
         self.dismiss_save_popup()
 
-        if os.path.isdir(self._finish_save_selected):
+        if False:
+        #if os.path.isdir(self._finish_save_selected):
             string = truncate_str_middle(self._finish_save_selected, 60)
             self.error_open("Folder {} already exists!".format(string))
         else:
+            update_progressbar(self._progress, 'exporting PCB panel...', 0.0)
             Clock.schedule_once(self.save_finish, 1.0)
             self._progress.open()
 
@@ -535,6 +541,7 @@ class PanelizerApp(App):
             self.panelize()
         self.settings_apply()
         self._settings_popup.open()
+        self._pcb_panel.print_layout()
 
     def settings_default(self):
         self._settings.default()
@@ -573,8 +580,7 @@ class PanelizerApp(App):
 
         PcbRail.invalidate()
         PcbMouseBites.invalidate()
-        self._bites_x = AppSettings.bites_count
-        self._bites_y = 0
+        self._bites = AppSettings.bites_count
         self.panelize()
 
     def settings_cancel(self):

@@ -658,12 +658,24 @@ def render_mouse_bite_drl(path, filename, origin, size, radius, gap):
     render_pcb_layer(layer.bounds, layer, path, filename)
 
 
+def save_rail_gm1(path, origin, size, panels, vcut):
+    gm1 = generate_rail_gm1_data(origin, size, panels, vcut)
+    with open(os.path.join(path, 'Rails-Edge_Cuts.gm1'), "w") as text_file:
+        text_file.write(gm1)
+
+
 def render_rail_gm1(path, filename, origin, size, panels, vcut):
     gm1 = generate_rail_gm1_data(origin, size, panels, vcut)
     data = rs274x.loads(gm1, 'dummy.gm1')
     layer = PCBLayer.from_cam(data)
     render_pcb_layer(layer.bounds, layer, path, filename, outline=True)
     return layer.bounds
+
+
+def save_rail_gtl(path, origin, size):
+    gtl = generate_rail_gtl_data(origin, size)
+    with open(os.path.join(path, 'Rails-F_Cu.gtl'), "w") as text_file:
+        text_file.write(gtl)
 
 
 def render_rail_gtl(bounds, path, filename, origin, size):
@@ -673,11 +685,23 @@ def render_rail_gtl(bounds, path, filename, origin, size):
     render_pcb_layer(bounds, layer, path, filename)
 
 
+def save_rail_gts(path, origin, size):
+    gts = generate_rail_gts_data(origin, size)
+    with open(os.path.join(path, 'Rails-F_Mask.gts'), "w") as text_file:
+        text_file.write(gts)
+
+
 def render_rail_gts(bounds, path, filename, origin, size):
     gts = generate_rail_gts_data(origin, size)
     data = rs274x.loads(gts, 'dummy.gts')
     layer = PCBLayer.from_cam(data)
     render_pcb_layer(bounds, layer, path, filename)
+
+
+def save_rail_gto(path, origin, size, panels, vcut, jlc):
+    gto = generate_rail_gto_data(origin, size, panels, vcut, jlc)
+    with open(os.path.join(path, 'Rails-F_Silkscreen.gto'), "w") as text_file:
+        text_file.write(gto)
 
 
 def render_rail_gto(bounds, path, filename, origin, size, panels, vcut, jlc):

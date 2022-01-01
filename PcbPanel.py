@@ -397,12 +397,12 @@ class PcbBites:
                     bite = gap.bite(i)
                     bite.assign_group(group)
 
-    def __init__(self, panel, root, shapes, bites_x, bites_y):
+    def __init__(self, panel, root, shapes, bites):
         self._bites = []
         self._shapes = shapes
         #self._shapes.print('  ')
 
-        if bites_x > 0:
+        if bites > 0:
             columns = self._shapes.width
             rows = (self._shapes.height - 1)
             self._horizontal = Array2D(columns, rows)
@@ -410,37 +410,19 @@ class PcbBites:
                 for c in range(0, columns):
                     bottom = self._shapes.get(c, r)
                     top = self._shapes.get(c, r + 1)
-                    gap = PcbGap(panel, root, True, bites_x, bottom, top)
+                    gap = PcbGap(panel, root, True, bites, bottom, top)
                     self._horizontal.put(c, r, gap)
             #print(' horizontal gaps:')
             #self._horizontal.print('  ')
-            self.assign_groups(bites_x, columns, rows, self._horizontal)
+            self.assign_groups(bites, columns, rows, self._horizontal)
         else:
             self._horizontal = Array2D(0, 0)
-
-        if bites_y > 0:
-            columns = (self._shapes.width - 1)
-            rows = (self._shapes.height - 2)
-            self._vertical = Array2D(columns, rows)
-            for r in range(0, rows):
-                for c in range(0, columns):
-                    left = self._shapes.get(c, r)
-                    right = self._shapes.get(c + 1, r)
-                    gap = PcbGap(panel, root, False, bites_x, left, right)
-                    self._vertical.put(c, r, gap)
-            self.assign_groups(bites_y, columns, rows, self._vertical)
-        else:
-            self._vertical = Array2D(0, 0)
 
     def activate(self):
         # TODO: implement Array2D iterator and use it here
         for c in range(self._horizontal.width):
             for r in range(self._horizontal.height):
                 gap = self._horizontal.get(c, r)
-                gap.activate()
-        for c in range(self._vertical.width):
-            for r in range(self._vertical.height):
-                gap = self._vertical.get(c, r)
                 gap.activate()
 
     def deactivate(self):
@@ -449,10 +431,6 @@ class PcbBites:
             for r in range(self._horizontal.height):
                 gap = self._horizontal.get(c, r)
                 gap.deactivate()
-        for c in range(self._vertical.width):
-            for r in range(self._vertical.height):
-                gap = self._vertical.get(c, r)
-                gap.deactivate()
 
     def layout(self):
         valid = True
@@ -460,13 +438,6 @@ class PcbBites:
         for c in range(self._horizontal.width):
             for r in range(self._horizontal.height):
                 gap = self._horizontal.get(c, r)
-                # workaround for "value and function()" optimizing out function() if value == False
-                # valid = valid and gap.layout()
-                v = gap.layout()
-                valid = valid and v
-        for c in range(self._vertical.width):
-            for r in range(self._vertical.height):
-                gap = self._vertical.get(c, r)
                 # workaround for "value and function()" optimizing out function() if value == False
                 # valid = valid and gap.layout()
                 v = gap.layout()
@@ -513,12 +484,6 @@ class PcbShape:
         else:
             return self._mask.get_mask_top(x, length)
 
-    def mask_connects_vertical(self, left, y, length):
-        if left:
-            return self._mask.get_mask_left(y, length)
-        else:
-            return self._mask.get_mask_right(y, length)
-
     def connects(self, horizontal, side, pos, length):
         if horizontal:
             if self._kind is PcbKind.bottom:
@@ -527,8 +492,6 @@ class PcbShape:
                 return True  # always connects
             elif self._kind is PcbKind.main:
                 return self.mask_connects_horizontal(side, pos, length)
-        else:
-            return self.mask_connects_vertical(side, pos, length)
 
     @property
     def x(self):
@@ -566,6 +529,8 @@ class PcbPanel(OffScreenScatter):
         self._size_pixels = (0, 0)
         self._origin = (0, 0)
 
+        self._width = 0
+        self._height = 0
         self._angle = 0
         self._columns = 0
         self._rows = 0
@@ -574,7 +539,6 @@ class PcbPanel(OffScreenScatter):
         self._shapes = None
 
         self._bites_x = 0  # per single pcb
-        self._bites_y = 0  # per single pcb
         self._bites = None
 
         self._valid_layout = False
@@ -593,23 +557,32 @@ class PcbPanel(OffScreenScatter):
             self._root.remove_widget(self)
             self._active = False
 
-    def panelize(self, columns, rows, angle, bites_x, bites_y):
+    def panelize(self, columns, rows, angle, bites_x):
+        width = self.size[0]
+        height = self.size[1]
+
+        changed = self._columns != columns or self._rows != rows or self._angle != angle or \
+                  self._bites_x != bites_x or self._width != width or self._height != height
+
         self._columns = columns
         self._rows = rows
         self._angle = angle
         self._bites_x = bites_x
-        self._bites_y = bites_y
+        self._width = width
+        self._height = height
 
-        self._shapes = None
-        self._bites = None
+        if changed:
+            self._shapes = None
+            self._bites = None
 
-        self._mask = PcbMask(self._client.mask, self._angle)
+            self._mask = PcbMask(self._client.mask, self._angle)
 
-        scale = self._client.pixels_per_cm / 10.0
+            scale = self._client.pixels_per_cm / 10.0
 
-        self.allocate_parts()
-        self.calculate_sizes(scale, self._columns, self._rows)
-        self.layout_parts(scale, self.size[0], self.size[1])
+            self.allocate_parts()
+            self.calculate_sizes(scale, self._columns, self._rows)
+            self.layout_parts(scale, self._width, self._height)
+
         self.paint()
 
     def calculate_sizes(self, scale, columns, rows):
@@ -654,7 +627,7 @@ class PcbPanel(OffScreenScatter):
             for c in range(0, self._columns):
                 self._shapes.put(c, r + 1, PcbShape(PcbKind.main, self._mask))
 
-        self._bites = PcbBites(self, self._root, self._shapes, self._bites_x, self._bites_y)
+        self._bites = PcbBites(self, self._root, self._shapes, self._bites_x)
 
     def layout_parts(self, scale, panel_width, panel_height):
         pcb_client_width = self._client.size_pixels[0]
@@ -677,10 +650,10 @@ class PcbPanel(OffScreenScatter):
             size = (round_float(panel_width), round_float(height_bottom))
             bottom.set(pos, size)
         for c in range(0, self._columns):
-            bottom = self._shapes.get(c, self._rows + 1)
+            top = self._shapes.get(c, self._rows + 1)
             pos = (0, round_float(panel_height - height_top))
             size = (round_float(panel_width), round_float(height_top))
-            bottom.set(pos, size)
+            top.set(pos, size)
 
         y = height_bottom + gap
         for r in range(0, self._rows):
@@ -752,7 +725,7 @@ class PcbPanel(OffScreenScatter):
     def center(self, available_size, angle):
         if angle is not None:
             if self._angle != angle:
-                self.panelize(self._columns, self._rows, angle, self._bites_x, self._bites_y)
+                self.panelize(self._columns, self._rows, angle, self._bites_x)
 
         ox = round_float((available_size[0] - (self._scale * self.size[0])) / 2.0)
         oy = round_float((available_size[1] - (self._scale * self.size[1])) / 2.0)
@@ -776,6 +749,18 @@ class PcbPanel(OffScreenScatter):
     def update_status(self):
         self._valid_layout = self._bites.validate_layout()
         self._parent.update_status()
+
+    def print_layout(self):
+        print('print_layout')
+        print('pixels_per_cm: {}'.format(self.pixels_per_cm))
+        bottom = self._shapes.get(0, 0)
+        print(' bottom: {}'.format(bottom))
+        top = self._shapes.get(0, self._rows + 1)
+        print(' top:    {}'.format(top))
+        for r in range(0, self._rows):
+            for c in range(0, self._columns):
+                main = self._shapes.get(c, r + 1)
+                print(' main:  {}'.format(main))
 
     @property
     def valid_layout(self):
