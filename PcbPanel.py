@@ -599,6 +599,7 @@ class PcbPanel(OffScreenScatter):
         self._angle = angle
         self._bites_x = bites_x
         self._bites_y = bites_y
+
         self._shapes = None
         self._bites = None
 
@@ -608,7 +609,7 @@ class PcbPanel(OffScreenScatter):
 
         self.allocate_parts()
         self.calculate_sizes(scale, self._columns, self._rows)
-        self._valid_layout = self.layout_parts(scale, self.size[0], self.size[1])
+        self.layout_parts(scale, self.size[0], self.size[1])
         self.paint()
 
     def calculate_sizes(self, scale, columns, rows):

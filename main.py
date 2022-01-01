@@ -77,10 +77,6 @@ class PanelizerApp(App):
     _zoom_str = '{}%'.format(_zoom_values[_zoom_values_index])
     _zoom_values_properties = ListProperty([])
 
-    def timer_callback(self, dt):
-        self._angle += 5.0
-        self.panelize()
-
     def __init__(self, **kwargs):
         super(PanelizerApp, self).__init__(**kwargs)
 
@@ -449,8 +445,18 @@ class PanelizerApp(App):
         print('save_finish')
         print(' path {}'.format(path))
 
-        Clock.schedule_once(self._progress.dismiss, 5)
-        #self._progress.dismiss()
+        try:
+            if not os.path.exists(path):
+                os.makedirs(path)
+        except:
+            self._progress.dismiss()
+            self.error_open("Unable to save to {}!".format(path))
+            return
+
+        update_progressbar(self._progress, 'exporting mouse bites PCB...', 0.0)
+        mouse_bites_path = PcbMouseBites.generate_pcb_files()
+
+        self._progress.dismiss()
 
     def dismiss_save_popup(self):
         self._save_popup.dismiss()
@@ -480,7 +486,6 @@ class PanelizerApp(App):
         else:
             Clock.schedule_once(self.save_finish, 1.0)
             self._progress.open()
-            update_progressbar(self._progress, 'Saving PCB (simulated, not implemented yet) ...', 0.0)
 
     def save_panel_to_disk(self):
         if self._current_pcb_folder is None:

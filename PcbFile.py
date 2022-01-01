@@ -632,11 +632,23 @@ def render_pcb_layer(bounds, layer, path, filename, outline=False, verbose=False
                              theme.THEMES['Mask'], bounds=bounds, verbose=verbose)
 
 
+def save_mouse_bite_gm1(path, origin, size, arc, close):
+    gm1 = generate_mouse_bite_gm1_data(origin, size, arc, close)
+    with open(os.path.join(path, 'Mouse_Bites-Edge_Cuts.gm1'), "w") as text_file:
+        text_file.write(gm1)
+
+
 def render_mouse_bite_gm1(path, filename, origin, size, arc, close):
     gm1 = generate_mouse_bite_gm1_data(origin, size, arc, close)
     data = rs274x.loads(gm1, 'dummy.gm1')
     layer = PCBLayer.from_cam(data)
     render_pcb_layer(layer.bounds, layer, path, filename, outline=True)
+
+
+def save_mouse_bite_drl(path, origin, size, radius, gap):
+    drl = generate_mouse_bite_drl_data(origin, size, radius, gap)
+    with open(os.path.join(path, 'Mouse_Bites-NPTH.drl'), "w") as text_file:
+        text_file.write(drl)
 
 
 def render_mouse_bite_drl(path, filename, origin, size, radius, gap):

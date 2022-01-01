@@ -40,6 +40,18 @@ class PcbMouseBites:
         except FileExistsError:
             pass
 
+    def generate_pcb_files(self):
+        if self._tmp_folder is None:
+            print('ERROR: PcbMouseBites temp folder is NULL')
+            return
+
+        origin = (0, 0)
+        size = (self._bite, self._gap)
+        save_mouse_bite_gm1(self._tmp_folder, origin, size, arc=1, close=True)
+        save_mouse_bite_drl(self._tmp_folder, origin, size, self._bite_hole_radius, self._bite_hole_space)
+
+        return self._tmp_folder
+
     def render_masks(self, bite, gap, bite_hole_radius, bite_hole_space):
         if self._tmp_folder is None:
             print('ERROR: PcbMouseBites temp folder is NULL')
