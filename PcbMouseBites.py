@@ -59,10 +59,6 @@ class PcbMouseBites:
 
         if self._gm1 is None or self._bite != bite or self._gap != gap or \
                 self._bite_hole_radius != bite_hole_radius or self._bite_hole_space != bite_hole_space:
-            # TODO: is there anything else that's more efficient that we can do here?
-            # without this the rail images do not refresh correctly
-            Cache.remove('kv.image')
-            Cache.remove('kv.texture')
 
             render_mouse_bite_gm1(self._tmp_folder, 'bites_edge_cuts',
                                   origin=(0, 0), size=(bite, gap), arc=1, close=True)
@@ -71,6 +67,11 @@ class PcbMouseBites:
 
             self._gm1 = load_image_masked(self._tmp_folder, 'bites_edge_cuts_mask.png', Color(1, 1, 1, 1))
             self._drl = load_image_masked(self._tmp_folder, 'bites_holes_npth.png', Color(1, 1, 1, 1))
+
+            # TODO: is there anything else that's more efficient that we can do here?
+            # without this the rail images do not refresh correctly
+            Cache.remove('kv.image')
+            Cache.remove('kv.texture')
 
             self._bite = bite
             self._gap = gap

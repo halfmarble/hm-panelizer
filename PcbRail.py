@@ -44,7 +44,7 @@ class PcbRail:
 
     def generate_pcb_files(self):
         if self._tmp_folder is None:
-            print('ERROR: PcbMouseBites temp folder is NULL')
+            print('ERROR: PcbRail temp folder is NULL')
             return
 
         save_rail_gm1(self._tmp_folder, self._origin, self._size, self._panels, self._vcut)
@@ -61,10 +61,6 @@ class PcbRail:
 
         if self._gm1 is None or self._panels != panels or self._origin != origin or self._size != size or \
                 self._vcut != vcut or self._jlc != jlc:
-            # TODO: is there anything else that's more efficient that we can do here?
-            # without this the rail images do not refresh correctly
-            Cache.remove('kv.image')
-            Cache.remove('kv.texture')
 
             bounds = render_rail_gm1(self._tmp_folder, 'rail_edge_cuts', origin, size, panels, vcut)
             render_rail_gtl(bounds, self._tmp_folder, 'rail_top_copper', origin, size)
@@ -76,6 +72,11 @@ class PcbRail:
             self._gts = load_image_masked(self._tmp_folder, 'rail_top_mask.png', Color(1, 1, 1, 1))
             self._gto = load_image_masked(self._tmp_folder, 'rail_top_silk.png', Color(1, 1, 1, 1))
 
+            # TODO: is there anything else that's more efficient that we can do here?
+            # without this the rail images do not refresh correctly
+            Cache.remove('kv.image')
+            Cache.remove('kv.texture')
+
             self._panels = panels
             self._origin = origin
             self._size = size
@@ -83,6 +84,7 @@ class PcbRail:
             self._jlc = jlc
 
     def paint(self, bottom, top):
+
         c = PCB_MASK_COLOR
         Color(c.r, c.g, c.b, c.a)
         Rectangle(texture=self._gm1.texture, pos=bottom.pos, size=bottom.size)

@@ -275,6 +275,7 @@ class PcbGap:
         self._shape2 = shape2
         self._main_shape = None
         self._bottom_shape = None
+        self._bottom_shape = None
 
         self._bites = []
         self._gap_start = 0
@@ -282,17 +283,16 @@ class PcbGap:
         self._gap_width = 0
         self._bite_width = 0
 
+        self._main_shape = self._shape1
+        if not self._main_shape.is_of_kind(PcbKind.main):
+            self._main_shape = self._shape2
+        self._bottom_shape = self._shape1
+
         for i in range(self._bites_count):
             slide = (float(i + 1) / float(self._bites_count + 1))
             self._bites.append(BiteWidget(self, root, self._horizontal, slide))
 
     def layout(self):
-        self._main_shape = self._shape1
-        if not self._main_shape.is_of_kind(PcbKind.main):
-            self._main_shape = self._shape2
-
-        self._bottom_shape = self._shape1
-
         scale = self._panel.scale
         scale_mm = self._panel.pixels_per_cm * scale / 10.0
 
@@ -780,6 +780,7 @@ class PcbPanel(OffScreenScatter):
         scale = self._client.pixels_per_cm / 10.0
         self.calculate_sizes(scale, self._columns, self._rows)
         self.layout_parts(scale, self.size[0], self.size[1])
+        self.paint()
 
     def update_status(self):
         self._valid_layout = self._bites.validate_layout()

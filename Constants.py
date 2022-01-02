@@ -34,8 +34,8 @@ PIXELS_SIZE_MAX: Final          = 2048
 
 PCB_OUTLINE_WIDTH: Final        = 1.5
 
-INITIAL_ROWS: Final             = 2
-INITIAL_COLUMNS: Final          = 2
+INITIAL_ROWS: Final             = 1
+INITIAL_COLUMNS: Final          = 1
 MAX_ROWS: Final                 = 99
 MAX_COLUMNS: Final              = 99
 

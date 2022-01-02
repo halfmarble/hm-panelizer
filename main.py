@@ -208,6 +208,8 @@ class PanelizerApp(App):
                 self._pcb_board.activate()
             self.update_status()
             self.calculate_pcb_fit_scale()
+        if self._pcb is not None:
+            self._pcb_panel.print_layout()
 
     def panelize_column(self, add):
         if self._pcb is not None:
@@ -541,7 +543,6 @@ class PanelizerApp(App):
             self.panelize()
         self.settings_apply()
         self._settings_popup.open()
-        self._pcb_panel.print_layout()
 
     def settings_default(self):
         self._settings.default()
