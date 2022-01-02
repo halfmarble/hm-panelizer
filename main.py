@@ -125,7 +125,7 @@ class PanelizerApp(App):
         self._panels_y = INITIAL_ROWS
         self._panelization_str = '{}x{}'.format(self._panels_x, self._panels_y)
 
-        self._bites = AppSettings.bites_count
+        self._bites_count = AppSettings.bites_count
 
     def build(self):
         self.title = 'hmPanelizer'
@@ -174,7 +174,7 @@ class PanelizerApp(App):
             self._pcb_panel = PcbPanel(parent=self, root=self._surface, pcb=self._pcb)
             self._panels_x = INITIAL_COLUMNS
             self._panels_y = INITIAL_ROWS
-            self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle, self._bites)
+            self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle, self._bites_count)
         else:
             self._pixels_per_cm = self._pcb.pixels_per_cm
             self._pcb_board = PcbBoard(root=self._surface, pcb=self._pcb)
@@ -196,7 +196,7 @@ class PanelizerApp(App):
                 self.update_scale()
                 self.calculate_pcb_fit_scale()
                 if self._pcb_panel is not None:
-                    self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle, self._bites)
+                    self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle, self._bites_count)
                 self.center()
                 if self._pcb_panel is not None:
                     self._pcb_panel.activate()
@@ -580,7 +580,7 @@ class PanelizerApp(App):
 
         PcbRail.invalidate()
         PcbMouseBites.invalidate()
-        self._bites = AppSettings.bites_count
+        self._bites_count = AppSettings.bites_count
         self.panelize()
 
     def settings_cancel(self):
