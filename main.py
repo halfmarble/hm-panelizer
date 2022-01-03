@@ -462,9 +462,9 @@ class PanelizerApp(App):
         origins = self._pcb_panel.get_origins()
         panels_count = self._panels_x * self._panels_y
         mouse_bites_count = (panels_count * self._bites_count) + (self._panels_x * self._bites_count)
-        vertical = True if self._angle == 0.0 else False
-        export_pcb_panel(self._progress, path, self._current_pcb_folder, panels_count, rails_path,
-                         mouse_bites_path, mouse_bites_count, origins, vertical)
+        pcb_height = self._pcb.size_mm[1]
+        export_pcb_panel(self._progress, path, self._current_pcb_folder, panels_count, pcb_height,
+                         rails_path, mouse_bites_path, mouse_bites_count, origins, self._angle)
 
         self._progress.dismiss()
 

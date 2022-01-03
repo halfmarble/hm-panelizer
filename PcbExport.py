@@ -58,17 +58,19 @@ extensions_to_names = {
     '.drl': 'drill',
 }
 
-def export_pcb_panel(progress, path_export, path_pcb, pcb_count, path_rails, path_mouse_bites, mouse_bites_count,
-                     origins, vertical):
+
+def export_pcb_panel(progress, path_export, path_pcb, pcb_count, pcb_height,
+                     path_rails, path_mouse_bites, mouse_bites_count, origins, angle):
     print('\nexport_pcb_panel')
     print(' path_export: {}'.format(path_export))
     print(' path_pcb: {}'.format(path_pcb))
     print(' pcb_count: {}'.format(pcb_count))
+    print(' pcb_height: {}'.format(pcb_height))
     print(' path_rails: {}'.format(path_rails))
     print(' path_mouse_bites: {}'.format(path_mouse_bites))
     print(' mouse_bites_count: {}'.format(mouse_bites_count))
     print(' origins: {}'.format(origins))
-    print(' vertical: {}'.format(vertical))
+    print(' angle: {}'.format(angle))
 
     paths = [path_rails, path_rails]
     for i in range(pcb_count):
@@ -77,12 +79,23 @@ def export_pcb_panel(progress, path_export, path_pcb, pcb_count, path_rails, pat
         paths.append(path_mouse_bites)
     #print(' paths: {}'.format(paths))
 
+    angles = [0.0, 0.0]
+    for i in range(pcb_count):
+        angles.append(angle)
+    for i in range(mouse_bites_count):
+        angles.append(0.0)
+    #print(' angles: {}'.format(angles))
+
     board_count = len(paths)
     boards = []
     for i in range(board_count):
         path = paths[i]
         origin = origins[i]
-        boards.append((path, 10.0*origin[0], 10.0*origin[1], 0))
+        rotate = angles[i]
+        offset_x = 0.0
+        if rotate != 0:
+            offset_x = pcb_height
+        boards.append((path, offset_x+10.0*origin[0], 10.0*origin[1], rotate))
     #print(' boards: {}'.format(boards))
 
     for directory, x_offset, y_offset, angle in boards:
@@ -129,12 +142,15 @@ def export_pcb_panel(progress, path_export, path_pcb, pcb_count, path_rails, pat
                             ctx = ctx_npth_drl
 
                     full_path = os.path.join(directory, filename)
-                    print('MERGING: {}'.format(filename))
+                    print(' FILE: {}'.format(filename))
                     file = hm_gerber_ex.read(full_path)
                     file.to_metric()
                     if angle != 0.0:
+                        print(' ROTATING')
                         file.rotate(angle)
+                    print(' OFFSETTING')
                     file.offset(x_offset, y_offset)
+                    print(' MERGING')
                     ctx.merge(file)
 
         if file is not None and ext != '.drl':

@@ -61,12 +61,9 @@ extensions_to_names = {
     '.drl': 'drill',
 }
 
-# boards = [
-#     ('pcb/',  0, 0, 90),
-#     ('pcb/', 10, 0, 0),
-# ]
 boards = [
-    ('pcb_bites/',  0, 0, 0),
+    ('pcb/',  0, 0, 90),
+    ('pcb/', 10, 0, 0),
 ]
 
 output = 'panelized'
