@@ -17,6 +17,7 @@ from hm_gerber_tool.cam import FileSettings
 from hm_gerber_tool.utils import inch, metric, write_gerber_value, parse_gerber_value
 from hm_gerber_ex.utility import rotate
 
+
 def loads(data, filename=None, settings=None, tools=None, format=None):
     if not settings:
         settings = FileSettings(**detect_excellon_format(data))
@@ -156,8 +157,7 @@ class ExcellonFileEx(ExcellonFile):
                     coordinate_ctx.update(stmt.x_end, stmt.y_end)
                     x_end = coordinate_ctx.x
                     y_end = coordinate_ctx.y
-                    yield DrillSlotEx(current_tool, (x_start, y_start), 
-                                      (x_end, y_end), DrillSlotEx.TYPE_G85)
+                    yield DrillSlotEx(current_tool, (x_start, y_start), (x_end, y_end), DrillSlotEx.TYPE_G85)
                 elif isinstance(stmt, CoordinateStmtEx):
                     center_offset = (stmt.i, stmt.j) \
                                     if stmt.i is not None and stmt.j is not None else None
@@ -267,8 +267,7 @@ class DrillRout(object):
             self.center_offset = center_offset
 
         def to_excellon(self, settings):
-            center_offset = self.center_offset \
-                            if self.center_offset is not None else (None, None)
+            center_offset = self.center_offset if self.center_offset is not None else (None, None)
             return self.mode + CoordinateStmtEx(
                 *self.position, self.radius, *center_offset).to_excellon(settings)
 
@@ -386,21 +385,24 @@ class CoordinateStmtEx(CoordinateStmt):
         self.j = j
     
     def to_excellon(self, settings):
+        #print('to_excellon')
+        #print(' settings: {}'.format(settings))
         stmt = ''
         if self.x is not None:
-            stmt += 'X%s' % write_gerber_value(self.x, settings.format,
-                                               settings.zero_suppression)
+            #print(' self.x: {}'.format(self.x))
+            string = 'X%s' % write_gerber_value(self.x, settings.format, settings.zero_suppression, settings.zeros)
+            #print(' string: {}'.format(string))
+            stmt += string
         if self.y is not None:
-            stmt += 'Y%s' % write_gerber_value(self.y, settings.format,
-                                               settings.zero_suppression)
+            #print(' self.y: {}'.format(self.y))
+            string = 'Y%s' % write_gerber_value(self.y, settings.format, settings.zero_suppression, settings.zeros)
+            #print(' string: {}'.format(string))
+            stmt += string
         if self.radius is not None:
-            stmt += 'A%s' % write_gerber_value(self.radius, settings.format,
-                                               settings.zero_suppression)
+            stmt += 'A%s' % write_gerber_value(self.radius, settings.format, settings.zero_suppression)
         elif self.i is not None and self.j is not None:
-            stmt += 'I%sJ%s' % (write_gerber_value(self.i, settings.format,
-                                                   settings.zero_suppression),
-                                write_gerber_value(self.j, settings.format,
-                                                   settings.zero_suppression))
+            stmt += 'I%sJ%s' % (write_gerber_value(self.i, settings.format, settings.zero_suppression),
+                                write_gerber_value(self.j, settings.format, settings.zero_suppression))
         return stmt
 
     def __str__(self):

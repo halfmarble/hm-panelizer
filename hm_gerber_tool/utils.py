@@ -29,7 +29,7 @@ from math import radians, sin, cos, sqrt, atan2, pi
 MILLIMETERS_PER_INCH = 25.4
 
 
-def parse_gerber_value(value, format=(2, 5), zero_suppression='trailing'):
+def parse_gerber_value(value, format=(4, 6), zero_suppression='trailing'):
     """ Convert gerber/excellon formatted string to floating-point number
 
     .. note::
@@ -94,7 +94,7 @@ def parse_gerber_value(value, format=(2, 5), zero_suppression='trailing'):
     return -result if negative else result
 
 
-def write_gerber_value(value, format=(2, 5), zero_suppression='trailing'):
+def write_gerber_value(value, format=(4, 6), zero_suppression='trailing', zeros=None):
     """ Convert a floating point number to a Gerber/Excellon-formatted string.
 
     .. note::
@@ -118,6 +118,10 @@ def write_gerber_value(value, format=(2, 5), zero_suppression='trailing'):
     zero_suppression : string
         Zero-suppression mode. May be 'leading', 'trailing' or 'none'
 
+    zeros: string
+        Unless 'decimal' it should be the opposite of zero_suppression
+        If 'decimal' format using %f
+
     Returns
     -------
     value : string
@@ -126,7 +130,16 @@ def write_gerber_value(value, format=(2, 5), zero_suppression='trailing'):
     
     if format[0] == float:
         return "%f" %value
-    
+
+    if zeros is not None and zeros == 'decimal':
+        # TODO: use format
+        if format[1] <= 1:
+            return '{:0.1f}'.format(value)
+        elif format[1] == 2:
+            return '{:0.2f}'.format(value)
+        else:
+            return '{:0.3f}'.format(value)
+
     # Format precision
     integer_digits, decimal_digits = format
     MAX_DIGITS = integer_digits + decimal_digits
@@ -134,8 +147,7 @@ def write_gerber_value(value, format=(2, 5), zero_suppression='trailing'):
     if MAX_DIGITS > 13 or integer_digits > 6 or decimal_digits > 7:
         raise ValueError('Parser only supports precision up to 6:7 format')
 
-    # Edge case... (per Gerber spec we should return 0 in all cases, see page
-    # 77)
+    # Edge case... (per Gerber spec we should return 0 in all cases, see page 77)
     if value == 0:
         return '0'
 

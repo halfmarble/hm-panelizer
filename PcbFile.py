@@ -605,15 +605,15 @@ def generate_mouse_bite_drl_data(origin, size, radius, gap):
     unit = (radius + radius + gap)
     count = int(w / unit) - 1
     cx = min_x + (w / 2.0)
-    data += 'X{:0.2f}Y{:0.2f}\n'.format(cx, min_y)
-    data += 'X{:0.2f}Y{:0.2f}\n'.format(cx, max_y)
+    data += 'X{}Y{}\n'.format(generate_decfloat3(cx), generate_decfloat3(min_y))
+    data += 'X{}Y{}\n'.format(generate_decfloat3(cx), generate_decfloat3(max_y))
     x = 0
     for i in range(0, count):
         x += gap
-        data += 'X{:0.2f}Y{:0.2f}\n'.format((cx+x), min_y)
-        data += 'X{:0.2f}Y{:0.2f}\n'.format((cx-x), min_y)
-        data += 'X{:0.2f}Y{:0.2f}\n'.format((cx+x), max_y)
-        data += 'X{:0.2f}Y{:0.2f}\n'.format((cx-x), max_y)
+        data += 'X{}Y{}\n'.format(generate_decfloat3(cx+x), generate_decfloat3(min_y))
+        data += 'X{}Y{}\n'.format(generate_decfloat3(cx-x), generate_decfloat3(min_y))
+        data += 'X{}Y{}\n'.format(generate_decfloat3(cx+x), generate_decfloat3(max_y))
+        data += 'X{}Y{}\n'.format(generate_decfloat3(cx-x), generate_decfloat3(max_y))
 
     data += 'M30\n'
     return data

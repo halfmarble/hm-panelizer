@@ -16,7 +16,7 @@ import hm_gerber_ex.dxf
 
 
 class Composition(object):
-    def __init__(self, settings = None, comments = None):
+    def __init__(self, settings=None, comments=None):
         self.settings = settings
         self.comments = comments if comments != None else []
 
@@ -58,7 +58,7 @@ class GerberComposition(Composition):
         aperture_macro_map = {}
         aperture_map = {}
 
-        if self.settings:
+        if self.settings is not None:
             if self.settings.units == 'metric':
                 file.to_metric()
             else:
@@ -83,11 +83,11 @@ class GerberComposition(Composition):
                 statement.d = aperture_map[statement.d]
             self.drawings.append(statement)
         
-        if not self.settings:
+        if self.settings is None:
             self.settings = file.context
 
     def _merge_dxf(self, file):
-        if self.settings:
+        if self.settings is not None:
             if self.settings.units == 'metric':
                 file.to_metric()
             else:
@@ -96,7 +96,7 @@ class GerberComposition(Composition):
         file.dcode = self._register_aperture(file.aperture)
         self.drawings.append(file.statements)
 
-        if not self.settings:
+        if self.settings is None:
             self.settings = file.settings
 
     def _register_aperture_macro(self, statement):
@@ -124,6 +124,7 @@ class DrillComposition(Composition):
         self.dxf_statements = []
     
     def merge(self, file):
+
         if isinstance(file, hm_gerber_ex.excellon.ExcellonFileEx):
             self._merge_excellon(file)
         elif isinstance(file, hm_gerber_ex.DxfFile):
@@ -132,6 +133,8 @@ class DrillComposition(Composition):
             raise Exception('unsupported file type')
 
     def dump(self, path):
+        if len(self.tools) == 0:
+            return
         def statements():
             for t in self.tools:
                 stmt = ToolSelectionStmt(t.number)
@@ -144,8 +147,6 @@ class DrillComposition(Composition):
                         yield statement.to_excellon(self.settings)
             yield EndOfProgramStmt().to_excellon()
 
-        self.settings.notation = 'absolute'
-        self.settings.zeros = 'trailing'
         with open(path, 'w') as f:
             hm_gerber_ex.excellon.write_excellon_header(f, self.settings, self.tools)
             for statement in statements():
@@ -154,13 +155,12 @@ class DrillComposition(Composition):
     def _merge_excellon(self, file):
         tool_map = {}
 
-        if not self.settings:
+        if self.settings is None:
             self.settings = file.settings
+        if self.settings.units == 'metric':
+            file.to_metric()
         else:
-            if self.settings.units == 'metric':
-                file.to_metric()
-            else:
-                file.to_inch()
+            file.to_inch()
 
         for tool in iter(file.tools.values()):
             num = tool.number
@@ -171,13 +171,12 @@ class DrillComposition(Composition):
             self.hits.append(hit)
     
     def _merge_dxf(self, file):
-        if not self.settings:
+        if self.settings is None:
             self.settings = file.settings
+        if self.settings.units == 'metric':
+            file.to_metric()
         else:
-            if self.settings.units == 'metric':
-                file.to_metric()
-            else:
-                file.to_inch()
+            file.to_inch()
 
         tool = self._register_tool(ExcellonTool(self.settings, number=1, diameter=file.width))
         self.dxf_statements.append((tool.number, file.statements))

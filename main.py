@@ -22,6 +22,7 @@ from kivy.uix.filechooser import FileChooserIconView
 
 import PcbMouseBites
 import PcbRail
+from PcbExport import export_pcb_panel
 
 Config.set('kivy', 'keyboard_mode', 'system')
 
@@ -150,7 +151,7 @@ class PanelizerApp(App):
         Clock.schedule_once(self.load_real_pcb_board, 2.0)
 
     def load_real_pcb_board(self, time):
-        demo_real_pcb = '/Users/gerard/PCBs/neatoboardB'
+        demo_real_pcb = '/Users/gerard/PCBs/neatoboardG'
         if os.path.isdir(demo_real_pcb):
             self._current_pcb_folder = demo_real_pcb
             #self.load(demo_real_pcb, [])
@@ -208,8 +209,6 @@ class PanelizerApp(App):
                 self._pcb_board.activate()
             self.update_status()
             self.calculate_pcb_fit_scale()
-        if self._pcb is not None:
-            self._pcb_panel.print_layout()
 
     def panelize_column(self, add):
         if self._pcb is not None:
@@ -443,8 +442,6 @@ class PanelizerApp(App):
 
     def save_finish(self, time):
         path = self._finish_save_selected
-        print('save_finish')
-        print(' path {}'.format(path))
 
         try:
             if not os.path.exists(path):
@@ -461,6 +458,13 @@ class PanelizerApp(App):
         update_progressbar(self._progress, 'exporting rails PCB...', 0.2)
         rails_path = PcbRail.generate_pcb_files()
         print('generated rails files in {}'.format(rails_path))
+
+        origins = self._pcb_panel.get_origins()
+        panels_count = self._panels_x * self._panels_y
+        mouse_bites_count = (panels_count * self._bites_count) + (self._panels_x * self._bites_count)
+        vertical = True if self._angle == 0.0 else False
+        export_pcb_panel(self._progress, path, self._current_pcb_folder, panels_count, rails_path,
+                         mouse_bites_path, mouse_bites_count, origins, vertical)
 
         self._progress.dismiss()
 

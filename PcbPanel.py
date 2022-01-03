@@ -802,6 +802,27 @@ class PcbPanel(OffScreenScatter):
         for o in bites_origins:
             print('   bite: {} cm'.format(o))
 
+    def get_origins(self):
+        origins = []
+        scale = float(self.pixels_per_cm)
+
+        top = self._shapes.get(0, 0)
+        origins.append(top.get_origin_mm(scale))
+
+        bottom = self._shapes.get(0, self._rows + 1)
+        origins.append(bottom.get_origin_mm(scale))
+
+        for r in range(0, self._rows):
+            for c in range(0, self._columns):
+                main = self._shapes.get(c, r + 1)
+                origins.append(main.get_origin_mm(scale))
+
+        bites_origins = self._bites.get_origins_mm(scale)
+        for o in bites_origins:
+            origins.append(o)
+
+        return origins
+
     @property
     def valid_layout(self):
         return self._valid_layout

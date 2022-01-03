@@ -46,6 +46,7 @@ class FileSettings(object):
     zeros : string
         'leading' to include leading zeros, 'trailing to include trailing zeros.
         This is the convention used in Excellon files
+        'decimal' i.e. '2.50'
 
     Notes
     -----
@@ -54,8 +55,8 @@ class FileSettings(object):
     and vice versa
     """
 
-    def __init__(self, notation='absolute', units='inch',
-                 zero_suppression=None, format=(2, 5), zeros=None,
+    def __init__(self, notation='absolute', units='metric',
+                 zero_suppression=None, format=(2, 6), zeros=None,
                  angle_units='degrees'):
         if notation not in ['absolute', 'incremental']:
             raise ValueError('Notation must be either absolute or incremental')
@@ -65,23 +66,25 @@ class FileSettings(object):
             raise ValueError('Units must be either inch or metric')
         self.units = units
 
+        if zeros is not None and zeros == 'decimal':
+            self.zeros = zeros
+            self.zero_suppression = 'leading'
+        else:
+            self._zeros = ''
+
         if zero_suppression is None and zeros is None:
             self.zero_suppression = 'trailing'
-
         elif zero_suppression == zeros:
-            raise ValueError('Zeros and Zero Suppression must be different. \
-                             Best practice is to specify only one.')
-
+            raise ValueError('Zeros and Zero Suppression must be different. Best practice is to specify only one.')
         elif zero_suppression is not None:
             if zero_suppression not in ['leading', 'trailing']:
                 # This is a common problem in Eagle files, so just suppress it
                 self.zero_suppression = 'leading'
             else:
                 self.zero_suppression = zero_suppression
-
         elif zeros is not None:
-            if zeros not in ['leading', 'trailing']:
-                raise ValueError('Zeros must be either leading or trailling')
+            if zeros not in ['leading', 'trailing', 'decimal']:
+                raise ValueError('Zeros must be either leading or trailling or decimal')
             self.zeros = zeros
 
         if len(format) != 2:
@@ -94,12 +97,16 @@ class FileSettings(object):
 
     @property
     def zero_suppression(self):
-        return self._zero_suppression
+        if self._zeros != 'decimal':
+            return self._zero_suppression
+        else:
+            return 'leading'
 
     @zero_suppression.setter
     def zero_suppression(self, value):
-        self._zero_suppression = value
-        self._zeros = 'leading' if value == 'trailing' else 'trailing'
+        if self._zeros != 'decimal':
+            self._zero_suppression = value
+            self._zeros = 'leading' if value == 'trailing' else 'trailing'
 
     @property
     def zeros(self):
@@ -109,7 +116,10 @@ class FileSettings(object):
     def zeros(self, value):
 
         self._zeros = value
-        self._zero_suppression = 'leading' if value == 'trailing' else 'trailing'
+        if self._zeros != 'decimal':
+            self._zero_suppression = 'leading' if value == 'trailing' else 'trailing'
+        else:
+            self._zero_suppression = 'leading'
 
     def __getitem__(self, key):
         if key == 'notation':
@@ -130,8 +140,7 @@ class FileSettings(object):
     def __setitem__(self, key, value):
         if key == 'notation':
             if value not in ['absolute', 'incremental']:
-                raise ValueError('Notation must be either \
-                                 absolute or incremental')
+                raise ValueError('Notation must be either absolute or incremental')
             self.notation = value
         elif key == 'units':
             if value not in ['inch', 'metric']:
@@ -140,13 +149,12 @@ class FileSettings(object):
 
         elif key == 'zero_suppression':
             if value not in ['leading', 'trailing']:
-                raise ValueError('Zero suppression must be either leading or \
-                                 trailling')
+                raise ValueError('Zero suppression must be either leading or trailling')
             self.zero_suppression = value
 
         elif key == 'zeros':
-            if value not in ['leading', 'trailing']:
-                raise ValueError('Zeros must be either leading or trailling')
+            if value not in ['leading', 'trailing', 'decimal']:
+                raise ValueError('Zeros must be either leading or trailling or decimal')
             self.zeros = value
 
         elif key == 'format':
@@ -165,13 +173,14 @@ class FileSettings(object):
     def __eq__(self, other):
         return (self.notation == other.notation and
                 self.units == other.units and
+                self.zeros == other.zeros and
                 self.zero_suppression == other.zero_suppression and
                 self.format == other.format and
                 self.angle_units == other.angle_units)
 
     def __str__(self):
-        return ('<Settings: %s %s %s %s %s>' %
-                (self.units, self.notation, self.zero_suppression, self.format, self.angle_units))
+        return ('<Settings: %s %s %s %s %s %s>' %
+                (self.units, self.notation, self.zeros, self.zero_suppression, self.format, self.angle_units))
 
 
 class CamFile(object):
@@ -225,7 +234,7 @@ class CamFile(object):
             self.units = 'metric'
             self.zero_suppression = 'trailing'
             self.zeros = 'leading'
-            self.format = (3, 3)
+            self.format = (2, 4)
         self.statements = statements if statements is not None else []
         if primitives is not None:
             self.primitives = primitives

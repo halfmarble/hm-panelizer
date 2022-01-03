@@ -149,6 +149,10 @@ def generate_float46(value):
     return data
 
 
+def generate_decfloat3(value):
+    return '{:0.3f}'.format(value)
+
+
 FS_MASK: Final = '''
 $HEADER$
 void main(void) {
