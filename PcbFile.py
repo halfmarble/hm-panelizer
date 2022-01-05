@@ -144,6 +144,7 @@ def generate_mouse_bite_gm1_data(origin, size, arc, close):
     data += '%TF.GenerationSoftware,{}*%\n'.format(APP_STR)
     data += '%TF.SameCoordinates,Original*%\n'
     data += '%TF.FileFunction,Profile,NP*%\n'
+    data += '%TF.ProjectId,hm-PanelMouseBite*%\n'
     data += '%FSLAX46Y46*%\n'
     data += 'G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*\n'
     data += 'G04 Created by {}*\n\n'.format(APP_STR)
@@ -158,6 +159,7 @@ def generate_mouse_bite_gm1_data(origin, size, arc, close):
     data += 'G04 APERTURE END LIST*\n'
     data += 'D10*\n\n'
 
+    data += 'G04 mouse bite left bottom arc*\n'
     data += 'G01*\n'
     data += 'X{}Y{}D02*\n'.format(generate_float46(min_x), generate_float46(min_y))
     data += 'G75*\n'
@@ -165,10 +167,12 @@ def generate_mouse_bite_gm1_data(origin, size, arc, close):
     data += 'X{}Y{}I{}J{}D01*\n\n'.format(generate_float46(min_x+arc), generate_float46(min_y+arc),
                                           generate_float46(0), generate_float46(arc))
 
+    data += 'G04 mouse bite left connect arcs line*\n'
     data += 'G01*\n'
     data += 'X{}Y{}D02*\n'.format(generate_float46(min_x+arc), generate_float46(min_y+arc))
     data += 'X{}Y{}D01*\n\n'.format(generate_float46(min_x+arc), generate_float46(max_y-arc))
 
+    data += 'G04 mouse bite left top arc*\n'
     data += 'G01*\n'
     data += 'X{}Y{}D02*\n'.format(generate_float46(min_x+arc), generate_float46(max_y-arc))
     data += 'G75*\n'
@@ -176,6 +180,7 @@ def generate_mouse_bite_gm1_data(origin, size, arc, close):
     data += 'X{}Y{}I{}J{}D01*\n\n'.format(generate_float46(min_x), generate_float46(max_y),
                                           generate_float46(-arc), generate_float46(0))
 
+    data += 'G04 mouse bite right bottom arc*\n'
     data += 'G01*\n'
     data += 'X{}Y{}D02*\n'.format(generate_float46(max_x), generate_float46(min_y))
     data += 'G75*\n'
@@ -183,10 +188,12 @@ def generate_mouse_bite_gm1_data(origin, size, arc, close):
     data += 'X{}Y{}I{}J{}D01*\n\n'.format(generate_float46(max_x-arc), generate_float46(min_y+arc),
                                           generate_float46(0), generate_float46(arc))
 
+    data += 'G04 mouse bite right connect arcs line*\n'
     data += 'G01*\n'
     data += 'X{}Y{}D02*\n'.format(generate_float46(max_x-arc), generate_float46(min_y+arc))
     data += 'X{}Y{}D01*\n\n'.format(generate_float46(max_x-arc), generate_float46(max_y-arc))
 
+    data += 'G04 mouse bite right top arc*\n'
     data += 'G01*\n'
     data += 'X{}Y{}D02*\n'.format(generate_float46(max_x-arc), generate_float46(max_y-arc))
     data += 'G75*\n'
@@ -195,6 +202,7 @@ def generate_mouse_bite_gm1_data(origin, size, arc, close):
                                           generate_float46(arc), generate_float46(0))
 
     if close:
+        data += 'G04 mouse bite closing gap at top/bottom*\n'
         data += 'G01*\n'
         data += 'X{}Y{}D02*\n'.format(generate_float46(min_x), generate_float46(min_y))
         data += 'X{}Y{}D01*\n\n'.format(generate_float46(max_x), generate_float46(min_y))
@@ -216,6 +224,7 @@ def generate_rail_gm1_data(origin, size, panels, vcut):
     data += '%TF.GenerationSoftware,{}*%\n'.format(APP_STR)
     data += '%TF.SameCoordinates,Original*%\n'
     data += '%TF.FileFunction,Profile,NP*%\n'
+    data += '%TF.ProjectId,hm-PanelRail*%\n'
     data += '%FSLAX46Y46*%\n'
     data += 'G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*\n'
     data += 'G04 Created by {}*\n\n'.format(APP_STR)

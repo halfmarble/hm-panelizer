@@ -459,12 +459,25 @@ class PanelizerApp(App):
         rails_path = PcbRail.generate_pcb_files()
         print('generated rails files in {}'.format(rails_path))
 
-        origins = self._pcb_panel.get_origins()
+        rails_origins = self._pcb_panel.get_rails_origins()
+        pcbs_origins = self._pcb_panel.get_pcbs_origins()
+        bites_origins = self._pcb_panel.get_bites_origins()
+
+        origins = []
+        for o in rails_origins:
+            origins.append(o)
+        for o in pcbs_origins:
+            origins.append(o)
+        for o in bites_origins:
+            origins.append(o)
+
         panels_count = self._panels_x * self._panels_y
         mouse_bites_count = (panels_count * self._bites_count) + (self._panels_x * self._bites_count)
         pcb_height = self._pcb.size_mm[1]
-        export_pcb_panel(self._progress, path, self._current_pcb_folder, panels_count, pcb_height,
-                         rails_path, mouse_bites_path, mouse_bites_count, origins, self._angle)
+        error_msg = export_pcb_panel(self._progress, path, self._current_pcb_folder, panels_count, pcb_height,
+                                     rails_path, mouse_bites_path, mouse_bites_count, origins, self._angle)
+        if error_msg is not None:
+            self.error_open(error_msg)
 
         self._progress.dismiss()
 

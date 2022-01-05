@@ -47,7 +47,7 @@ class PcbMouseBites:
 
         origin = (0, 0)
         size = (self._bite, self._gap)
-        save_mouse_bite_gm1(self._tmp_folder, origin, size, arc=1, close=True)
+        save_mouse_bite_gm1(self._tmp_folder, origin, size, arc=1, close=False)
         save_mouse_bite_drl(self._tmp_folder, origin, size, self._bite_hole_radius, self._bite_hole_space)
 
         return self._tmp_folder

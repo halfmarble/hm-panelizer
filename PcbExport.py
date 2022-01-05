@@ -172,4 +172,5 @@ def export_pcb_panel(progress, path_export, path_pcb, pcb_count, pcb_height,
 
     update_progressbar(progress, 'Done', 1.0)
 
+    return None
 

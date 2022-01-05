@@ -51,7 +51,7 @@ class AppSettings:
         self._gap = clamp(2.5, gap, 10.0)
         self._rail = clamp(5, rail, 20.0)
         self._bites_count = int(clamp(1, bites_count, 10))
-        self._bite = clamp(2.5, bite, 10.0)
+        self._bite = clamp(5.0, bite, 15.0)
         self._bite_hole_radius = clamp(0.1, bite_hole_radius, 1.0)
         self._bite_hole_space = clamp(0.5, bite_hole_space, 20.0)
         self._use_vcut = use_vcut
