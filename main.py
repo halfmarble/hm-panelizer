@@ -1,4 +1,4 @@
-# Copyright 2021 HalfMarble LLC
+# Copyright 2021,2022 HalfMarble LLC
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,17 +12,20 @@
 
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+
 import os.path
 import tempfile
+
 from os import listdir
 from os.path import dirname
 
 from kivy import Config
 from kivy.uix.filechooser import FileChooserIconView
 
-import PcbMouseBites
-import PcbRail
-from PcbExport import export_pcb_panel
+from PcbMouseBites import *
+from PcbRail import *
+from PcbExport import *
 
 Config.set('kivy', 'keyboard_mode', 'system')
 

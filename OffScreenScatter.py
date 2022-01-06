@@ -1,4 +1,4 @@
-# Copyright 2021 HalfMarble LLC
+# Copyright 2021,2022 HalfMarble LLC
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import math
+
 from kivy.uix.scatter import Scatter
 from kivy.uix.image import Image
 from kivy.graphics import Fbo, ClearBuffers, ClearColor

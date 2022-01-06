@@ -1,4 +1,4 @@
-# Copyright 2021 HalfMarble LLC
+# Copyright 2021,2022 HalfMarble LLC
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,10 +19,6 @@ from os.path import join
 from kivy.uix.image import Image
 from kivy.graphics import Scale, Rectangle, Line
 
-from Constants import *
-from Utilities import *
-from OffScreenImage import *
-
 from hm_gerber_tool import PCB
 from hm_gerber_tool.render import theme
 from hm_gerber_tool.layers import PCBLayer
@@ -30,10 +26,14 @@ from hm_gerber_tool.render import GerberCairoContext, theme
 from hm_gerber_tool.common import rs274x
 from hm_gerber_tool.common import excellon
 
+from Constants import *
+from Utilities import *
+from OffScreenImage import *
+
 
 def log_text(progressbar, text=None, value=None):
     if progressbar is not None:
-        update_progressbar(progressbar, text, value)
+        Utilities.update_progressbar(progressbar, text, value)
     elif text is not None:
         print(text)
 

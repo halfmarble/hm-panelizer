@@ -1,4 +1,4 @@
-# Copyright 2021 HalfMarble LLC
+# Copyright 2021,2022 HalfMarble LLC
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,8 @@
 
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+
 import os
 import sys
 import math
@@ -41,7 +43,7 @@ def truncate_str_middle(s, n):
         return s
     # half of the size, minus the 3 .'s
     n_2 = int(n / 2 - 3)
-    # whatever's left
+    #  whatever is left
     n_1 = int(n - n_2 - 3)
     return '{0}...{1}'.format(s[:n_1], s[-n_2:])
 

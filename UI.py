@@ -1,4 +1,4 @@
-# Copyright 2021 HalfMarble LLC
+# Copyright 2021,2022 HalfMarble LLC
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,27 +37,6 @@ class TitleLabel(Label):
 
 class Settings(Popup):
     pass
-
-    # class FloatInput(TextInput):
-    #
-    #     pat = re.compile('[^0-9]')
-    #
-    #     def insert_text(self, substring, from_undo=False):
-    #         pat = self.pat
-    #         if '.' in self.text:
-    #             s = re.sub(pat, '', substring)
-    #         else:
-    #             s = '.'.join([re.sub(pat, '', s) for s in substring.split('.', 1)])
-    #         return super(FloatInput, self).insert_text(s, from_undo=from_undo)
-
-    # on_state:
-    #     self.background_color = self.state == 'down' and [0.65, 0.48, 0.46, 1.0] or [0.2, 0.2, 0.2, 1]
-    # canvas.before:
-    #     Color:
-    #         rgba: self.background_color
-    #     Rectangle:
-    #         pos: self.pos
-    #         size: self.size
 
 
 class Progress(Popup):

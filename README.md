@@ -8,5 +8,5 @@ Rendering Examples:
 -------------------
 
 ### Main window
-![main window](Screenshot.png)
+![main window](pics/Screenshot.png)
 

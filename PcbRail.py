@@ -1,4 +1,4 @@
-# Copyright 2021 HalfMarble LLC
+# Copyright 2021,2022 HalfMarble LLC
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,13 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+import tempfile
+
 from kivy.cache import Cache
 from kivy.graphics import Rectangle, Color
 
 from AppSettings import *
+from PcbFile import *
 from Utilities import *
 from Constants import *
-import tempfile
 
 
 class PcbRail:

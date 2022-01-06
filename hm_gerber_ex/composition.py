@@ -68,7 +68,7 @@ class GerberComposition(Composition):
         f.write(end.to_gerber(self.settings) + '\n')
         return True
 
-    def process_segment(self, f, i, lines, verbose=True):
+    def process_segment(self, f, i, lines, verbose=False):
         split = False
         start = lines[i]
         if isinstance(start, CoordStmt) and start.op == 'D02' and len(lines) > (i+1):
@@ -112,46 +112,6 @@ class GerberComposition(Composition):
             statements_list.append(statement)
         for i in range(len(statements_list)):
             i = self.process_segment(f, i, statements_list)
-
-    def split_line_NOT(self, f, statement_start, statement_end):
-        print('# LINE START {}'.format(statement_start.to_gerber(self.settings)))
-        print('# LINE END   {}'.format(statement_end.to_gerber(self.settings)))
-        f.write(statement_start.to_gerber(self.settings) + '\n')
-        new_statement = statement_end
-        if statement_end.y == statement_start.y:
-            x_start = statement_start.x
-            x_end = statement_end.x
-            y = statement_end.y
-            for c in self.cutout_lines:
-                if c[0] == y:
-                    f.write('G04 ------- start replacement*\n')
-                    f.write('G04 ------- {}\n'.format(statement_start))
-                    f.write('G04 ------- {}\n'.format(statement_start.to_gerber(self.settings)))
-                    f.write('G04 ------- {}\n'.format(statement_end))
-                    f.write('G04 ------- {}\n'.format(statement_end.to_gerber(self.settings)))
-                    print()
-                    print('# REPLACING {}'.format(new_statement.to_gerber(self.settings)))
-                    print('# WITH')
-                    lines = c[1]
-                    for cutout_line in lines:
-                        cutout_line_start = cutout_line[0]
-                        cutout_line_end = cutout_line[1]
-                        if cutout_line_start >= x_start and cutout_line_end <= x_end:
-                            new_statement.x = cutout_line_start
-                            print('#           {}'.format(new_statement.to_gerber(self.settings)))
-                            f.write(new_statement.to_gerber(self.settings) + '\n')
-                            new_statement = CoordStmt(None, cutout_line_end, y, None, None, 'D02', self.settings)
-                            print('#           {}'.format(new_statement.to_gerber(self.settings)))
-                            f.write(new_statement.to_gerber(self.settings) + '\n')
-
-                            new_statement = CoordStmt(None, cutout_line_end, y, None, None, 'D01', self.settings)
-
-                            x_start = cutout_line_end
-                    new_statement.x = x_end
-                    f.write('G04 ------- end replacement*\n')
-                    print('#           {}'.format(new_statement.to_gerber(self.settings)))
-                    print()
-        return new_statement
 
     def dump(self, path):
         def statements():

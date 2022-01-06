@@ -1,7 +1,4 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
-
-# Copyright 2021 HalfMarble LLC
+# Copyright 2021,2022 HalfMarble LLC
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,6 +28,7 @@ def is_pth(name):
         return False
     else:
         return True
+
 
 extensions = [
     '.gm1',
