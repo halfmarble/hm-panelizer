@@ -61,13 +61,54 @@ extensions_to_names = {
     '.drl': 'drill',
 }
 
+# 1 mouse bite -> 2 line segments
+# [
+#     [ y1, [(x1_start, x1_end)]]
+#     [ y2, [(x1_start, x1_end)]]
+# ]
+
+# 2 mouse bites on 1 row -> 4 line segments
+# [
+#     [ y1, [(x1_start, x1_end), (x2_start, x2_end)]]
+#     [ y2, [(x1_start, x1_end), (x2_start, x2_end)]]
+# ]
+
+# 2 mouse bites on 2 rows -> 8 line segments
+# [
+#     [ y1, [(x1_start, x1_end), (x2_start, x2_end), (x3_start, x3_end), (x4_start, x4_end)]]
+#     [ y2, [(x1_start, x1_end), (x2_start, x2_end), (x3_start, x3_end), (x4_start, x4_end)]]
+# ]
+
+mouse_bite_origins = [(30.0, 5.0), (90.0, 5.0), (160.0, 5.0)]
+mouse_bite_size = (5.0, 2.5)
+mouse_bite_cutout_lines =\
+    [
+        [mouse_bite_origins[0][1],
+            [
+                (mouse_bite_origins[0][0], mouse_bite_origins[0][0] + mouse_bite_size[0]),
+                (mouse_bite_origins[1][0], mouse_bite_origins[1][0] + mouse_bite_size[0]),
+                (mouse_bite_origins[2][0], mouse_bite_origins[2][0] + mouse_bite_size[0]),
+            ]
+        ],
+        [mouse_bite_origins[0][1]+mouse_bite_size[1],
+            [
+                (mouse_bite_origins[0][0], mouse_bite_origins[0][0] + mouse_bite_size[0]),
+                (mouse_bite_origins[1][0], mouse_bite_origins[1][0] + mouse_bite_size[0]),
+                (mouse_bite_origins[2][0], mouse_bite_origins[2][0] + mouse_bite_size[0]),
+            ]
+        ],
+    ]
+print('cutout_lines: {}'.format(mouse_bite_cutout_lines))
+
 boards = [
-    ('pcb/',  0, 0, 90),
-    ('pcb/', 10, 0, 0),
+    ('pcb_rails/', 0, 0, 0),
+    ('pcb_rails/', 0, 7.5, 0),
+    ('pcb_mouse_bites/',  mouse_bite_origins[0][0], mouse_bite_origins[0][1], 0),
+    ('pcb_mouse_bites/', mouse_bite_origins[1][0], mouse_bite_origins[1][1], 0),
+    ('pcb_mouse_bites/', mouse_bite_origins[2][0], mouse_bite_origins[2][1], 0),
 ]
 
 output = 'panelized'
-pcb = 'panel'
 
 os.chdir(os.path.dirname(__file__))
 try:
@@ -88,7 +129,10 @@ for ext in extensions:
     print('\nPROCESS: {}'.format(ext))
 
     if ext != '.drl':
-        ctx = GerberComposition()
+        cutout_lines = None
+        if ext == '.gm1':
+            cutout_lines = mouse_bite_cutout_lines
+        ctx = GerberComposition(cutout_lines=cutout_lines)
     file = None
 
     # board

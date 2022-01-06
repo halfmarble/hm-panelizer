@@ -980,17 +980,13 @@ class CoordStmt(Statement):
         if self.function:
             ret += self.function
         if self.x is not None:
-            ret += 'X{0}'.format(write_gerber_value(self.x, settings.format,
-                                                    settings.zero_suppression))
+            ret += 'X{0}'.format(write_gerber_value(self.x, settings.format, settings.zero_suppression))
         if self.y is not None:
-            ret += 'Y{0}'.format(write_gerber_value(self.y, settings.format,
-                                                    settings.zero_suppression))
+            ret += 'Y{0}'.format(write_gerber_value(self.y, settings.format, settings.zero_suppression))
         if self.i is not None:
-            ret += 'I{0}'.format(write_gerber_value(self.i, settings.format,
-                                                    settings.zero_suppression))
+            ret += 'I{0}'.format(write_gerber_value(self.i, settings.format, settings.zero_suppression))
         if self.j is not None:
-            ret += 'J{0}'.format(write_gerber_value(self.j, settings.format,
-                                                    settings.zero_suppression))
+            ret += 'J{0}'.format(write_gerber_value(self.j, settings.format, settings.zero_suppression))
         if self.op:
             ret += self.op
         return ret + '*'

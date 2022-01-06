@@ -7,7 +7,7 @@
 import os
 from functools import reduce
 from hm_gerber_tool.cam import FileSettings
-from hm_gerber_tool.gerber_statements import EofStmt
+from hm_gerber_tool.gerber_statements import EofStmt, CoordStmt, CommentStmt
 from hm_gerber_tool.excellon_statements import *
 from hm_gerber_tool.excellon import DrillSlot, DrillHit
 import hm_gerber_tool.rs274x
@@ -24,11 +24,12 @@ class Composition(object):
 class GerberComposition(Composition):
     APERTURE_ID_BIAS = 10
 
-    def __init__(self, settings=None, comments=None):
+    def __init__(self, settings=None, comments=None, cutout_lines=None):
         super(GerberComposition, self).__init__(settings, comments)
         self.aperture_macros = {}
         self.apertures = []
         self.drawings = []
+        self.cutout_lines = cutout_lines
 
     def merge(self, file):
         if isinstance(file, hm_gerber_ex.rs274x.GerberFile):
@@ -37,6 +38,120 @@ class GerberComposition(Composition):
             self._merge_dxf(file)
         else:
             raise Exception('unsupported file type')
+
+    def split_line(self, f, start, end, verbose=False):
+        if verbose:
+            print('# SPLIT')
+            print('#            LINE START  {:3.2f},{:3.2f} [{}] '
+                  .format(start.x, start.y, start.to_gerber(self.settings)))
+        f.write(start.to_gerber(self.settings) + '\n')
+        for cutout in self.cutout_lines:
+            cutout_y = cutout[0]
+            if cutout_y == start.y:
+                lines = cutout[1]
+                for cutout_line in lines:
+                    start_cutout_x = cutout_line[0]
+                    end_cutout_x = cutout_line[1]
+                    if start_cutout_x >= start.x and end_cutout_x <= end.x:
+                        new_end = CoordStmt(None, start_cutout_x, cutout_y, None, None, 'D01', self.settings)
+                        new_start = CoordStmt(None, end_cutout_x, cutout_y, None, None, 'D02', self.settings)
+                        if verbose:
+                            print('#   INSERTING LINE END   {:3.2f},{:3.2f} [{}] '
+                                  .format(new_end.x, new_end.y, new_end.to_gerber(self.settings)))
+                            print('#   INSERTING LINE START {:3.2f},{:3.2f} [{}] '
+                                  .format(new_start.x, new_start.y, new_start.to_gerber(self.settings)))
+                        f.write(new_end.to_gerber(self.settings) + '\n')
+                        f.write(new_start.to_gerber(self.settings) + '\n')
+        if verbose:
+            print('#            LINE END    {:3.2f},{:3.2f} [{}] '
+                  .format(end.x, end.y, end.to_gerber(self.settings)))
+        f.write(end.to_gerber(self.settings) + '\n')
+        return True
+
+    def process_segment(self, f, i, lines, verbose=True):
+        split = False
+        start = lines[i]
+        if isinstance(start, CoordStmt) and start.op == 'D02' and len(lines) > (i+1):
+            end = lines[i + 1]
+            if isinstance(end, CoordStmt) and end.op == 'D01':
+                if end.y == start.y:
+                    for cutout in self.cutout_lines:
+                        cutout_y = cutout[0]
+                        if cutout_y == end.y:
+                            if verbose:
+                                print('#')
+                                print('# LINE START {:3.2f},{:3.2f} [{}] '
+                                      .format(start.x, start.y, start.to_gerber(self.settings)))
+                                print('# LINE END   {:3.2f},{:3.2f} [{}] '
+                                      .format(end.x, end.y, end.to_gerber(self.settings)))
+                            if end.x > start.x:
+                                if verbose:
+                                    print('# DIRECTION ----->')
+                            else:
+                                if verbose:
+                                    print('# DIRECTION <----- (SWAP NEEDED)')
+                                temp_x = end.x
+                                end.x = start.x
+                                start.x = temp_x
+                                if verbose:
+                                    print('# NOW LINE START {:3.2f},{:3.2f} [{}] '
+                                          .format(start.x, start.y, start.to_gerber(self.settings)))
+                                    print('# NOW LINE END   {:3.2f},{:3.2f} [{}] '
+                                          .format(end.x, end.y, end.to_gerber(self.settings)))
+                            split = self.split_line(f, start, end, verbose)
+        if split:
+            return i+1
+        else:
+            f.write(lines[i].to_gerber(self.settings) + '\n')
+            return i
+
+    # can handle only horizontal lines, and lines going from left to right (i.e. start.x < end.x)
+    def process_statements(self, f, statements):
+        statements_list = []
+        for statement in statements():
+            statements_list.append(statement)
+        for i in range(len(statements_list)):
+            i = self.process_segment(f, i, statements_list)
+
+    def split_line_NOT(self, f, statement_start, statement_end):
+        print('# LINE START {}'.format(statement_start.to_gerber(self.settings)))
+        print('# LINE END   {}'.format(statement_end.to_gerber(self.settings)))
+        f.write(statement_start.to_gerber(self.settings) + '\n')
+        new_statement = statement_end
+        if statement_end.y == statement_start.y:
+            x_start = statement_start.x
+            x_end = statement_end.x
+            y = statement_end.y
+            for c in self.cutout_lines:
+                if c[0] == y:
+                    f.write('G04 ------- start replacement*\n')
+                    f.write('G04 ------- {}\n'.format(statement_start))
+                    f.write('G04 ------- {}\n'.format(statement_start.to_gerber(self.settings)))
+                    f.write('G04 ------- {}\n'.format(statement_end))
+                    f.write('G04 ------- {}\n'.format(statement_end.to_gerber(self.settings)))
+                    print()
+                    print('# REPLACING {}'.format(new_statement.to_gerber(self.settings)))
+                    print('# WITH')
+                    lines = c[1]
+                    for cutout_line in lines:
+                        cutout_line_start = cutout_line[0]
+                        cutout_line_end = cutout_line[1]
+                        if cutout_line_start >= x_start and cutout_line_end <= x_end:
+                            new_statement.x = cutout_line_start
+                            print('#           {}'.format(new_statement.to_gerber(self.settings)))
+                            f.write(new_statement.to_gerber(self.settings) + '\n')
+                            new_statement = CoordStmt(None, cutout_line_end, y, None, None, 'D02', self.settings)
+                            print('#           {}'.format(new_statement.to_gerber(self.settings)))
+                            f.write(new_statement.to_gerber(self.settings) + '\n')
+
+                            new_statement = CoordStmt(None, cutout_line_end, y, None, None, 'D01', self.settings)
+
+                            x_start = cutout_line_end
+                    new_statement.x = x_end
+                    f.write('G04 ------- end replacement*\n')
+                    print('#           {}'.format(new_statement.to_gerber(self.settings)))
+                    print()
+        return new_statement
 
     def dump(self, path):
         def statements():
@@ -51,8 +166,11 @@ class GerberComposition(Composition):
         self.settings.zeros = 'trailing'
         with open(path, 'w') as f:
             hm_gerber_ex.rs274x.write_gerber_header(f, self.settings)
-            for statement in statements():
-                f.write(statement.to_gerber(self.settings) + '\n')
+            if self.cutout_lines is not None:
+                self.process_statements(f, statements)
+            else:
+                for statement in statements():
+                    f.write(statement.to_gerber(self.settings) + '\n')
 
     def _merge_gerber(self, file):
         aperture_macro_map = {}
