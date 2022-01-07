@@ -19,6 +19,7 @@ from os.path import join
 from kivy.uix.image import Image
 from kivy.graphics import Scale, Rectangle, Line
 
+import Utilities
 from hm_gerber_tool import PCB
 from hm_gerber_tool.render import theme
 from hm_gerber_tool.layers import PCBLayer
@@ -720,3 +721,39 @@ def render_rail_gto(bounds, path, filename, origin, size, panels, vcut, jlc):
     render_pcb_layer(bounds, layer, path, filename)
 
 
+# 1 mouse bite -> 2 line segments
+# [
+#     [ y1_origin,          [(x1_start, x1_end)]]
+#     [ y1_origin+height,   [(x1_start, x1_end)]]
+# ]
+#
+# 2 mouse bites on 1 row -> 4 line segments
+# [
+#     [ y1_origin,          [(x1_start, x1_end), (x2_start, x2_end)]]
+#     [ y1_origin+height,   [(x1_start, x1_end), (x2_start, x2_end)]]
+# ]
+#
+# 2 mouse bites on 2 rows -> 16 line segments
+# [
+#     [ y1_origin,          [(x1_start, x1_end), (x2_start, x2_end), (x3_start, x3_end), (x4_start, x4_end)]]
+#     [ y1_origin+height,   [(x1_start, x1_end), (x2_start, x2_end), (x3_start, x3_end), (x4_start, x4_end)]]
+#     [ y2_origin,          [(x1_start, x1_end), (x2_start, x2_end), (x3_start, x3_end), (x4_start, x4_end)]]
+#     [ y2_origin+height,   [(x1_start, x1_end), (x2_start, x2_end), (x3_start, x3_end), (x4_start, x4_end)]]
+# ]
+def cutouts_from_origins(width, height, origins):
+    cutouts = []
+    for row in origins:
+        y = row[0][1]
+        line_bottom = [y]
+        line_top = [y+height]
+        cuts_bottom = []
+        cuts_top = []
+        for origin in row:
+            x = origin[0]
+            cuts_bottom.append((x, x+width))
+            cuts_top.append((x, x+width))
+        line_bottom.append(cuts_bottom)
+        line_top.append(cuts_top)
+        cutouts.append(line_bottom)
+        cutouts.append(line_top)
+    return cutouts

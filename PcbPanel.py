@@ -262,12 +262,8 @@ class PcbPanel(OffScreenScatter):
         self._parent.update_status()
 
     def get_bites_origins(self):
-        origins = []
         scale = float(self.pixels_per_cm)
-        bites_origins = self._bites.get_origins_mm(scale)
-        for o in bites_origins:
-            origins.append(o)
-        return origins
+        return self._bites.get_origins_mm(scale)
 
     def get_rails_origins(self):
         origins = []

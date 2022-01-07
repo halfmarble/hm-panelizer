@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from kivy.graphics import Rectangle, Translate, Rotate, PushMatrix, PopMatrix
 
 from Array2D import *
@@ -87,8 +88,9 @@ class PcbMouseBitesGroup:
     def get_origins_mm(self, scale):
         origins = []
         # TODO: implement Array2D iterator and use it here
-        for c in range(self._horizontal.width):
-            for r in range(self._horizontal.height):
+        for r in range(self._horizontal.height):
+            origins_row = []
+            for c in range(self._horizontal.width):
                 gap = self._horizontal.get(c, r)
                 main = gap.main_shape
                 main_origin = main.get_origin_mm(scale)
@@ -98,9 +100,10 @@ class PcbMouseBitesGroup:
                 bottom_size = bottom.get_size_mm(scale)
                 for b in range(gap.bites_count):
                     bite = gap.bite(b)
-                    origin_x = main_origin[0] + bite.slide*main_size[0]
+                    origin_x = main_origin[0] + (bite.slide * main_size[0])
                     origin_y = bottom_origin[1] + bottom_size[1]
-                    origins.append((origin_x, origin_y))
+                    origins_row.append((origin_x, origin_y))
+            origins.append(origins_row)
         return origins
 
     def validate_layout(self):

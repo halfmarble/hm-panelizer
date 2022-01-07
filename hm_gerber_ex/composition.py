@@ -39,13 +39,13 @@ class GerberComposition(Composition):
         else:
             raise Exception('unsupported file type')
 
-    def split_line(self, f, start, end, verbose=False):
+    def split_line(self, f, cutouts, start, end, verbose=False):
         if verbose:
             print('# SPLIT')
             print('#            LINE START  {:3.2f},{:3.2f} [{}] '
                   .format(start.x, start.y, start.to_gerber(self.settings)))
         f.write(start.to_gerber(self.settings) + '\n')
-        for cutout in self.cutout_lines:
+        for cutout in cutouts:
             cutout_y = cutout[0]
             if cutout_y == start.y:
                 lines = cutout[1]
@@ -68,15 +68,23 @@ class GerberComposition(Composition):
         f.write(end.to_gerber(self.settings) + '\n')
         return True
 
-    def process_segment(self, f, i, lines, verbose=False):
+    def process_segment(self, f, i, lines, cutouts, verbose=False):
         split = False
         start = lines[i]
         if isinstance(start, CoordStmt) and start.op == 'D02' and len(lines) > (i+1):
             end = lines[i + 1]
             if isinstance(end, CoordStmt) and end.op == 'D01':
                 if end.y == start.y:
-                    for cutout in self.cutout_lines:
+                    if verbose:
+                        print('#')
+                        print('# HORIZONTAL LINE')
+                        print('# LINE START {:3.2f},{:3.2f} [{}] '
+                              .format(start.x, start.y, start.to_gerber(self.settings)))
+                        print('# LINE END   {:3.2f},{:3.2f} [{}] '
+                              .format(end.x, end.y, end.to_gerber(self.settings)))
+                    for cutout in cutouts:
                         cutout_y = cutout[0]
+                        print('#    TRYING Y {}'.format(cutout_y))
                         if cutout_y == end.y:
                             if verbose:
                                 print('#')
@@ -98,7 +106,7 @@ class GerberComposition(Composition):
                                           .format(start.x, start.y, start.to_gerber(self.settings)))
                                     print('# NOW LINE END   {:3.2f},{:3.2f} [{}] '
                                           .format(end.x, end.y, end.to_gerber(self.settings)))
-                            split = self.split_line(f, start, end, verbose)
+                            split = self.split_line(f, cutouts, start, end, verbose)
         if split:
             return i+1
         else:
@@ -106,12 +114,15 @@ class GerberComposition(Composition):
             return i
 
     # can handle only horizontal lines, and lines going from left to right (i.e. start.x < end.x)
-    def process_statements(self, f, statements):
+    def process_statements(self, f, statements, cutouts, verbose=True):
+        if verbose:
+            print('>>>>>>>>>>> process_statements')
+            print('>>>>>>>>>>> cutouts: {}'.format(cutouts))
         statements_list = []
         for statement in statements():
             statements_list.append(statement)
         for i in range(len(statements_list)):
-            i = self.process_segment(f, i, statements_list)
+            i = self.process_segment(f, i, statements_list, cutouts, verbose)
 
     def dump(self, path):
         def statements():
@@ -127,7 +138,7 @@ class GerberComposition(Composition):
         with open(path, 'w') as f:
             hm_gerber_ex.rs274x.write_gerber_header(f, self.settings)
             if self.cutout_lines is not None:
-                self.process_statements(f, statements)
+                self.process_statements(f, statements, self.cutout_lines, verbose=True)
             else:
                 for statement in statements():
                     f.write(statement.to_gerber(self.settings) + '\n')

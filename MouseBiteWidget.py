@@ -157,5 +157,3 @@ class MouseBiteWidget(OffScreenScatter):
                 return self._disconnected_color
             else:
                 return self._base_color
-
-

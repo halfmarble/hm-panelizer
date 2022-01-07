@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright 2021 HalfMarble LLC
+# Copyright 2022 HalfMarble LLC
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import hm_gerber_ex
 from hm_gerber_ex import GerberComposition, DrillComposition
 from hm_gerber_tool.utils import listdir
 from hm_gerber_tool.cam import FileSettings
+
+from PcbFile import cutouts_from_origins
 
 
 def is_pth(name):
@@ -61,51 +63,31 @@ extensions_to_names = {
     '.drl': 'drill',
 }
 
-# 1 mouse bite -> 2 line segments
-# [
-#     [ y1, [(x1_start, x1_end)]]
-#     [ y2, [(x1_start, x1_end)]]
-# ]
+row1_height = 5.0
+row2_height = 12.5
 
-# 2 mouse bites on 1 row -> 4 line segments
-# [
-#     [ y1, [(x1_start, x1_end), (x2_start, x2_end)]]
-#     [ y2, [(x1_start, x1_end), (x2_start, x2_end)]]
-# ]
+mouse_bite_origins = \
+[
+    [(30.0, row1_height), (90.0, row1_height), (160.0, row1_height)],  # row 1
+    [(30.0, row2_height), (90.0, row2_height), (160.0, row2_height)],  # row 2
+]
+print('mouse_bite_origins: {}'.format(mouse_bite_origins))
 
-# 2 mouse bites on 2 rows -> 8 line segments
-# [
-#     [ y1, [(x1_start, x1_end), (x2_start, x2_end), (x3_start, x3_end), (x4_start, x4_end)]]
-#     [ y2, [(x1_start, x1_end), (x2_start, x2_end), (x3_start, x3_end), (x4_start, x4_end)]]
-# ]
+mouse_bite_width = 5.0
+mouse_bite_height = 2.5
 
-mouse_bite_origins = [(30.0, 5.0), (90.0, 5.0), (160.0, 5.0)]
-mouse_bite_size = (5.0, 2.5)
-mouse_bite_cutout_lines =\
-    [
-        [mouse_bite_origins[0][1],
-            [
-                (mouse_bite_origins[0][0], mouse_bite_origins[0][0] + mouse_bite_size[0]),
-                (mouse_bite_origins[1][0], mouse_bite_origins[1][0] + mouse_bite_size[0]),
-                (mouse_bite_origins[2][0], mouse_bite_origins[2][0] + mouse_bite_size[0]),
-            ]
-        ],
-        [mouse_bite_origins[0][1]+mouse_bite_size[1],
-            [
-                (mouse_bite_origins[0][0], mouse_bite_origins[0][0] + mouse_bite_size[0]),
-                (mouse_bite_origins[1][0], mouse_bite_origins[1][0] + mouse_bite_size[0]),
-                (mouse_bite_origins[2][0], mouse_bite_origins[2][0] + mouse_bite_size[0]),
-            ]
-        ],
-    ]
-print('cutout_lines: {}'.format(mouse_bite_cutout_lines))
+mouse_bite_cutout_lines = cutouts_from_origins(mouse_bite_width, mouse_bite_height, mouse_bite_origins)
 
 boards = [
     ('pcb_rails/', 0, 0, 0),
     ('pcb_rails/', 0, 7.5, 0),
-    ('pcb_mouse_bites/',  mouse_bite_origins[0][0], mouse_bite_origins[0][1], 0),
-    ('pcb_mouse_bites/', mouse_bite_origins[1][0], mouse_bite_origins[1][1], 0),
-    ('pcb_mouse_bites/', mouse_bite_origins[2][0], mouse_bite_origins[2][1], 0),
+    ('pcb_rails/', 0, 15, 0),
+    ('pcb_mouse_bites/', mouse_bite_origins[0][0][0], mouse_bite_origins[0][0][1], 0),
+    ('pcb_mouse_bites/', mouse_bite_origins[0][1][0], mouse_bite_origins[0][1][1], 0),
+    ('pcb_mouse_bites/', mouse_bite_origins[0][2][0], mouse_bite_origins[0][2][1], 0),
+    ('pcb_mouse_bites/', mouse_bite_origins[1][0][0], mouse_bite_origins[1][0][1], 0),
+    ('pcb_mouse_bites/', mouse_bite_origins[1][1][0], mouse_bite_origins[1][1][1], 0),
+    ('pcb_mouse_bites/', mouse_bite_origins[1][2][0], mouse_bite_origins[1][2][1], 0),
 ]
 
 output = 'panelized'

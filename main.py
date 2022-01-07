@@ -471,14 +471,16 @@ class PanelizerApp(App):
             origins.append(o)
         for o in pcbs_origins:
             origins.append(o)
-        for o in bites_origins:
-            origins.append(o)
+        for row in bites_origins:
+            for o in row:
+                origins.append(o)
 
         panels_count = self._panels_x * self._panels_y
         mouse_bites_count = (panels_count * self._bites_count) + (self._panels_x * self._bites_count)
         pcb_height = self._pcb.size_mm[1]
+        cutouts = cutouts_from_origins(AppSettings.bite, AppSettings.gap, bites_origins)
         error_msg = export_pcb_panel(self._progress, path, self._current_pcb_folder, panels_count, pcb_height,
-                                     rails_path, mouse_bites_path, mouse_bites_count, origins, self._angle)
+                                     rails_path, mouse_bites_path, mouse_bites_count, origins, cutouts, self._angle)
         if error_msg is not None:
             self.error_open(error_msg)
 
@@ -563,6 +565,7 @@ class PanelizerApp(App):
             self.panelize()
         self.settings_apply()
         self._settings_popup.open()
+        print(self._pcb_panel.get_bites_origins())
 
     def settings_default(self):
         self._settings.default()

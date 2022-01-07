@@ -58,7 +58,7 @@ extensions_to_names = {
 
 
 def export_pcb_panel(progress, path_export, path_pcb, pcb_count, pcb_height,
-                     path_rails, path_mouse_bites, mouse_bites_count, origins, angle):
+                     path_rails, path_mouse_bites, mouse_bites_count, origins, mouse_bites_cutouts, angle):
     print('\nexport_pcb_panel')
     print(' path_export: {}'.format(path_export))
     print(' path_pcb: {}'.format(path_pcb))
@@ -68,6 +68,7 @@ def export_pcb_panel(progress, path_export, path_pcb, pcb_count, pcb_height,
     print(' path_mouse_bites: {}'.format(path_mouse_bites))
     print(' mouse_bites_count: {}'.format(mouse_bites_count))
     print(' origins: {}'.format(origins))
+    print(' mouse_bites_cutouts: {}'.format(mouse_bites_cutouts))
     print(' angle: {}'.format(angle))
 
     paths = [path_rails, path_rails]
@@ -120,7 +121,10 @@ def export_pcb_panel(progress, path_export, path_pcb, pcb_count, pcb_height,
         update_progressbar(progress, 'exporting panel{} ...'.format(ext), progress_value)
 
         if ext != '.drl':
-            ctx = GerberComposition()
+            cutout_lines = None
+            if ext == '.gm1':
+                cutout_lines = mouse_bites_cutouts
+            ctx = GerberComposition(cutout_lines=cutout_lines)
         file = None
 
         # board
