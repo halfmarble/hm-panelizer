@@ -69,13 +69,17 @@ def redraw_window():
 
 
 def update_progressbar(widget, text=None, value=None):
-    if value is not None:
-        progressbar = widget.ids._progress_bar
-        progressbar.value = min(value, 1.0)
-    if text is not None:
-        label = widget.ids._progress_bar_label
-        label.text = text
-    redraw_window()
+    if widget is not None:
+        if value is not None:
+            progressbar = widget.ids._progress_bar
+            progressbar.value = min(value, 1.0)
+        if text is not None:
+            label = widget.ids._progress_bar_label
+            label.text = text
+        redraw_window()
+    else:
+        if text is not None:
+            print('LOG: {} [{}]'.format(text, value))
 
 
 def beep():

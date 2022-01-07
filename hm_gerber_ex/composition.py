@@ -84,10 +84,10 @@ class GerberComposition(Composition):
                               .format(end.x, end.y, end.to_gerber(self.settings)))
                     for cutout in cutouts:
                         cutout_y = cutout[0]
-                        print('#    TRYING Y {}'.format(cutout_y))
                         if cutout_y == end.y:
                             if verbose:
                                 print('#')
+                                print('# MATCHING Y {}'.format(cutout_y))
                                 print('# LINE START {:3.2f},{:3.2f} [{}] '
                                       .format(start.x, start.y, start.to_gerber(self.settings)))
                                 print('# LINE END   {:3.2f},{:3.2f} [{}] '

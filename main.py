@@ -455,32 +455,27 @@ class PanelizerApp(App):
             return
 
         update_progressbar(self._progress, 'exporting mouse bites PCB...', 0.1)
-        mouse_bites_path = PcbMouseBites.generate_pcb_files()
-        print('generated mouse bite files in {}'.format(mouse_bites_path))
+        mouse_bite_path = PcbMouseBites.generate_pcb_files()
+        print('generated mouse bite files in {}'.format(mouse_bite_path))
 
         update_progressbar(self._progress, 'exporting rails PCB...', 0.2)
-        rails_path = PcbRail.generate_pcb_files()
-        print('generated rails files in {}'.format(rails_path))
+        rail_path = PcbRail.generate_pcb_files()
+        print('generated rails files in {}'.format(rail_path))
 
-        rails_origins = self._pcb_panel.get_rails_origins()
-        pcbs_origins = self._pcb_panel.get_pcbs_origins()
-        bites_origins = self._pcb_panel.get_bites_origins()
+        rail_origins = self._pcb_panel.get_rails_origins()
+        pcb_origins = self._pcb_panel.get_pcbs_origins()
+        mouse_bite_origins = self._pcb_panel.get_bites_origins()
 
-        origins = []
-        for o in rails_origins:
-            origins.append(o)
-        for o in pcbs_origins:
-            origins.append(o)
-        for row in bites_origins:
-            for o in row:
-                origins.append(o)
+        print('rail_origins {}'.format(rail_origins))
+        print('pcb_origins {}'.format(pcb_origins))
+        print('mouse_bite_origins {}'.format(mouse_bite_origins))
 
-        panels_count = self._panels_x * self._panels_y
-        mouse_bites_count = (panels_count * self._bites_count) + (self._panels_x * self._bites_count)
-        pcb_height = self._pcb.size_mm[1]
-        cutouts = cutouts_from_origins(AppSettings.bite, AppSettings.gap, bites_origins)
-        error_msg = export_pcb_panel(self._progress, path, self._current_pcb_folder, panels_count, pcb_height,
-                                     rails_path, mouse_bites_path, mouse_bites_count, origins, cutouts, self._angle)
+        pcb_height_mm = self._pcb.size_mm[1]
+        error_msg = export_pcb_panel(self._progress, path,
+                                     self._current_pcb_folder, pcb_origins, pcb_height_mm,
+                                     rail_path, rail_origins,
+                                     mouse_bite_path, mouse_bite_origins, AppSettings.bite, AppSettings.gap,
+                                     self._angle)
         if error_msg is not None:
             self.error_open(error_msg)
 

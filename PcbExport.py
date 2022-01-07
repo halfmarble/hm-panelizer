@@ -57,32 +57,55 @@ extensions_to_names = {
 }
 
 
-def export_pcb_panel(progress, path_export, path_pcb, pcb_count, pcb_height,
-                     path_rails, path_mouse_bites, mouse_bites_count, origins, mouse_bites_cutouts, angle):
+def export_pcb_panel(progress, panel_path,
+                     pcb_path, pcb_origins, pcb_height_mm,
+                     rail_path, rail_origins,
+                     mouse_bite_path, mouse_bite_origins, mouse_bite_width_mm, mouse_bite_height_mm,
+                     angle):
     print('\nexport_pcb_panel')
-    print(' path_export: {}'.format(path_export))
-    print(' path_pcb: {}'.format(path_pcb))
-    print(' pcb_count: {}'.format(pcb_count))
-    print(' pcb_height: {}'.format(pcb_height))
-    print(' path_rails: {}'.format(path_rails))
-    print(' path_mouse_bites: {}'.format(path_mouse_bites))
-    print(' mouse_bites_count: {}'.format(mouse_bites_count))
-    print(' origins: {}'.format(origins))
-    print(' mouse_bites_cutouts: {}'.format(mouse_bites_cutouts))
+    print(' panel_path: {}'.format(panel_path))
+    print(' pcb_path: {}'.format(pcb_path))
+    print(' pcb_origins: {}'.format(pcb_origins))
+    print(' pcb_height_mm: {}'.format(pcb_height_mm))
+    print(' rail_path: {}'.format(rail_path))
+    print(' rail_origins: {}'.format(rail_origins))
+    print(' mouse_bite_path: {}'.format(mouse_bite_path))
+    print(' mouse_bite_origins: {}'.format(mouse_bite_origins))
+    print(' mouse_bite_width_mm: {}'.format(mouse_bite_width_mm))
+    print(' mouse_bite_height_mm: {}'.format(mouse_bite_height_mm))
     print(' angle: {}'.format(angle))
 
-    paths = [path_rails, path_rails]
+    origins = []
+    for o in rail_origins:
+        origins.append(o)
+
+    pcb_count = 0
+    for o in pcb_origins:
+        origins.append(o)
+        pcb_count += 1
+
+    mouse_bites_count = 0
+    for row in mouse_bite_origins:
+        for o in row:
+            origins.append(o)
+            mouse_bites_count += 1
+    print(' origins: {}'.format(origins))
+
+    mouse_bites_cutouts = cutouts_from_origins(mouse_bite_width_mm, mouse_bite_height_mm, mouse_bite_origins)
+    print(' mouse_bites_cutouts: {}'.format(mouse_bites_cutouts))
+
+    paths = [rail_path, rail_path]
     for i in range(pcb_count):
-        paths.append(path_pcb)
+        paths.append(pcb_path)
     for i in range(mouse_bites_count):
-        paths.append(path_mouse_bites)
+        paths.append(mouse_bite_path)
     #print(' paths: {}'.format(paths))
 
-    angles = [0.0, 0.0]
+    angles = [angle, angle]
     for i in range(pcb_count):
         angles.append(angle)
     for i in range(mouse_bites_count):
-        angles.append(0.0)
+        angles.append(angle)
     #print(' angles: {}'.format(angles))
 
     board_count = len(paths)
@@ -93,9 +116,9 @@ def export_pcb_panel(progress, path_export, path_pcb, pcb_count, pcb_height,
         rotate = angles[i]
         offset_x = 0.0
         if rotate != 0:
-            offset_x = pcb_height
+            offset_x = pcb_height_mm
         boards.append((path, offset_x+10.0*origin[0], 10.0*origin[1], rotate))
-    #print(' boards: {}'.format(boards))
+    print(' boards: {}'.format(boards))
 
     for directory, x_offset, y_offset, angle in boards:
         directory = os.path.abspath(directory)
@@ -157,17 +180,17 @@ def export_pcb_panel(progress, path_export, path_pcb, pcb_count, pcb_height,
 
         if file is not None and ext != '.drl':
             new_name = extensions_to_names.get(ext, 'unknown')
-            full_path = os.path.join(path_export, new_name + ext)
+            full_path = os.path.join(panel_path, new_name + ext)
             print('\nWRITING: {}'.format(full_path))
             ctx.dump(full_path)
             print('DONE\n')
 
-    full_path = os.path.join(path_export, 'drill-NPTH.drl')
+    full_path = os.path.join(panel_path, 'drill-NPTH.drl')
     print('\nWRITING: {}'.format(full_path))
     ctx_npth_drl.dump(full_path)
     print('DONE\n')
 
-    full_path = os.path.join(path_export, 'drill-PTH.drl')
+    full_path = os.path.join(panel_path, 'drill-PTH.drl')
     print('\nWRITING: {}'.format(full_path))
     ctx_pth_drl.dump(full_path)
     print('DONE\n')
@@ -175,4 +198,43 @@ def export_pcb_panel(progress, path_export, path_pcb, pcb_count, pcb_height,
     update_progressbar(progress, 'Done', 1.0)
 
     return None
+
+
+# 1 mouse bite -> 2 line segments
+# [
+#     [ y1_origin,          [(x1_start, x1_end)]]
+#     [ y1_origin+height,   [(x1_start, x1_end)]]
+# ]
+#
+# 2 mouse bites on 1 row -> 4 line segments
+# [
+#     [ y1_origin,          [(x1_start, x1_end), (x2_start, x2_end)]]
+#     [ y1_origin+height,   [(x1_start, x1_end), (x2_start, x2_end)]]
+# ]
+#
+# 2 mouse bites on 2 rows -> 16 line segments
+# [
+#     [ y1_origin,          [(x1_start, x1_end), (x2_start, x2_end), (x3_start, x3_end), (x4_start, x4_end)]]
+#     [ y1_origin+height,   [(x1_start, x1_end), (x2_start, x2_end), (x3_start, x3_end), (x4_start, x4_end)]]
+#     [ y2_origin,          [(x1_start, x1_end), (x2_start, x2_end), (x3_start, x3_end), (x4_start, x4_end)]]
+#     [ y2_origin+height,   [(x1_start, x1_end), (x2_start, x2_end), (x3_start, x3_end), (x4_start, x4_end)]]
+# ]
+def cutouts_from_origins(width_mm, height_mm, origins):
+    scale = 10.0  # cm to mm
+    cutouts = []
+    for row in origins:
+        y = scale*row[0][1]
+        line_bottom = [y]
+        line_top = [y+height_mm]
+        cuts_bottom = []
+        cuts_top = []
+        for origin in row:
+            x = scale*origin[0]
+            cuts_bottom.append((x, x+width_mm))
+            cuts_top.append((x, x+width_mm))
+        line_bottom.append(cuts_bottom)
+        line_top.append(cuts_top)
+        cutouts.append(line_bottom)
+        cutouts.append(line_top)
+    return cutouts
 
