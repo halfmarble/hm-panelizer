@@ -195,16 +195,14 @@ def export_pcb_panel(progress, panel_path,
                         print(' FILE: {}'.format(filename))
                     file = hm_gerber_ex.read(full_path)
                     file.to_metric()
-                    if angle != 0.0:
-                        if verbose:
-                            print(' ROTATING')
-                        file.rotate(angle)
-                    if verbose:
-                        print(' OFFSETTING')
                     if use_bounds_offsets and ext != '.drl':
-                        file.offset(round_down(x_offset-pcb_origin_x_mm), round_down(y_offset-pcb_origin_y_mm))
-                    else:
-                        file.offset(round_down(x_offset), round_down(y_offset))
+                        # move to 0,0 before rotation
+                        file.offset(round_down(-pcb_origin_x_mm), round_down(-pcb_origin_y_mm))
+                    if angle != 0.0:
+                        # rotate
+                        file.rotate(angle)
+                    # final offset
+                    file.offset(round_down(x_offset), round_down(y_offset))
                     if verbose:
                         print(' MERGING')
                     ctx.merge(file)

@@ -30,11 +30,12 @@ from PcbExport import *
 
 mouse_bite_width = 0.5
 mouse_bite_height = 0.25
-rail_origins = [(0.0, 0.0), (0.0, 5.18)]
-pcb_origins = [(-12.19, 7.41), (-12.19, 9.62)]
-mouse_bite_origins = [[(0.25, 0.5)], [(0.25, 2.72)], [(0.25, 4.93)]]
+rail_origins = [(0.0, 0.0), (0.0, 2.0)]
+pcb_origins = [(0.0, 0.75)]
+mouse_bite_origins = [[(0.71, 0.5)], [(0.71, 1.75)]]
 pcb_path = '/Users/gerard/PCBs/rectangle'
-pcb_height_mm = 19.640000000000008
+pcb_origin_mm = (121.9, -66.54)
+pcb_size_mm = (10.0, 19.640000000000008)
 
 # print('rail_origins {}'.format(rail_origins))
 # print('pcb_origins {}'.format(pcb_origins))
@@ -44,12 +45,13 @@ progress = None
 panel_path = os.path.abspath(os.path.join('.', 'example', 'panelized'))
 rail_path = os.path.join('.', 'example', 'pcb_rails')
 mouse_bite_path = os.path.join('.', 'example', 'pcb_mouse_bites')
+pcb_rect_mm = (pcb_origin_mm, pcb_size_mm)
 mouse_bite_width_mm = 10.0*mouse_bite_width
 mouse_bite_height_mm = 10.0*mouse_bite_height
-angle = 0.0
+angle = 90.0
 
 error_msg = export_pcb_panel(progress, panel_path,
-                             pcb_path, pcb_origins, pcb_height_mm,
+                             pcb_path, pcb_origins, pcb_rect_mm,
                              rail_path, rail_origins,
                              mouse_bite_path, mouse_bite_origins, mouse_bite_width_mm, mouse_bite_height_mm,
                              angle)

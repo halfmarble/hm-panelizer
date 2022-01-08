@@ -32,7 +32,7 @@ try:
 except FileExistsError:
     pass
 
-path = os.path.join(os.path.dirname('.'), 'panelized')
+path = os.path.join(os.path.dirname('.'), 'pcb_rectangle')
 print('\nLoading PCB from path \"{}\"'.format(path))
 pcb = PCB.from_directory(path, verbose=True)
 #pcb = PCB.from_directory(os.path.join(os.path.dirname('.'), 'pcb'), verbose=True)
@@ -51,14 +51,14 @@ clip_to_outline = False
 print_outline = False
 
 if get_outline:
-    outline_str = ctx.get_outline_mask(pcb.edge_cuts_layer, os.path.join(os.path.dirname('.'), output, 'edge_cuts_mask.png'),
+    outline_str = ctx.get_outline_mask(pcb.edge_cuts_layer, os.path.join(os.path.dirname('.'), output, 'edge_cuts_mask'),
                                        bounds=bounds, verbose=False)
     if print_outline and outline_str is not None:
         print('\n{}'.format(outline_str))
 
 for layer in pcb.layers:
     ctx.render_clipped_layer(layer, clip_to_outline,
-                             os.path.join(os.path.dirname('.'), output, '{}.png'.format(layer.name())),
+                             os.path.join(os.path.dirname('.'), output, '{}'.format(layer.name())),
                              theme.THEMES['Mask'], bounds=bounds, background=False, verbose=False)
 
 # layer = pcb.layers[2]

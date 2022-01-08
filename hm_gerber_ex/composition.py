@@ -70,7 +70,7 @@ class GerberComposition(Composition):
                 for cutout_line in lines:
                     start_cutout_x = cutout_line[0]
                     end_cutout_x = cutout_line[1]
-                    if start_cutout_x >= round_down(start.x) and end_cutout_x <= round_down(end.x):
+                    if start_cutout_x >= start.x and end_cutout_x <= end.x:
                         new_end = CoordStmt(None, start_cutout_x, cutout_y, None, None, 'D01', self.settings)
                         new_start = CoordStmt(None, end_cutout_x, cutout_y, None, None, 'D02', self.settings)
                         if verbose:
@@ -92,7 +92,7 @@ class GerberComposition(Composition):
         if isinstance(start, CoordStmt) and start.op == 'D02' and len(lines) > (i+1):
             end = lines[i + 1]
             if isinstance(end, CoordStmt) and end.op == 'D01':
-                if end.y == start.y:
+                if equal_floats(end.y, start.y):
                     if verbose:
                         print('#')
                         print('# HORIZONTAL LINE')
