@@ -261,11 +261,61 @@ class PcbPanel(OffScreenScatter):
         self._valid_layout = self._bites.validate_layout()
         self._parent.update_status()
 
-    def get_bites_origins(self):
+    def get_row_mouse_bites_xs_mm(self):
         scale = float(self.pixels_per_cm)
-        return self._bites.get_origins_mm(scale)
+        return self._bites.get_row_xs_mm(scale)
 
-    def get_rails_origins(self):
+    def get_rails_origins(self, pcb_height_mm):
+        origins = []
+        pcb_height_cm = pcb_height_mm / 10.0
+        gap_cm = AppSettings.gap / 10.0
+        rail_cm = AppSettings.rail / 10.0
+        y_coord = 0.0
+        origins.append((0.0, y_coord))
+        y_coord += rail_cm + gap_cm
+        row_height = pcb_height_cm + gap_cm
+        y_coord += self._rows * row_height
+        origins.append((0.0, y_coord))
+        return origins
+
+    def get_mouse_bites_origins(self, pcb_width_mm, pcb_height_mm):
+        origins = []
+        # row_mouse_bites_xs = self.get_row_mouse_bites_xs_mm()
+        # pcb_width_cm = pcb_width_mm / 10.0
+        # pcb_height_cm = pcb_height_mm / 10.0
+        # gap_cm = AppSettings.gap / 10.0
+        # rail_cm = AppSettings.rail / 10.0
+        # o_pcb = self._pcb.origin_mm
+        # o_pcb_cm = (o_pcb[0] / 10.0, o_pcb[1] / 10.0)
+        # y_coord = rail_cm + gap_cm
+        # for y in range(self._rows):
+        #     x_coord = 0.0
+        #     for x in range(self._columns):
+        #         origins.append((x_coord - o_pcb_cm[0], y_coord - o_pcb_cm[1]))
+        #         x_coord += pcb_width_cm + gap_cm
+        #     y_coord += pcb_height_cm + gap_cm
+        return origins
+
+    def get_pcbs_origins(self, pcb_width_mm, pcb_height_mm):
+        origins = []
+        pcb_width_cm = pcb_width_mm / 10.0
+        pcb_height_cm = pcb_height_mm / 10.0
+        gap_cm = AppSettings.gap / 10.0
+        rail_cm = AppSettings.rail / 10.0
+        o_pcb = self._pcb.origin_mm
+        o_pcb_cm = (o_pcb[0] / 10.0, o_pcb[1] / 10.0)
+        y_coord = rail_cm + gap_cm
+        for y in range(self._rows):
+            x_coord = 0.0
+            for x in range(self._columns):
+                origins.append((x_coord - o_pcb_cm[0], y_coord - o_pcb_cm[1]))
+                x_coord += pcb_width_cm + gap_cm
+            y_coord += pcb_height_cm + gap_cm
+        return origins
+
+    # DO NOT RELAY ON THESE VALUES FOR THE ACTUAL PCB LAYOUT
+    # THEY CONTAIN ROUNDING ERRORS FROM SCREEN SPACE TO MM SPACE CONVERSION !
+    def get_rails_origins_approx(self):
         origins = []
         scale = float(self.pixels_per_cm)
         top = self._shapes.get(0, 0)
@@ -274,13 +324,24 @@ class PcbPanel(OffScreenScatter):
         origins.append(bottom.get_origin_mm(scale))
         return origins
 
-    def get_pcbs_origins(self):
+    # DO NOT RELAY ON THESE VALUES FOR THE ACTUAL PCB LAYOUT
+    # THEY CONTAIN ROUNDING ERRORS FROM SCREEN SPACE TO MM SPACE CONVERSION !
+    def get_bites_origins_approx(self):
+        scale = float(self.pixels_per_cm)
+        return self._bites.get_origins_mm(scale)
+
+    # DO NOT RELAY ON THESE VALUES FOR THE ACTUAL PCB LAYOUT
+    # THEY CONTAIN ROUNDING ERRORS FROM SCREEN SPACE TO MM SPACE CONVERSION !
+    def get_pcbs_origins_approx(self):
         origins = []
         scale = float(self.pixels_per_cm)
+        o_pcb = self._pcb.origin_mm
+        o_pcb = (o_pcb[0] / 10.0, o_pcb[1] / 10.0)  # mm to cm
         for r in range(0, self._rows):
             for c in range(0, self._columns):
                 main = self._shapes.get(c, r + 1)
-                origins.append(main.get_origin_mm(scale))
+                o = main.get_origin_mm(scale)
+                origins.append((o[0]-o_pcb[0], o[1]-o_pcb[1]))  # offset by the pcb own origin
         return origins
 
     @property

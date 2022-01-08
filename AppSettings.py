@@ -46,7 +46,7 @@ class AppSettings:
         self._gap = clamp(2.5, gap, 10.0)
         self._rail = clamp(5, rail, 20.0)
         self._bites_count = int(clamp(1, bites_count, 10))
-        self._bite = clamp(5.0, bite, 15.0)
+        self._bite = clamp(4.0, bite, 15.0)
         self._bite_hole_radius = clamp(0.1, bite_hole_radius, 1.0)
         self._bite_hole_space = clamp(0.5, bite_hole_space, 20.0)
         self._use_vcut = use_vcut
@@ -54,27 +54,27 @@ class AppSettings:
 
     @property
     def rail(self):
-        return self._rail
+        return float(self._rail)
 
     @property
     def gap(self):
-        return self._gap
+        return float(self._gap)
 
     @property
     def bite(self):
-        return self._bite
+        return float(self._bite)
 
     @property
     def bites_count(self):
-        return self._bites_count
+        return int(self._bites_count)
 
     @property
     def bite_hole_radius(self):
-        return self._bite_hole_radius
+        return float(self._bite_hole_radius)
 
     @property
     def bite_hole_space(self):
-        return self._bite_hole_space
+        return float(self._bite_hole_space)
 
     @property
     def use_vcut(self):

@@ -75,13 +75,13 @@ class GerberComposition(Composition):
             end = lines[i + 1]
             if isinstance(end, CoordStmt) and end.op == 'D01':
                 if end.y == start.y:
-                    if verbose:
-                        print('#')
-                        print('# HORIZONTAL LINE')
-                        print('# LINE START {:3.2f},{:3.2f} [{}] '
-                              .format(start.x, start.y, start.to_gerber(self.settings)))
-                        print('# LINE END   {:3.2f},{:3.2f} [{}] '
-                              .format(end.x, end.y, end.to_gerber(self.settings)))
+                    # if verbose:
+                    #     print('#')
+                    #     print('# HORIZONTAL LINE')
+                    #     print('# LINE START {:3.2f},{:3.2f} [{}] '
+                    #           .format(start.x, start.y, start.to_gerber(self.settings)))
+                    #     print('# LINE END   {:3.2f},{:3.2f} [{}] '
+                    #           .format(end.x, end.y, end.to_gerber(self.settings)))
                     for cutout in cutouts:
                         cutout_y = cutout[0]
                         if cutout_y == end.y:

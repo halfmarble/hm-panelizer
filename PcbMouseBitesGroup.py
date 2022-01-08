@@ -85,6 +85,18 @@ class PcbMouseBitesGroup:
                 valid = valid and v
         return valid
 
+    def get_row_xs_mm(self, scale):
+        xs_mm = []
+        gap = self._horizontal.get(0, 0)
+        main = gap.main_shape
+        main_origin = main.get_origin_mm(scale)
+        main_size = main.get_size_mm(scale)
+        for b in range(gap.bites_count):
+            bite = gap.bite(b)
+            origin_x = main_origin[0] + (bite.slide * main_size[0])
+            xs_mm.append(origin_x)
+        return xs_mm
+
     def get_origins_mm(self, scale):
         origins = []
         # TODO: implement Array2D iterator and use it here

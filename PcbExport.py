@@ -101,11 +101,11 @@ def export_pcb_panel(progress, panel_path,
         paths.append(mouse_bite_path)
     #print(' paths: {}'.format(paths))
 
-    angles = [angle, angle]
+    angles = [0.0, 0.0]  # the angle always stays 0.0 for the rails !
     for i in range(pcb_count):
         angles.append(angle)
     for i in range(mouse_bites_count):
-        angles.append(angle)
+        angles.append(0.0)  # the angle always stays 0.0 for the mouse bites !
     #print(' angles: {}'.format(angles))
 
     board_count = len(paths)

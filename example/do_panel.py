@@ -31,35 +31,34 @@ from PcbExport import *
 mouse_bite_width = 0.5
 mouse_bite_height = 0.25
 
-row1_height = 0.5
-row2_height = 1.25
+if False:
+    #test case 1
+    pcb_height = 0.5
+    row1_height = pcb_height
+    row2_height = pcb_height + pcb_height + mouse_bite_height
+    rail_origins = [(0, 0), (0, row2_height + mouse_bite_height)]
+    pcb_origins = [(0, row1_height + mouse_bite_height)]
+    mouse_bite_origins = [[(3.0, row1_height)], [(3.0, row2_height)]]
+    pcb_path = os.path.join('.', 'example', 'pcb_rails')
+    pcb_height_mm = 10.0 * pcb_height
+elif True:
+    # test case 2
+    rail_origins = [(0.0, 0.0), (0.0, 2.9667866927592965)]
+    pcb_origins = [(-12.190000000000001, 7.404000000000001)]
+    mouse_bite_origins = [[(0.2501441617742988, 0.5)], [(0.2501441617742988, 2.7140000000000004)]]
+    pcb_path = '/Users/gerard/PCBs/rectangle'
+    pcb_height_mm = 19.640000000000008
 
-rail_origins = \
-[
-    (0, 0),
-    (0, 1.5),
-]
-pcb_origins = \
-[
-    (0, row1_height+mouse_bite_height),
-]
-mouse_bite_origins = \
-[
-    [(3.0, row1_height)],
-    [(3.0, row2_height)],
-]
 print('rail_origins {}'.format(rail_origins))
 print('pcb_origins {}'.format(pcb_origins))
 print('mouse_bite_origins: {}'.format(mouse_bite_origins))
 
 progress = None
 panel_path = os.path.abspath(os.path.join('.', 'example', 'panelized'))
-pcb_path = os.path.join('.', 'example', 'pcb_rails')
-pcb_height_mm = 5.0
 rail_path = os.path.join('.', 'example', 'pcb_rails')
 mouse_bite_path = os.path.join('.', 'example', 'pcb_mouse_bites')
-mouse_bite_width_mm = 5.0
-mouse_bite_height_mm = 2.5
+mouse_bite_width_mm = 10.0*mouse_bite_width
+mouse_bite_height_mm = 10.0*mouse_bite_height
 angle = 0.0
 
 error_msg = export_pcb_panel(progress, panel_path,

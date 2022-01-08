@@ -25,6 +25,9 @@ from .common import read as gerber_read
 from .utils import listdir
 
 
+skip_extensions = ['.kicad_sch', '.kicad_prl', '.gbrjob', '.zip', '.png', '.jpg']
+
+
 class PCB(object):
 
     @classmethod
@@ -41,11 +44,15 @@ class PCB(object):
         for filename in listdir(directory, True, True):
             ext = os.path.splitext(filename)[1].lower()
             if verbose:
-                print('[PCB]: reading {}'.format(filename))
-            if ext == 'gbrjob' or ext == '.zip' or ext == '.png' or ext == '.jpg':
-                print('[PCB]: Skipping file {} [unsupported file extension]'.format(filename))
+                print('[PCB]')
+                print('[PCB]: ext [{}]'.format(ext))
+            # common extensions that we should skip, which might be in the same path as the gerber files
+            if ext is None or len(ext) == 0 or ext in skip_extensions:
+                print('[PCB]:  Skipping file {} [unsupported file extension]'.format(filename))
                 continue
             try:
+                if verbose:
+                    print('[PCB]: reading {}'.format(filename))
                 camfile = gerber_read(os.path.join(directory, filename))
                 layer = PCBLayer.from_cam(camfile)
                 if verbose:
@@ -61,10 +68,10 @@ class PCB(object):
                 names.add(name)
             except ParseError:
                 if verbose:
-                    print('[PCB]: Skipping file {} [ParseError]'.format(filename))
+                    print('[PCB]:  Skipping file {} [ParseError]'.format(filename))
             except IOError:
                 if verbose:
-                    print('[PCB]: Skipping file {} [IOError]'.format(filename))
+                    print('[PCB]:  Skipping file {} [IOError]'.format(filename))
 
         # Try to guess board name
         if board_name is None:
@@ -73,6 +80,7 @@ class PCB(object):
             else:
                 board_name = os.path.basename(directory)
 
+        print('[PCB]')
         print('[PCB]: board_name {}'.format(board_name))
 
         # Return PCB
