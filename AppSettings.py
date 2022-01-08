@@ -45,12 +45,12 @@ class AppSettings:
         self._merge_error = PCB_PANEL_MERGE_ERROR
 
     def set(self, gap, rail, bites_count, bite, bite_hole_radius, bite_hole_space, use_vcut, use_jlc, merge_error):
-        self._gap = clamp(2.0, gap, 10.0)
+        self._gap = clamp(1.0, gap, 10.0)
         self._rail = clamp(5, rail, 20.0)
         self._bites_count = int(clamp(1, bites_count, 10))
-        self._bite = clamp(2.0, bite, 15.0)
-        self._bite_hole_radius = clamp(0.1, bite_hole_radius, 1.0)
-        self._bite_hole_space = clamp(0.5, bite_hole_space, 20.0)
+        self._bite = clamp((2.0*PCB_BITES_ARC_MM)+0.5, bite, 15.0)
+        self._bite_hole_radius = clamp(0.1, bite_hole_radius, 0.5)
+        self._bite_hole_space = clamp(0.5, bite_hole_space, 5.0)
         self._use_vcut = use_vcut
         self._use_jlc = use_jlc
         self._merge_error = merge_error

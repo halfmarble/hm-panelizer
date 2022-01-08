@@ -142,12 +142,18 @@ def export_pcb_panel(progress, panel_path,
         boards.append((use_bounds_offset, path, offset_x+10.0*origin[0], 10.0*origin[1], rotate))
     if verbose:
         print(' boards: {}'.format(boards))
-
-        for use_bounds_offsets, directory, x_offset, y_offset, angle in boards:
-            directory = os.path.abspath(directory)
-            print('\nfiles in {}:'.format(directory))
-            for filename in listdir(directory, True, True):
-                print(' {}'.format(filename))
+        directory = os.path.abspath(pcb_path)
+        print('\npcb files in {}:'.format(directory))
+        for filename in listdir(directory, True, True):
+            print(' {}'.format(filename))
+        directory = os.path.abspath(rail_path)
+        print('\nrail files in {}:'.format(directory))
+        for filename in listdir(directory, True, True):
+            print(' {}'.format(filename))
+        directory = os.path.abspath(mouse_bite_path)
+        print('\nmouse_bite files in {}:'.format(directory))
+        for filename in listdir(directory, True, True):
+            print(' {}'.format(filename))
         print('\n\n')
 
     settings = FileSettings(format=(3, 3), zeros='decimal')
@@ -195,7 +201,7 @@ def export_pcb_panel(progress, panel_path,
                         print(' FILE: {}'.format(filename))
                     file = hm_gerber_ex.read(full_path)
                     file.to_metric()
-                    if use_bounds_offsets and ext != '.drl':
+                    if use_bounds_offsets:
                         # move to 0,0 before rotation
                         file.offset(round_down(-pcb_origin_x_mm), round_down(-pcb_origin_y_mm))
                     if angle != 0.0:
