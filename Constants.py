@@ -35,8 +35,8 @@ PIXELS_SIZE_MAX: Final          = 2048
 
 PCB_OUTLINE_WIDTH: Final        = 1.5
 
-INITIAL_ROWS: Final             = 1
-INITIAL_COLUMNS: Final          = 1
+INITIAL_ROWS: Final             = 2
+INITIAL_COLUMNS: Final          = 2
 MAX_ROWS: Final                 = 99
 MAX_COLUMNS: Final              = 99
 
@@ -51,7 +51,7 @@ PCB_PANEL_GAP_MM: Final         = 2.5
 # no less than 5mm
 PCB_PANEL_RAIL_HEIGHT_MM: Final = 5.0
 
-PCB_PANEL_BITES_SIZE_MM: Final  = 3.0
+PCB_PANEL_BITES_SIZE_MM: Final  = 5.0
 PCB_PANEL_BITES_COUNT_X: Final  = 1
 # leave at 0, unimplemented yet
 PCB_PANEL_BITES_COUNT_Y: Final  = 0

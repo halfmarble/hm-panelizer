@@ -28,6 +28,18 @@ from kivy.base import EventLoop
 from kivy.graphics import Fbo, ClearColor, ClearBuffers, Color, Rectangle
 from kivy.uix.image import Image
 
+from math import floor, ceil
+
+
+def round_down(n, d=2):
+    d = int('1' + ('0' * d))
+    return floor(n * d) / d
+
+
+def round_up(n, d=2):
+    d = int('1' + ('0' * d))
+    return ceil(n * d) / d
+
 
 def clamp(left, value, right):
     return max(left, min(value, right))
@@ -79,7 +91,7 @@ def update_progressbar(widget, text=None, value=None):
         redraw_window()
     else:
         if text is not None:
-            print('LOG: {} [{}]'.format(text, value))
+            print('LOG: {} [{:.2f}%]'.format(text, round_down(value)))
 
 
 def beep():

@@ -271,29 +271,30 @@ class PcbPanel(OffScreenScatter):
         gap_cm = AppSettings.gap / 10.0
         rail_cm = AppSettings.rail / 10.0
         y_coord = 0.0
-        origins.append((0.0, y_coord))
+        origins.append((0.0, round_down(y_coord)))
         y_coord += rail_cm + gap_cm
         row_height = pcb_height_cm + gap_cm
         y_coord += self._rows * row_height
-        origins.append((0.0, y_coord))
+        origins.append((0.0, round_down(y_coord)))
         return origins
 
     def get_mouse_bites_origins(self, pcb_width_mm, pcb_height_mm):
         origins = []
-        # row_mouse_bites_xs = self.get_row_mouse_bites_xs_mm()
-        # pcb_width_cm = pcb_width_mm / 10.0
-        # pcb_height_cm = pcb_height_mm / 10.0
-        # gap_cm = AppSettings.gap / 10.0
-        # rail_cm = AppSettings.rail / 10.0
-        # o_pcb = self._pcb.origin_mm
-        # o_pcb_cm = (o_pcb[0] / 10.0, o_pcb[1] / 10.0)
-        # y_coord = rail_cm + gap_cm
-        # for y in range(self._rows):
-        #     x_coord = 0.0
-        #     for x in range(self._columns):
-        #         origins.append((x_coord - o_pcb_cm[0], y_coord - o_pcb_cm[1]))
-        #         x_coord += pcb_width_cm + gap_cm
-        #     y_coord += pcb_height_cm + gap_cm
+        row_mouse_bites_xs = self.get_row_mouse_bites_xs_mm()
+        pcb_width_cm = pcb_width_mm / 10.0
+        pcb_height_cm = pcb_height_mm / 10.0
+        gap_cm = AppSettings.gap / 10.0
+        rail_cm = AppSettings.rail / 10.0
+        y_coord = rail_cm
+        for y in range(self._rows+1):
+            x_coord = 0.0
+            row_origins = []
+            for x in range(self._columns):
+                for ox in row_mouse_bites_xs:
+                    row_origins.append((round_down(x_coord + ox), round_down(y_coord)))
+                x_coord += pcb_width_cm + gap_cm
+            origins.append(row_origins)
+            y_coord += pcb_height_cm + gap_cm
         return origins
 
     def get_pcbs_origins(self, pcb_width_mm, pcb_height_mm):
@@ -308,7 +309,7 @@ class PcbPanel(OffScreenScatter):
         for y in range(self._rows):
             x_coord = 0.0
             for x in range(self._columns):
-                origins.append((x_coord - o_pcb_cm[0], y_coord - o_pcb_cm[1]))
+                origins.append((round_down(x_coord - o_pcb_cm[0]), round_down(y_coord - o_pcb_cm[1])))
                 x_coord += pcb_width_cm + gap_cm
             y_coord += pcb_height_cm + gap_cm
         return origins

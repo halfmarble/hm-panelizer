@@ -30,28 +30,15 @@ from PcbExport import *
 
 mouse_bite_width = 0.5
 mouse_bite_height = 0.25
+rail_origins = [(0.0, 0.0), (0.0, 5.18)]
+pcb_origins = [(-12.19, 7.41), (-12.19, 9.62)]
+mouse_bite_origins = [[(0.25, 0.5)], [(0.25, 2.72)], [(0.25, 4.93)]]
+pcb_path = '/Users/gerard/PCBs/rectangle'
+pcb_height_mm = 19.640000000000008
 
-if False:
-    #test case 1
-    pcb_height = 0.5
-    row1_height = pcb_height
-    row2_height = pcb_height + pcb_height + mouse_bite_height
-    rail_origins = [(0, 0), (0, row2_height + mouse_bite_height)]
-    pcb_origins = [(0, row1_height + mouse_bite_height)]
-    mouse_bite_origins = [[(3.0, row1_height)], [(3.0, row2_height)]]
-    pcb_path = os.path.join('.', 'example', 'pcb_rails')
-    pcb_height_mm = 10.0 * pcb_height
-elif True:
-    # test case 2
-    rail_origins = [(0.0, 0.0), (0.0, 2.9667866927592965)]
-    pcb_origins = [(-12.190000000000001, 7.404000000000001)]
-    mouse_bite_origins = [[(0.2501441617742988, 0.5)], [(0.2501441617742988, 2.7140000000000004)]]
-    pcb_path = '/Users/gerard/PCBs/rectangle'
-    pcb_height_mm = 19.640000000000008
-
-print('rail_origins {}'.format(rail_origins))
-print('pcb_origins {}'.format(pcb_origins))
-print('mouse_bite_origins: {}'.format(mouse_bite_origins))
+# print('rail_origins {}'.format(rail_origins))
+# print('pcb_origins {}'.format(pcb_origins))
+# print('mouse_bite_origins: {}'.format(mouse_bite_origins))
 
 progress = None
 panel_path = os.path.abspath(os.path.join('.', 'example', 'panelized'))

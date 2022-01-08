@@ -462,34 +462,22 @@ class PanelizerApp(App):
         rail_path = PcbRail.generate_pcb_files()
         print('generated rails files in {}'.format(rail_path))
 
-        row_mouse_bites_xs = self._pcb_panel.get_row_mouse_bites_xs_mm()
-        print('row_mouse_bites_xs {}'.format(row_mouse_bites_xs))
-
-        rail_origins = self._pcb_panel.get_rails_origins_approx()
-        pcb_origins = self._pcb_panel.get_pcbs_origins_approx()
-        mouse_bite_origins = self._pcb_panel.get_bites_origins_approx()
-
-        print('approx rail_origins {}'.format(rail_origins))
-        print('approx pcb_origins {}'.format(pcb_origins))
-        print('approx mouse_bite_origins {}'.format(mouse_bite_origins))
-
         pcb_width_mm = self._pcb.size_mm[0]
         pcb_height_mm = self._pcb.size_mm[1]
         rail_origins = self._pcb_panel.get_rails_origins(pcb_height_mm)
         pcb_origins = self._pcb_panel.get_pcbs_origins(pcb_width_mm, pcb_height_mm)
         mouse_bite_origins = self._pcb_panel.get_mouse_bites_origins(pcb_width_mm, pcb_height_mm)
+        # print('rail_origins {}'.format(rail_origins))
+        # print('pcb_origins {}'.format(pcb_origins))
+        # print('mouse_bite_origins {}'.format(mouse_bite_origins))
 
-        print('rail_origins {}'.format(rail_origins))
-        print('pcb_origins {}'.format(pcb_origins))
-        print('mouse_bite_origins {}'.format(mouse_bite_origins))
-
-        # error_msg = export_pcb_panel(self._progress, path,
-        #                              self._current_pcb_folder, pcb_origins, pcb_height_mm,
-        #                              rail_path, rail_origins,
-        #                              mouse_bite_path, mouse_bite_origins, AppSettings.bite, AppSettings.gap,
-        #                              self._angle)
-        # if error_msg is not None:
-        #     self.error_open(error_msg)
+        error_msg = export_pcb_panel(self._progress, path,
+                                     self._current_pcb_folder, pcb_origins, pcb_height_mm,
+                                     rail_path, rail_origins,
+                                     mouse_bite_path, mouse_bite_origins, AppSettings.bite, AppSettings.gap,
+                                     self._angle)
+        if error_msg is not None:
+            self.error_open(error_msg)
 
         self._progress.dismiss()
 

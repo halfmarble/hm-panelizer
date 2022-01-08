@@ -14,6 +14,20 @@ import hm_gerber_tool.rs274x
 import hm_gerber_tool.excellon
 import hm_gerber_ex.dxf
 
+from math import floor
+
+
+def round_down(n, d=2):
+    d = int('1' + ('0' * d))
+    return floor(n * d) / d
+
+
+def equal_floats(one, two, sigma=0.075):
+    if abs(one-two) <= sigma:
+        return True
+    else:
+        return False
+
 
 class Composition(object):
     def __init__(self, settings=None, comments=None):
@@ -41,29 +55,29 @@ class GerberComposition(Composition):
 
     def split_line(self, f, cutouts, start, end, verbose=False):
         if verbose:
-            print('# SPLIT')
-            print('#            LINE START  {:3.2f},{:3.2f} [{}] '
+            print('#   SPLIT')
+            print('#            LINE START  {},{} [{}] '
                   .format(start.x, start.y, start.to_gerber(self.settings)))
         f.write(start.to_gerber(self.settings) + '\n')
         for cutout in cutouts:
             cutout_y = cutout[0]
-            if cutout_y == start.y:
+            if equal_floats(cutout_y, round_down(start.y)):
                 lines = cutout[1]
                 for cutout_line in lines:
                     start_cutout_x = cutout_line[0]
                     end_cutout_x = cutout_line[1]
-                    if start_cutout_x >= start.x and end_cutout_x <= end.x:
+                    if start_cutout_x >= round_down(start.x) and end_cutout_x <= round_down(end.x):
                         new_end = CoordStmt(None, start_cutout_x, cutout_y, None, None, 'D01', self.settings)
                         new_start = CoordStmt(None, end_cutout_x, cutout_y, None, None, 'D02', self.settings)
                         if verbose:
-                            print('#   INSERTING LINE END   {:3.2f},{:3.2f} [{}] '
+                            print('#   INSERTING LINE END   {},{} [{}] '
                                   .format(new_end.x, new_end.y, new_end.to_gerber(self.settings)))
-                            print('#   INSERTING LINE START {:3.2f},{:3.2f} [{}] '
+                            print('#   INSERTING LINE START {},{} [{}] '
                                   .format(new_start.x, new_start.y, new_start.to_gerber(self.settings)))
                         f.write(new_end.to_gerber(self.settings) + '\n')
                         f.write(new_start.to_gerber(self.settings) + '\n')
         if verbose:
-            print('#            LINE END    {:3.2f},{:3.2f} [{}] '
+            print('#            LINE END    {},{} [{}] '
                   .format(end.x, end.y, end.to_gerber(self.settings)))
         f.write(end.to_gerber(self.settings) + '\n')
         return True
@@ -75,36 +89,36 @@ class GerberComposition(Composition):
             end = lines[i + 1]
             if isinstance(end, CoordStmt) and end.op == 'D01':
                 if end.y == start.y:
-                    # if verbose:
-                    #     print('#')
-                    #     print('# HORIZONTAL LINE')
-                    #     print('# LINE START {:3.2f},{:3.2f} [{}] '
-                    #           .format(start.x, start.y, start.to_gerber(self.settings)))
-                    #     print('# LINE END   {:3.2f},{:3.2f} [{}] '
-                    #           .format(end.x, end.y, end.to_gerber(self.settings)))
+                    if verbose:
+                        print('#')
+                        print('# HORIZONTAL LINE')
+                        print('# LINE START {},{} [{}] '
+                              .format(start.x, start.y, start.to_gerber(self.settings)))
+                        print('# LINE END   {},{} [{}] '
+                              .format(end.x, end.y, end.to_gerber(self.settings)))
                     for cutout in cutouts:
                         cutout_y = cutout[0]
-                        if cutout_y == end.y:
+                        if equal_floats(cutout_y, round_down(end.y)):
                             if verbose:
                                 print('#')
-                                print('# MATCHING Y {}'.format(cutout_y))
-                                print('# LINE START {:3.2f},{:3.2f} [{}] '
+                                print('#  MATCHING Y {}'.format(cutout_y))
+                                print('#  LINE START {},{} [{}] '
                                       .format(start.x, start.y, start.to_gerber(self.settings)))
-                                print('# LINE END   {:3.2f},{:3.2f} [{}] '
+                                print('#  LINE END   {},{} [{}] '
                                       .format(end.x, end.y, end.to_gerber(self.settings)))
                             if end.x > start.x:
                                 if verbose:
-                                    print('# DIRECTION ----->')
+                                    print('#  DIRECTION ----->')
                             else:
                                 if verbose:
-                                    print('# DIRECTION <----- (SWAP NEEDED)')
+                                    print('#  DIRECTION <----- (SWAP NEEDED)')
                                 temp_x = end.x
                                 end.x = start.x
                                 start.x = temp_x
                                 if verbose:
-                                    print('# NOW LINE START {:3.2f},{:3.2f} [{}] '
+                                    print('#   NOW LINE START {},{} [{}] '
                                           .format(start.x, start.y, start.to_gerber(self.settings)))
-                                    print('# NOW LINE END   {:3.2f},{:3.2f} [{}] '
+                                    print('#   NOW LINE END   {},{} [{}] '
                                           .format(end.x, end.y, end.to_gerber(self.settings)))
                             split = self.split_line(f, cutouts, start, end, verbose)
         if split:
@@ -114,7 +128,7 @@ class GerberComposition(Composition):
             return i
 
     # can handle only horizontal lines, and lines going from left to right (i.e. start.x < end.x)
-    def process_statements(self, f, statements, cutouts, verbose=True):
+    def process_statements(self, f, statements, cutouts, verbose=False):
         if verbose:
             print('>>>>>>>>>>> process_statements')
             print('>>>>>>>>>>> cutouts: {}'.format(cutouts))
@@ -138,7 +152,7 @@ class GerberComposition(Composition):
         with open(path, 'w') as f:
             hm_gerber_ex.rs274x.write_gerber_header(f, self.settings)
             if self.cutout_lines is not None:
-                self.process_statements(f, statements, self.cutout_lines, verbose=True)
+                self.process_statements(f, statements, self.cutout_lines, verbose=False)
             else:
                 for statement in statements():
                     f.write(statement.to_gerber(self.settings) + '\n')
