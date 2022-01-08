@@ -462,17 +462,19 @@ class PanelizerApp(App):
         rail_path = PcbRail.generate_pcb_files()
         print('generated rails files in {}'.format(rail_path))
 
-        pcb_width_mm = self._pcb.size_mm[0]
-        pcb_height_mm = self._pcb.size_mm[1]
-        rail_origins = self._pcb_panel.get_rails_origins(pcb_height_mm)
+        pcb_size = self._pcb.size_mm
+        pcb_width_mm = pcb_size[0]
+        pcb_height_mm = pcb_size[1]
+        rail_origins = self._pcb_panel.get_rails_origins(pcb_width_mm, pcb_height_mm)
         pcb_origins = self._pcb_panel.get_pcbs_origins(pcb_width_mm, pcb_height_mm)
         mouse_bite_origins = self._pcb_panel.get_mouse_bites_origins(pcb_width_mm, pcb_height_mm)
         # print('rail_origins {}'.format(rail_origins))
         # print('pcb_origins {}'.format(pcb_origins))
         # print('mouse_bite_origins {}'.format(mouse_bite_origins))
 
+        pcb_rect_mm = (self._pcb.origin_mm, self._pcb.size_mm)
         error_msg = export_pcb_panel(self._progress, path,
-                                     self._current_pcb_folder, pcb_origins, pcb_height_mm,
+                                     self._current_pcb_folder, pcb_origins, pcb_rect_mm,
                                      rail_path, rail_origins,
                                      mouse_bite_path, mouse_bite_origins, AppSettings.bite, AppSettings.gap,
                                      self._angle)
@@ -545,14 +547,15 @@ class PanelizerApp(App):
         self._error_popup.dismiss()
 
     def settings_apply(self):
-        self._settings_popup.ids._gap_setting.text = '{:0.2f}'.format(AppSettings.gap)
-        self._settings_popup.ids._rail_setting.text = '{:d}'.format(int(AppSettings.rail))
+        self._settings_popup.ids._gap_setting.text = '{:0.3f}'.format(AppSettings.gap)
+        self._settings_popup.ids._rail_setting.text = '{:0.3f}'.format(AppSettings.rail)
         self._settings_popup.ids._bites_count_setting.text = '{:d}'.format(int(AppSettings.bites_count))
-        self._settings_popup.ids._bite_setting.text = '{:d}'.format(int(AppSettings.bite))
-        self._settings_popup.ids._bite_hole_radius_setting.text = '{:0.2f}'.format(AppSettings.bite_hole_radius)
-        self._settings_popup.ids._bite_hole_space_setting.text = '{:0.2f}'.format(AppSettings.bite_hole_space)
+        self._settings_popup.ids._bite_setting.text = '{:0.3f}'.format(AppSettings.bite)
+        self._settings_popup.ids._bite_hole_radius_setting.text = '{:0.3f}'.format(AppSettings.bite_hole_radius)
+        self._settings_popup.ids._bite_hole_space_setting.text = '{:0.3f}'.format(AppSettings.bite_hole_space)
         self._settings_popup.ids._use_vcut_setting.state = 'down' if AppSettings.use_vcut else 'normal'
         self._settings_popup.ids._use_jlc_setting.state = 'down' if AppSettings.use_jlc else 'normal'
+        self._settings_popup.ids._merge_error_setting.text = '{:0.3f}'.format(AppSettings.merge_error)
 
     def settings_open(self):
         if self._pcb_panel is not None:
@@ -580,7 +583,7 @@ class PanelizerApp(App):
         except:
             bites_count = AppSettings.bites_count
         try:
-            bite = int(self._settings_popup.ids._bite_setting.text)
+            bite = float(self._settings_popup.ids._bite_setting.text)
         except:
             bite = AppSettings.bite
         try:
@@ -593,8 +596,12 @@ class PanelizerApp(App):
             bite_hole_space = AppSettings.bite_hole_space
         use_vcut = True if self._settings_popup.ids._use_vcut_setting.state == 'down' else False
         use_jlc = True if self._settings_popup.ids._use_jlc_setting.state == 'down' else False
+        try:
+            merge_error = float(self._settings_popup.ids._merge_error_setting.text)
+        except:
+            merge_error = AppSettings.merge_error
 
-        AppSettings.set(gap, rail, bites_count, bite, bite_hole_radius, bite_hole_space, use_vcut, use_jlc)
+        AppSettings.set(gap, rail, bites_count, bite, bite_hole_radius, bite_hole_space, use_vcut, use_jlc, merge_error)
 
         PcbRail.invalidate()
         PcbMouseBites.invalidate()

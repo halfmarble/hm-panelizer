@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright 2021 HalfMarble LLC
+# Copyright 2022 HalfMarble LLC
 # Copyright 2019 Hiroshi Murayama <opiopan@gmail.com>
 
 import operator

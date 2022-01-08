@@ -59,7 +59,7 @@ extensions_to_names = {
 
 
 def export_pcb_panel(progress, panel_path,
-                     pcb_path, pcb_origins, pcb_height_mm,
+                     pcb_path, pcb_origins, pcb_rect_mm,
                      rail_path, rail_origins,
                      mouse_bite_path, mouse_bite_origins, mouse_bite_width_mm, mouse_bite_height_mm,
                      angle, verbose=True):
@@ -68,7 +68,7 @@ def export_pcb_panel(progress, panel_path,
         print(' panel_path: {}'.format(panel_path))
         print(' pcb_path: {}'.format(pcb_path))
         print(' pcb_origins: {}'.format(pcb_origins))
-        print(' pcb_height_mm: {}'.format(pcb_height_mm))
+        print(' pcb_rect_mm: {}'.format(pcb_rect_mm))
         print(' rail_path: {}'.format(rail_path))
         print(' rail_origins: {}'.format(rail_origins))
         print(' mouse_bite_path: {}'.format(mouse_bite_path))
@@ -76,6 +76,16 @@ def export_pcb_panel(progress, panel_path,
         print(' mouse_bite_width_mm: {}'.format(mouse_bite_width_mm))
         print(' mouse_bite_height_mm: {}'.format(mouse_bite_height_mm))
         print(' angle: {}'.format(angle))
+
+    pcb_origin_mm = pcb_rect_mm[0]
+    pcb_origin_x_mm = pcb_origin_mm[0]
+    pcb_origin_y_mm = pcb_origin_mm[1]
+    pcb_size_mm = pcb_rect_mm[1]
+    pcb_width_mm = pcb_size_mm[0]
+    pcb_height_mm = pcb_size_mm[1]
+    if verbose:
+        print(' pcb_origin_mm: {}'.format(pcb_origin_mm))
+        print(' pcb_size_mm: {}'.format(pcb_size_mm))
 
     origins = []
     for o in rail_origins:
@@ -98,6 +108,13 @@ def export_pcb_panel(progress, panel_path,
         print(' origins: {}'.format(origins))
         print(' mouse_bites_cutouts: {}'.format(mouse_bites_cutouts))
 
+    use_bounds_offsets = [False, False]
+    for i in range(pcb_count):
+        use_bounds_offsets.append(True)  # use bounds origin to further offset the Pcb back to 0,0
+    for i in range(mouse_bites_count):
+        use_bounds_offsets.append(False)
+    #print(' use_bounds_offsets: {}'.format(use_bounds_offsets))
+
     paths = [rail_path, rail_path]
     for i in range(pcb_count):
         paths.append(pcb_path)
@@ -115,23 +132,23 @@ def export_pcb_panel(progress, panel_path,
     board_count = len(paths)
     boards = []
     for i in range(board_count):
+        use_bounds_offset = use_bounds_offsets[i]
         path = paths[i]
         origin = origins[i]
         rotate = angles[i]
         offset_x = 0.0
-        if rotate != 0:
+        if rotate != 0.0:
             offset_x = pcb_height_mm
-        boards.append((path, round_down(offset_x+10.0*origin[0]), round_down(10.0*origin[1]), rotate))
+        boards.append((use_bounds_offset, path, offset_x+10.0*origin[0], 10.0*origin[1], rotate))
     if verbose:
         print(' boards: {}'.format(boards))
 
-        for directory, x_offset, y_offset, angle in boards:
+        for use_bounds_offsets, directory, x_offset, y_offset, angle in boards:
             directory = os.path.abspath(directory)
             print('\nfiles in {}:'.format(directory))
             for filename in listdir(directory, True, True):
                 print(' {}'.format(filename))
         print('\n\n')
-
 
     settings = FileSettings(format=(3, 3), zeros='decimal')
     ctx_npth_drl = DrillComposition(settings)
@@ -158,7 +175,7 @@ def export_pcb_panel(progress, panel_path,
         file = None
 
         # board
-        for directory, x_offset, y_offset, angle in boards:
+        for use_bounds_offsets, directory, x_offset, y_offset, angle in boards:
             directory = os.path.abspath(directory)
             if not os.path.isdir(directory):
                 raise TypeError('{} is not a directory.'.format(directory))
@@ -184,12 +201,10 @@ def export_pcb_panel(progress, panel_path,
                         file.rotate(angle)
                     if verbose:
                         print(' OFFSETTING')
-                    file.offset(x_offset, y_offset)
-
-                    # TODO: need to offset the Pcb drill file by the Pcb origin
-                    # if ext == '.drl':
-                    #     file.offset(121.9, 0)
-
+                    if use_bounds_offsets and ext != '.drl':
+                        file.offset(round_down(x_offset-pcb_origin_x_mm), round_down(y_offset-pcb_origin_y_mm))
+                    else:
+                        file.offset(round_down(x_offset), round_down(y_offset))
                     if verbose:
                         print(' MERGING')
                     ctx.merge(file)

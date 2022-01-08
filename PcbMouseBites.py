@@ -23,6 +23,7 @@ from AppSettings import *
 from Constants import *
 from PcbFile import *
 from Utilities import *
+import Constants
 
 
 class PcbMouseBites:
@@ -50,7 +51,7 @@ class PcbMouseBites:
 
         origin = (0, 0)
         size = (self._bite, self._gap)
-        save_mouse_bite_gm1(self._tmp_folder, origin, size, arc=1, close=False)
+        save_mouse_bite_gm1(self._tmp_folder, origin, size, arc=Constants.PCB_BITES_ARC_MM, close=False)
         save_mouse_bite_drl(self._tmp_folder, origin, size, self._bite_hole_radius, self._bite_hole_space)
 
         return self._tmp_folder
@@ -64,7 +65,7 @@ class PcbMouseBites:
                 self._bite_hole_radius != bite_hole_radius or self._bite_hole_space != bite_hole_space:
 
             render_mouse_bite_gm1(self._tmp_folder, 'bites_edge_cuts',
-                                  origin=(0, 0), size=(bite, gap), arc=1, close=True)
+                                  origin=(0, 0), size=(bite, gap), arc=Constants.PCB_BITES_ARC_MM, close=True)
             render_mouse_bite_drl(self._tmp_folder, 'bites_holes_npth',
                                   origin=(0, 0), size=(bite, gap), radius=bite_hole_radius, gap=bite_hole_space)
 

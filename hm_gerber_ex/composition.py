@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright 2021 HalfMarble LLC
+# Copyright 2022 HalfMarble LLC
 # Copyright 2019 Hiroshi Murayama <opiopan@gmail.com>
 
 import os
 from functools import reduce
+
 from hm_gerber_tool.cam import FileSettings
 from hm_gerber_tool.gerber_statements import EofStmt, CoordStmt, CommentStmt
 from hm_gerber_tool.excellon_statements import *
@@ -16,13 +17,16 @@ import hm_gerber_ex.dxf
 
 from math import floor
 
+# BACK DEPENDENCY ON hm-panelizer!
+from AppSettings import AppSettings
+
 
 def round_down(n, d=2):
     d = int('1' + ('0' * d))
     return floor(n * d) / d
 
 
-def equal_floats(one, two, sigma=0.075):
+def equal_floats(one, two, sigma=AppSettings.merge_error):
     if abs(one-two) <= sigma:
         return True
     else:

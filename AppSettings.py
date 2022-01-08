@@ -21,14 +21,15 @@ from Utilities import *
 class AppSettings:
 
     def __init__(self):
-        self._gap = 0
-        self._rail = 0
-        self._bite = 0
-        self._bite_hole_radius = 0
-        self._bite_hole_space = 0
+        self._gap = 0.0
+        self._rail = 0.0
+        self._bite = 0.0
+        self._bite_hole_radius = 0.0
+        self._bite_hole_space = 0.0
         self._bites_count = 0
         self._use_vcut = False
         self._use_jlc = False
+        self._merge_error = 0.0
 
         self.default()
 
@@ -41,8 +42,9 @@ class AppSettings:
         self._bites_count = PCB_PANEL_BITES_COUNT_X
         self._use_vcut = PCB_PANEL_USE_VCUT
         self._use_jlc = PCB_PANEL_USE_JLC
+        self._merge_error = PCB_PANEL_MERGE_ERROR
 
-    def set(self, gap, rail, bites_count, bite, bite_hole_radius, bite_hole_space, use_vcut, use_jlc):
+    def set(self, gap, rail, bites_count, bite, bite_hole_radius, bite_hole_space, use_vcut, use_jlc, merge_error):
         self._gap = clamp(2.0, gap, 10.0)
         self._rail = clamp(5, rail, 20.0)
         self._bites_count = int(clamp(1, bites_count, 10))
@@ -51,6 +53,7 @@ class AppSettings:
         self._bite_hole_space = clamp(0.5, bite_hole_space, 20.0)
         self._use_vcut = use_vcut
         self._use_jlc = use_jlc
+        self._merge_error = merge_error
 
     @property
     def rail(self):
@@ -83,6 +86,10 @@ class AppSettings:
     @property
     def use_jlc(self):
         return self._use_jlc
+
+    @property
+    def merge_error(self):
+        return float(self._merge_error)
 
 
 AppSettings = AppSettings()

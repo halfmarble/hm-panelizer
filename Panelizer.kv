@@ -172,6 +172,19 @@
                 EmptyLabel:
             BoxLayout:
                 orientation: "horizontal"
+                size_hint: 1.0, 0.1
+                EmptyLabel:
+                TitleLabel:
+                    text: 'merge slop (error):'
+                TextInput:
+                    id: _merge_error_setting
+                    size_hint_x: 0.25
+                    text: '{:0.2f}'.format(app._settings._merge_error)
+                PostLabel:
+                    text: 'mm'
+                EmptyLabel:
+            BoxLayout:
+                orientation: "horizontal"
                 size_hint: 1.0, 0.15
         BoxLayout:
             orientation: "horizontal"
