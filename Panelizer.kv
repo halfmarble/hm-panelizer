@@ -53,6 +53,16 @@
     size_hint_x: 0.1
 
 
+<MenuLabel>:
+    color: 0.4, 0.4, 0.4, 1.0
+    text: 'Menu item'
+    text_size: self.size
+    font_size: 16
+    halign: 'left'
+    valign: 'middle'
+    size: (800, 16)
+
+
 <Settings@Popup>:
     auto_dismiss: False
     size_hint: (None, None)
@@ -203,6 +213,60 @@
                 on_release: app.settings_close()
 
 
+<About@Popup>:
+    auto_dismiss: True
+    size_hint: (None, None)
+    size: (512, 350)
+    BoxLayout:
+        orientation: "vertical"
+        BoxLayout:
+            orientation: "vertical"
+            size_hint: 1.0, 0.85
+            TitleLabel:
+                size_hint: 1.0, 0.1
+                text: ' '
+            TitleLabel:
+                bold: False
+                markup: True
+                size_hint: 1.0, 0.1
+                text: 'Copyright 2022 [b]HalfMarble LLC[/b]'
+            TitleLabel:
+                bold: False
+                size_hint: 1.0, 0.1
+                text: 'Licensed under the Apache License, Version 2.0'
+            TitleLabel:
+                size_hint: 1.0, 0.1
+                text: ' '
+            TitleLabel:
+                size_hint: 1.0, 0.1
+                text: 'Possible thanks to the following:'
+            TitleLabel:
+                bold: False
+                size_hint: 1.0, 0.1
+                text: 'www.kicad.org'
+            TitleLabel:
+                bold: False
+                size_hint: 1.0, 0.1
+                text: 'kivy.org'
+            TitleLabel:
+                bold: False
+                size_hint: 1.0, 0.1
+                text: 'github.com/curtacircuitos/pcb-tools'
+            TitleLabel:
+                bold: False
+                size_hint: 1.0, 0.1
+                text: 'github.com/opiopan/pcb-tools-extension'
+            TitleLabel:
+                size_hint: 1.0, 0.1
+                text: ' '
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint: 1.0, 0.1
+            Button:
+                text: 'OK'
+                on_release: app.about_ok()
+
+
 <Error@Popup>:
     auto_dismiss: True
     size_hint: (None, None)
@@ -318,139 +382,176 @@
                 text: "Cancel"
                 on_release: root.cancel()
             Button:
-                text: "Save"
+                text: "Export"
                 on_release: _save_file_chooser.cancel();root.save(_save_file_chooser.path, _save_file_chooser.selection, _save_file_name.text)
 
 
 BoxLayout:
     orientation: 'vertical'
 
-    ActionBar:
-
-        ActionView:
-            id: _action_view
-
-            ActionPrevious:
-                with_previous: False
-                size_hint: (1.0, 1.0)
-
-            ActionSeparator:
-
-            ActionButton:
-                id: _load_button
-                text: 'Load PCB'
-                icon: 'data/icons/load.png'
-                size_hint_max: (32, 32)
-                size_hint: (1.0, 1.0)
-                on_release: app.load_pcb_from_disk()
-
-            ActionSeparator:
-
-            ActionToggleButton:
-                id: _vertical_button
-                text: 'Vertical'
-                state: 'down'
-                icon: 'data/icons/vertical.png'
-                size_hint_max: (32, 32)
-                size_hint: (1.0, 1.0)
-                on_release: app.rotate(True)
-            ActionToggleButton:
-                id: _horizontal_button
-                text: 'Horizontal'
-                icon: 'data/icons/horizontal.png'
-                size_hint_max: (32, 32)
-                size_hint: (1.0, 1.0)
-                on_release: app.rotate(False)
-
-            ActionSeparator:
-
-            ActionToggleButton:
-                id: _panelization_button
-                text: 'Panelize'
-                icon: 'data/icons/panelize.png'
-                size_hint_max: (32, 32)
-                size_hint: (1.0, 1.0)
-                on_release: app.panelize()
-            ActionButton:
-                id: _settings_button
-                icon: 'data/icons/settings.png'
-                size_hint_max: (32, 32)
-                size_hint: (1.0, 1.0)
-                on_release: app.settings_open()
-            ActionButton:
-                id: _save_button
-                icon: 'data/icons/save.png'
-                size_hint_max: (32, 32)
-                size_hint: (1.0, 1.0)
-                on_release: app.save_panel_to_disk()
-            ActionButton:
-                icon: 'data/icons/minus.png'
-                size_hint_max: (32, 32)
-                size_hint: (1.0, 1.0)
-                on_release: app.panelize_column(False)
-            ActionButton:
-                icon: 'data/icons/plus.png'
-                size_hint_max: (32, 32)
-                size_hint: (1.0, 1.0)
-                on_release: app.panelize_column(True)
-            ActionLabel:
-                id: _panelization_label
-                text: app._panelization_str
-                font_size: 20
-                color: 0.65, 0.65, 0.65
-                bold: True
-                size_hint_max: (48, 32)
-                size_hint: (1.0, 1.0)
-            ActionButton:
-                icon: 'data/icons/minus.png'
-                size_hint_max: (32, 32)
-                size_hint: (1.0, 1.0)
-                on_release: app.panelize_row(False)
-            ActionButton:
-                icon: 'data/icons/plus.png'
-                size_hint_max: (32, 32)
-                size_hint: (1.0, 1.0)
-                on_release: app.panelize_row(True)
-
-            ActionSeparator:
-
-            ActionButton:
-                text: 'Zoom out'
-                icon: 'data/icons/zoom-out.png'
-                size_hint_max: (32, 32)
-                size_hint: (1.0, 1.0)
-                on_release: app.select_zoom(True)
-            ActionButton:
-                text: 'Zoom in'
-                icon: 'data/icons/zoom-in.png'
-                size_hint_max: (32, 32)
-                size_hint: (1.0, 1.0)
-                on_release: app.select_zoom(False)
-            ActionSpinner:
-                id: _zoom_button
-                color: 0.65, 0.65, 0.65
-                text: app._zoom_str
-                values: app._zoom_values_properties
-                on_text: idx = app._zoom_values_properties.index(args[1]); app.select_zoom_index(idx)
-                font_size: 20
-                bold: True
-                size_hint_max: (96, 32)
-                size_hint: (1.0, 1.0)
-            ActionLabel:
-                color: 0.65, 0.65, 0.65
-                text: ''
-                font_size: 20
-                size_hint_max: (32, 32)
-                size_hint: (1.0, 1.0)
-            ActionOverflow:
-
     BoxLayout:
         orientation: 'horizontal'
         GridLayout:
-            rows: 2
-            ScreenManager:
-                id: _screen_manager
-                on_current_screen: pass
+            rows: 6
+            BoxLayout:
+                size_hint_y: None
+                height: 10
+                canvas:
+                    Color:
+                        rgb: 0.17, 0.17, 0.17
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+            BoxLayout:
+                size_hint_y: None
+                height: 32
+                canvas:
+                    Color:
+                        rgb: 0.17, 0.17, 0.17
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+                Label:
+                    text: ''
+                    size: (16, 16)
+                    size_hint_x: None
+
+                ActionButton:
+                    icon: 'data/icons/eye.png'
+                    size: (40, 32)
+                    size_hint_x: None
+                    on_release: app.about()
+
+                ActionSeparator:
+
+                ActionButton:
+                    id: _load_button
+                    icon: 'data/icons/load.png'
+                    size: (44, 32)
+                    size_hint_x: None
+                    on_release: app.load_pcb_from_disk()
+                ActionButton:
+                    id: _save_button
+                    icon: 'data/icons/save.png'
+                    size: (54, 32)
+                    size_hint_x: None
+                    on_release: app.save_panel_to_disk()
+
+                ActionSeparator:
+
+                ActionToggleButton:
+                    id: _vertical_button
+                    state: 'down'
+                    icon: 'data/icons/vertical.png'
+                    size: (44, 32)
+                    size_hint_x: None
+                    on_release: app.rotate(True)
+                ActionToggleButton:
+                    id: _horizontal_button
+                    icon: 'data/icons/horizontal.png'
+                    size: (80, 32)
+                    size_hint_x: None
+                    on_release: app.rotate(False)
+
+                ActionSeparator:
+
+                ActionToggleButton:
+                    id: _panelization_button
+                    icon: 'data/icons/panelize.png'
+                    size: (44, 32)
+                    size_hint_x: None
+                    on_release: app.panelize()
+                ActionButton:
+                    id: _settings_button
+                    icon: 'data/icons/settings.png'
+                    size: (60, 32)
+                    size_hint_x: None
+                    on_release: app.settings_open()
+
+                ActionButton:
+                    icon: 'data/icons/minus.png'
+                    size: (32, 32)
+                    size_hint_x: None
+                    on_release: app.panelize_column(False)
+                ActionButton:
+                    icon: 'data/icons/plus.png'
+                    size: (32, 32)
+                    size_hint_x: None
+                    on_release: app.panelize_column(True)
+                ActionLabel:
+                    id: _panelization_label
+                    text: app._panelization_str
+                    font_size: 20
+                    color: 0.65, 0.65, 0.65
+                    bold: True
+                    size: (32, 32)
+                    size_hint_x: None
+                ActionButton:
+                    icon: 'data/icons/minus.png'
+                    size: (32, 32)
+                    size_hint_x: None
+                    on_release: app.panelize_row(False)
+                ActionButton:
+                    icon: 'data/icons/plus.png'
+                    size: (32, 32)
+                    size_hint_x: None
+                    on_release: app.panelize_row(True)
+
+                ActionSeparator:
+
+                ActionButton:
+                    icon: 'data/icons/zoom-out.png'
+                    size: (32, 32)
+                    size_hint_x: None
+                    on_release: app.select_zoom(True)
+                ActionButton:
+                    icon: 'data/icons/zoom-in.png'
+                    size: (32, 32)
+                    size_hint_x: None
+                    on_release: app.select_zoom(False)
+                ActionSpinner:
+                    id: _zoom_button
+                    color: 0.65, 0.65, 0.65
+                    text: app._zoom_str
+                    values: app._zoom_values_properties
+                    on_text: idx = app._zoom_values_properties.index(args[1]); app.select_zoom_index(idx)
+                    font_size: 20
+                    bold: True
+                    size: (96, 32)
+                    size_hint_x: None
+
+            BoxLayout:
+                size_hint_y: None
+                height: 32
+                canvas:
+                    Color:
+                        rgb: 0.17, 0.17, 0.17
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+                Label:
+                    text: '      About        Load     Export       Vertical     Horizontal        Panel    Settings    Columns                          Rows            Zoom in/out'
+                    color: 0.4, 0.4, 0.4, 1.0
+                    text_size: self.size
+                    font_size: 14
+
+            BoxLayout:
+                size_hint_y: None
+                height: 4
+                canvas:
+                    Color:
+                        rgb: 0.1, 0.1, 0.1
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+
+            WorkScreen:
+                _app: app
+                Widget:
+                    id: _surface
+                    size: (800, 800)
+                    size_hint: (1.0, 1.0)
+
             BoxLayout:
                 size_hint_y: None
                 height: 32

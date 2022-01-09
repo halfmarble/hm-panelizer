@@ -34,6 +34,7 @@ class PcbRail:
         self._gto = None
 
         self._panels = 0
+        self._gap = 0
         self._origin = (0, 0)
         self._size = (0, 0)
         self._vcut = False
@@ -50,14 +51,14 @@ class PcbRail:
             print('ERROR: PcbRail temp folder is NULL')
             return
 
-        save_rail_gm1(self._tmp_folder, self._origin, self._size, self._panels, self._vcut)
+        save_rail_gm1(self._tmp_folder, self._origin, self._size, self._panels, self._gap, self._vcut)
         save_rail_gtl(self._tmp_folder, self._origin, self._size)
         save_rail_gts(self._tmp_folder, self._origin, self._size)
-        save_rail_gto(self._tmp_folder, self._origin, self._size, self._panels, self._vcut, self._jlc)
+        save_rail_gto(self._tmp_folder, self._origin, self._size, self._panels, self._gap, self._vcut, self._jlc)
 
         return self._tmp_folder
 
-    def render_masks(self, panels, origin, size, vcut, jlc):
+    def render_masks(self, panels, gap, origin, size, vcut, jlc):
         if self._tmp_folder is None:
             print('ERROR: PcbRail temp folder is NULL')
             return
@@ -65,10 +66,10 @@ class PcbRail:
         if self._gm1 is None or self._panels != panels or self._origin != origin or self._size != size or \
                 self._vcut != vcut or self._jlc != jlc:
 
-            bounds = render_rail_gm1(self._tmp_folder, 'rail_edge_cuts', origin, size, panels, vcut)
+            bounds = render_rail_gm1(self._tmp_folder, 'rail_edge_cuts', origin, size, panels, gap, vcut)
             render_rail_gtl(bounds, self._tmp_folder, 'rail_top_copper', origin, size)
             render_rail_gts(bounds, self._tmp_folder, 'rail_top_mask', origin, size)
-            render_rail_gto(bounds, self._tmp_folder, 'rail_top_silk', origin, size, panels, vcut, jlc)
+            render_rail_gto(bounds, self._tmp_folder, 'rail_top_silk', origin, size, panels, gap, vcut, jlc)
 
             self._gm1 = load_image_masked(self._tmp_folder, 'rail_edge_cuts_mask.png', Color(1, 1, 1, 1))
             self._gtl = load_image_masked(self._tmp_folder, 'rail_top_copper.png', Color(1, 1, 1, 1))
@@ -81,6 +82,7 @@ class PcbRail:
             Cache.remove('kv.texture')
 
             self._panels = panels
+            self._gap = gap
             self._origin = origin
             self._size = size
             self._vcut = vcut

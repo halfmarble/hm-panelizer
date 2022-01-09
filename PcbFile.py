@@ -214,7 +214,7 @@ def generate_mouse_bite_gm1_data(origin, size, arc, close):
     return data
 
 
-def generate_rail_gm1_data(origin, size, panels, vcut):
+def generate_rail_gm1_data(origin, size, panels, gap, vcut):
     min_x = origin[0]
     min_y = origin[1]
     max_x = min_x+size[0]
@@ -251,10 +251,11 @@ def generate_rail_gm1_data(origin, size, panels, vcut):
     data += 'X{}Y{}D01*\n\n'.format(generate_float46(min_x), generate_float46(min_y))
 
     if vcut and panels > 1:
-        section = width / float(panels)
-        x = min_x
+        available = width - (float(panels-1) * gap)
+        section = available / float(panels)
+        x = min_x - (gap/2.0)
         for i in range(0, panels-1):
-            x += section
+            x += section + gap
             data += 'X{}Y{}D02*\n'.format(generate_float46(x), generate_float46(max_y))
             data += 'X{}Y{}D01*\n'.format(generate_float46(x), generate_float46(min_y))
             data += '\n\n'
@@ -461,7 +462,7 @@ def generate_vscore_text_data(origin, aperture):
     return data
 
 
-def generate_rail_gto_data(origin, size, panels, vcut, jlc):
+def generate_rail_gto_data(origin, size, panels, gap, vcut, jlc):
     min_x = origin[0]
     min_y = origin[1]
     max_x = min_x+size[0]
@@ -490,11 +491,12 @@ def generate_rail_gto_data(origin, size, panels, vcut, jlc):
     if jlc:
         data += generate_jlcjlcjlcjlc_text_data(origin=(10, height/2.0), aperture=10)
 
-    if vcut and panels > 0:
-        section = width / float(panels)
-        x = min_x
-        for i in range(0, panels - 1):
-            x += section
+    if vcut and panels > 1:
+        available = width - (float(panels-1) * gap)
+        section = available / float(panels)
+        x = min_x - (gap/2.0)
+        for i in range(0, int(panels-1)):
+            x += section + gap
             data += 'D10*\n'
             data += 'X{}Y{}D02*\n'.format(generate_float46(x), generate_float46(max_y))
             data += 'X{}Y{}D01*\n\n'.format(generate_float46(x), generate_float46(min_y))
@@ -668,14 +670,14 @@ def render_mouse_bite_drl(path, filename, origin, size, radius, gap):
     render_pcb_layer(layer.bounds, layer, path, filename)
 
 
-def save_rail_gm1(path, origin, size, panels, vcut):
-    gm1 = generate_rail_gm1_data(origin, size, panels, vcut)
+def save_rail_gm1(path, origin, size, panels, gap, vcut):
+    gm1 = generate_rail_gm1_data(origin, size, panels, gap, vcut)
     with open(os.path.join(path, 'Rails-Edge_Cuts.gm1'), "w") as text_file:
         text_file.write(gm1)
 
 
-def render_rail_gm1(path, filename, origin, size, panels, vcut):
-    gm1 = generate_rail_gm1_data(origin, size, panels, vcut)
+def render_rail_gm1(path, filename, origin, size, panels, gap, vcut):
+    gm1 = generate_rail_gm1_data(origin, size, panels, gap, vcut)
     data = rs274x.loads(gm1, 'dummy.gm1')
     layer = PCBLayer.from_cam(data)
     render_pcb_layer(layer.bounds, layer, path, filename, outline=True)
@@ -708,14 +710,14 @@ def render_rail_gts(bounds, path, filename, origin, size):
     render_pcb_layer(bounds, layer, path, filename)
 
 
-def save_rail_gto(path, origin, size, panels, vcut, jlc):
-    gto = generate_rail_gto_data(origin, size, panels, vcut, jlc)
+def save_rail_gto(path, origin, size, panels, gap, vcut, jlc):
+    gto = generate_rail_gto_data(origin, size, panels, gap, vcut, jlc)
     with open(os.path.join(path, 'Rails-F_Silkscreen.gto'), "w") as text_file:
         text_file.write(gto)
 
 
-def render_rail_gto(bounds, path, filename, origin, size, panels, vcut, jlc):
-    gto = generate_rail_gto_data(origin, size, panels, vcut, jlc)
+def render_rail_gto(bounds, path, filename, origin, size, panels, gap, vcut, jlc):
+    gto = generate_rail_gto_data(origin, size, panels, gap, vcut, jlc)
     data = rs274x.loads(gto, 'dummy.gto')
     layer = PCBLayer.from_cam(data)
     render_pcb_layer(bounds, layer, path, filename)

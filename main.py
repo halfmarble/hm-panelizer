@@ -57,7 +57,6 @@ from OffScreenScatter import *
 from Pcb import *
 from PcbBoard import *
 from PcbPanel import *
-from WorkScreen import *
 from UI import *
 from PcbFile import *
 
@@ -105,6 +104,7 @@ class PanelizerApp(App):
         self._progress = None
         self._error_popup = None
         self._settings_popup = None
+        self._about_popup = None
 
         self._screen = None
         self._surface = None
@@ -132,23 +132,23 @@ class PanelizerApp(App):
         self._bites_count = AppSettings.bites_count
 
     def build(self):
-        self.title = 'hmPanelizer'
+        self.title = Constants.APP_STR
+        self._surface = self.root.ids._surface
 
         self._zoom_values_index = self._zoom_values.index(self._scale)
         for value in self._zoom_values:
             self._zoom_values_properties.append('{}%'.format(value))
 
-        self._screen = WorkScreen(self)
-        self._surface = Widget()
-        self._screen.add_widget(self._surface, False)
-        self.root.ids._screen_manager.switch_to(self._screen)
-
-        self._progress = Progress(title='Progress processing PCB')
+        self._progress = Progress(title='Progress processing Pcb')
         self._error_popup = Error(title='Error')
         self._settings_popup = Settings(title='Panelizing settings')
+        self._about_popup = About(title='{}'.format(self.title))
 
         self._grid = OffScreenImage(client=self._grid_renderer, shader=None)
         self._surface.add_widget(self._grid)
+
+        # let the system layout the window
+        redraw_window()
 
         self.load_pcb(join(dirname(__file__), DEMO_PCB_PATH_STR), None)
         Clock.schedule_once(self.load_real_pcb_board, 2.0)
@@ -279,24 +279,24 @@ class PanelizerApp(App):
             units = 'mm'
         if self._pcb is not None:
             #self.root.ids._save_button.disabled = False
-            status.text += '  PCB: {},'.format(self._pcb.board_name)
+            status.text += '  Pcb: {},'.format(self._pcb.board_name)
             if self._angle == 0.0:
                 status.text += '  size: {}{} x {}{},'.format(round(self._pcb.size_mm[0], 2), units,
                                                              round(self._pcb.size_mm[1], 2), units)
             else:
                 status.text += '  size: {}{} x {}{},'.format(round(self._pcb.size_mm[1], 2), units,
                                                              round(self._pcb.size_mm[0], 2), units)
-            status.text += '  {}valid pcb, '.format('in' if not self._pcb.valid else '')
+            status.text += '  {}valid Pcb, '.format('in' if not self._pcb.valid else '')
             if self._pcb_panel is not None:
                 # self.root.ids._save_button.disabled = True
-                status.text += '  panel pcb count: {},'.format(self._panels_x * self._panels_y)
+                status.text += '  panel Pcb count: {},'.format(self._panels_x * self._panels_y)
                 status.text += '  panel size: {}{} x {}{},'.format(round(self._pcb_panel.size_mm[0], 2), units,
                                                                    round(self._pcb_panel.size_mm[1], 2), units)
                 status.text += '  {}valid layout.'.format('in' if not self._pcb_panel.valid_layout else '')
             else:
                 status.text += '  invalid layout.'
         else:
-            status.text = '  Invalid PCB.'
+            status.text = '  Invalid Pcb.'
 
     def update_zoom_title(self):
         if self._pcb is not None:
@@ -430,7 +430,7 @@ class PanelizerApp(App):
         Clock.schedule_once(self.load_finish, 1.0)
 
         self._progress.open()
-        update_progressbar(self._progress, 'Loading PCB ...', 0.0)
+        update_progressbar(self._progress, 'Loading Pcb ...', 0.0)
 
     def load_pcb_from_disk(self):
         content = LoadDialog(load=self.load, cancel=self.dismiss_load_popup)
@@ -439,7 +439,7 @@ class PanelizerApp(App):
         file_chooser.path = self._load_file_path
         file_chooser.dirselect = True
 
-        self._load_popup = Popup(title="Select folder with PCB gerber files or .zip archive file to load",
+        self._load_popup = Popup(title="Select folder with Pcb gerber files or .zip archive file to load",
                                  content=content, size_hint=(0.9, 0.9))
         self._load_popup.open()
 
@@ -451,14 +451,14 @@ class PanelizerApp(App):
                 os.makedirs(path)
         except:
             self._progress.dismiss()
-            self.error_open("Unable to save to {}!".format(path))
+            self.error_open("Unable to export to {}!".format(path))
             return
 
-        update_progressbar(self._progress, 'exporting mouse bites PCB...', 0.1)
+        update_progressbar(self._progress, 'exporting mouse bites Pcb...', 0.1)
         mouse_bite_path = PcbMouseBites.generate_pcb_files()
         print('generated mouse bite files in {}'.format(mouse_bite_path))
 
-        update_progressbar(self._progress, 'exporting rails PCB...', 0.2)
+        update_progressbar(self._progress, 'exporting rails Pcb...', 0.2)
         rail_path = PcbRail.generate_pcb_files()
         print('generated rails files in {}'.format(rail_path))
 
@@ -510,13 +510,13 @@ class PanelizerApp(App):
             string = truncate_str_middle(self._finish_save_selected, 60)
             self.error_open("Folder {} already exists!".format(string))
         else:
-            update_progressbar(self._progress, 'exporting PCB panel...', 0.0)
+            update_progressbar(self._progress, 'exporting Pcb panel...', 0.0)
             Clock.schedule_once(self.save_finish, 1.0)
             self._progress.open()
 
     def save_panel_to_disk(self):
         if self._current_pcb_folder is None:
-            self.error_open("Can not save demo PCB board (no src gerber files available)")
+            self.error_open("Can not export demo Pcb board (no src gerber files available)")
             return
 
         if self._pcb_panel is not None:
@@ -530,13 +530,13 @@ class PanelizerApp(App):
                 file_chooser.dirselect = True
                 content.ids._save_file_name.text = self._pcb.board_name+'_panelized'
 
-                self._save_popup = Popup(title="Select folder where to save the PCB panel",
+                self._save_popup = Popup(title="Select folder where to export the Pcb panel",
                                          content=content, size_hint=(0.9, 0.9))
                 self._save_popup.open()
             else:
-                self.error_open("Invalid PCB panel layout")
+                self.error_open("Invalid Pcb panel layout")
         else:
-            self.error_open("Invalid PCB board")
+            self.error_open("Invalid Pcb board")
 
     def error_open(self, text):
         label = self._error_popup.ids._error_label
@@ -610,6 +610,12 @@ class PanelizerApp(App):
 
     def settings_cancel(self):
         self._settings_popup.dismiss()
+
+    def about(self):
+        self._about_popup.open()
+
+    def about_ok(self):
+        self._about_popup.dismiss()
 
     def cleanup(self):
         if ALLOW_DIR_DELETIONS:

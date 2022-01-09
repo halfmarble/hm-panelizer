@@ -17,6 +17,26 @@
 from kivy.uix.label import Label
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.popup import Popup
+from kivy.uix.screenmanager import Screen
+from kivy.graphics import Color, Rectangle
+
+
+class WorkScreen(Screen):
+
+    def __init__(self, **kwargs):
+        super(WorkScreen, self).__init__(**kwargs)
+
+        self._app = None
+
+        with self.canvas:
+            Color(1.0, 0.0, 0.0, 0.5)
+            self.background_rect = Rectangle(pos=self.pos, size=self.size)
+
+        self.bind(size=self.update_rect)
+
+    def update_rect(self, *args):
+        self.background_rect.size = (self.size[0], self.size[1])
+        self._app.resize(self.background_rect.size)
 
 
 class LayerButton(ToggleButton):
@@ -35,7 +55,15 @@ class TitleLabel(Label):
     pass
 
 
+class MenuLabel(Label):
+    pass
+
+
 class Settings(Popup):
+    pass
+
+
+class About(Popup):
     pass
 
 

@@ -19,7 +19,7 @@ from kivy.graphics import Color
 from posixpath import join
 
 
-VERSION_STR: Final              = '1.0.0 (alpha)'
+VERSION_STR: Final              = '1.0.0 (beta)'
 APP_STR: Final                  = 'hm-panelizer {}'.format(VERSION_STR)
 
 ALLOW_DIR_DELETIONS: Final      = True

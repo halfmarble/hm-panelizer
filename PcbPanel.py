@@ -192,14 +192,14 @@ class PcbPanel(OffScreenScatter):
             pcb_height = pcb_client_width
 
         panels = self._columns
+        gap = AppSettings.gap
         origin = (0, 0)
         size = (self._size_mm[0], AppSettings.rail)
         vcut = AppSettings.use_vcut
         jlc = AppSettings.use_jlc
-        PcbRail.render_masks(panels, origin, size, vcut, jlc)
+        PcbRail.render_masks(panels, gap, origin, size, vcut, jlc)
 
         bite = AppSettings.bite
-        gap = AppSettings.gap
         bite_hole_radius = AppSettings.bite_hole_radius
         bite_hole_space = AppSettings.bite_hole_space
         PcbMouseBites.render_masks(bite, gap, bite_hole_radius, bite_hole_space)
