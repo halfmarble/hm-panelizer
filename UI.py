@@ -22,13 +22,14 @@
 
 
 from kivy.uix.label import Label
+from kivy.uix.stencilview import StencilView
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 from kivy.graphics import Color, Rectangle
 
 
-class WorkScreen(Screen):
+class WorkScreen(StencilView):
 
     def __init__(self, **kwargs):
         super(WorkScreen, self).__init__(**kwargs)
@@ -42,7 +43,8 @@ class WorkScreen(Screen):
         self.bind(size=self.update_rect)
 
     def update_rect(self, *args):
-        self.background_rect.size = (self.size[0], self.size[1])
+        self.pos = (0, 2.0*self.pos[1])  # TODO: why do we need this here to center the screen vertically?
+        self.background_rect.size = (self.pos[0]+self.size[0], self.pos[1]+self.size[1])
         self._app.resize(self.background_rect.size)
 
 
