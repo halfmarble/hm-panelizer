@@ -71,11 +71,20 @@ KiCad drill settings
 
 ## TODO
 
-Here is a list of features we want to add:
+Here is a list of features we definitively want to add:
 
-- KiCad BOM conversion to popular PCB house (JLC, PCBWay, Oshpark, etc.) formats
+- KiCad BOM conversion to popular Pcb house (JLC, PCBWay, Oshpark, etc.) formats
 - panelize parts placement
 
+And here is a list of wish features we would like to see:
+
+- speed optimizations (rendering and panelization)
+- GUI for setting colors of Pcb layers, themes
+- scrollbars
+- support both horizontal and vertical mouse bites at the same time
+- standard output/error redirected to the progress panel to track the debug logs
+- render component parts
+- 3D rendering
 
 ## Need help?
 
