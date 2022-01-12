@@ -16,6 +16,25 @@ www.useiconic.com/open
 
 We are releasing it under MIT license, Copyright 2021,2022 HalfMarble LLC (www.halfmarble.com)
 
+Please note that we forked **_pcb-tools_** and **_pcb-tools-extension_**, made significant modifications,
+and included both of these projects as part of our tool. We tried at first to keep minimal changes
+to those projects, so that we could contribute back, but we eventually ended up needing to make many changes,
+some of them incompatible or unwanted (for example changing names of APIs to make it easier for us to follow the code) with those projects,
+and contributing back would add significant amount of development time. We feel unhappy that
+we were unable to find an easy way to contribute back to those projects, and hope that someone can
+reconcile our contributions back to these projects one day.
+
+## How to run
+
+hm-panelizer is a **_python app_**, so you will need **_python_** version `3.9.x` (we use `3.9.7`) Once you have it installed on your system,
+you will need the following python packages (optional - use **_pip3_** to help you manage python packages):
+
+- `kivy`
+- `cairo` (comes with most python distributions?)
+
+Once you have `python 3.9.x` and the required python packages installed, you can run hm-panelizer via command line
+(i.e. terminal) by `cd`'ing into the hm-panelizer folder, then issuing `python3 main.py` command.
+
 ## Screenshots:
 
 Main view
@@ -30,21 +49,23 @@ Panel view
 
 ![screenshot2](pics/Screenshot2.png)
 
-### WARNING !
+## _! WARNING !_
 
-We hope that you will find hm-panelizer useful, however, we offer no guarantee that it will work in your case - 
-always verify with other tools, before you order your Pcb panels!
+_We hope that you will find hm-panelizer useful, however, we offer no guarantee that it will work in your case - 
+always verify with other tools, before you order your Pcb panels!_
 
 ## Why did we create hm-panelizer?
 
 There are a couple of open source tools out there that will help you panelize your Pcb, 
 for example http://blog.thisisnotrocketscience.nl/projects/pcb-panelizer/ and www.github.com/yaqwsx/KiKit,
 however, we wanted a GUI based app, which we could run on a macOS based machine. We could not find one,
-so we decided to write one.
+so we wrote one.
 
 ## Will hm-panelizer work with my Pcb?
 
-It might. We personally use KiCad 6.x and we wanted to panelize our own Pcb (NEAToBOARD),
+It might. The gerber viewer part should almost certainly work, but the panelizer feature is another story.
+
+We personally use KiCad 6.x and we wanted to panelize our own Pcb (NEAToBOARD),
 so that's what we mostly tested. We did try a few other Pcbs created with other software and we are eager to hear your
 experience.
 
@@ -53,10 +74,10 @@ as open source in hopes that the community will contribute to it.  If you find a
 
 Having said that, here are requirements to create a Pcb that should make it suitable for hm-panelizer:
 
-- use metric system (we haven't honestly even tried imperial)
-- your pcb gerber files must use Altium/Protel filename extensions (see https://pcbprime.com/pcb-tips/accepted-file-formats/Gerber%20File%20Extension%20Comparison.pdf)
-- the board outline gerber file (.gm1) must be present
-- currently, our tool can only add mouse-bites to perfectly straight lines (see hm-panelizer's "Outline verification" feature)
+- use **metric system**
+- your pcb gerber files must use **Altium/Protel filename extensions** (see https://pcbprime.com/pcb-tips/accepted-file-formats/Gerber%20File%20Extension%20Comparison.pdf)
+- the **board outline gerber file** (.gm1) must be present
+- currently, our tool can only add **mouse-bites to perfectly straight lines** (see hm-panelizer's "Outline verification" feature)
 - for optimal results use drill/place origin and grid origin at (0, 0)
 
 Here are the KiCad settings we personally use to export our Pcbs:

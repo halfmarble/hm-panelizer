@@ -64,8 +64,10 @@ def generate_pcb_data_layers(cwd, pcb_rel_path, data_rel_path, progressbar=None,
     text = 'Reading PCB \"{}\"'.format(board_name)
     log_text(progressbar, text, progressbar_value)
     pcb = PCB.from_directory(pcb_path, verbose=True)
-    print('\n')
+    if pcb is None:
+        return
 
+    print('\n')
     progressbar_value = 0.25
     for layer in pcb.layers:
         text = 'Found layer \"{}\"'.format(layer.name())

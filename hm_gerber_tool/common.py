@@ -37,8 +37,11 @@ def read(filename):
         or IPCNetlist. Returns None if file is not of the proper type.
     """
     with open(filename, 'rU') as f:
-        data = f.read()
-    return loads(data, filename)
+        try:
+            data = f.read()
+            return loads(data, filename)
+        except:
+            return None
 
 
 def loads(data, filename=None):

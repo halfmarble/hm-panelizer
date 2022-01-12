@@ -16,6 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import os
 
 from hm_gerber_tool.cam import CamFile
@@ -54,18 +55,20 @@ class PCB(object):
                 if verbose:
                     print('[PCB]: reading {}'.format(filename))
                 camfile = gerber_read(os.path.join(directory, filename))
-                layer = PCBLayer.from_cam(camfile)
-                if verbose:
-                    print('[PCB]:  layer {}, bounds {}, [metric units: {}]'.format(layer, layer.bounds, layer.metric))
-                layers.append(layer)
-                name = os.path.splitext(filename)[0]
-                if len(os.path.splitext(filename)) > 1:
-                    _name, ext = os.path.splitext(name)
-                    if ext[1:] in layer_signatures(layer.layer_class):
-                        name = _name
-                    if layer.layer_class == 'drill' and 'drill' in ext:
-                        name = _name
-                names.add(name)
+                if camfile is not None:
+                    layer = PCBLayer.from_cam(camfile)
+                    if verbose:
+                        print(
+                            '[PCB]:  layer {}, bounds {}, [metric units: {}]'.format(layer, layer.bounds, layer.metric))
+                    layers.append(layer)
+                    name = os.path.splitext(filename)[0]
+                    if len(os.path.splitext(filename)) > 1:
+                        _name, ext = os.path.splitext(name)
+                        if ext[1:] in layer_signatures(layer.layer_class):
+                            name = _name
+                        if layer.layer_class == 'drill' and 'drill' in ext:
+                            name = _name
+                    names.add(name)
             except ParseError:
                 if verbose:
                     print('[PCB]:  Skipping file {} [ParseError]'.format(filename))
@@ -84,9 +87,12 @@ class PCB(object):
         print('[PCB]: board_name {}'.format(board_name))
 
         # Return PCB
-        board = cls(layers, board_name)
-        print('[PCB]: board_bounds {}'.format(board.board_bounds))
-        return board
+        if len(layers) > 0:
+            board = cls(layers, board_name)
+            print('[PCB]: board_bounds {}'.format(board.board_bounds))
+            return board
+        else:
+            return None
 
     def __init__(self, layers, name=None):
         self.layers = sort_layers(layers)

@@ -832,7 +832,14 @@ class GerberCairoContext(GerberContext):
         self.active_ctx.scale(1, -1)
 
     def new_render_layer(self, mirror=False, flip=False):
-        matrix = copy.copy(self._active_matrix_base)
+        matrix = cairo.matrix.Matrix()
+        matrix.x0 = self._active_matrix_base.x0
+        matrix.xx = self._active_matrix_base.xx
+        matrix.xy = self._active_matrix_base.xy
+        matrix.yy = self._active_matrix_base.yy
+        matrix.y0 = self._active_matrix_base.y0
+        matrix.yx = self._active_matrix_base.yx
+
         surface = cairo.SVGSurface(None, self.size_in_pixels[0], self.size_in_pixels[1])
         ctx = cairo.Context(surface)
 
