@@ -12,7 +12,7 @@ import hm_gerber_tool.rs274x
 import hm_gerber_tool.ipc356
 import hm_gerber_ex.rs274x
 import hm_gerber_ex.excellon
-import hm_gerber_ex.dxf
+#import hm_gerber_ex.dxf
 
 
 def read(filename, format=None):

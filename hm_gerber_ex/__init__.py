@@ -12,4 +12,4 @@ This package provide panelizing of PCB fucntion.
 
 from hm_gerber_ex.common import read, loads, rectangle
 from hm_gerber_ex.composition import GerberComposition, DrillComposition
-from hm_gerber_ex.dxf import DxfFile
+#from hm_gerber_ex.dxf import DxfFile

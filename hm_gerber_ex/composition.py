@@ -13,7 +13,7 @@ from hm_gerber_tool.excellon_statements import *
 from hm_gerber_tool.excellon import DrillSlot, DrillHit
 import hm_gerber_tool.rs274x
 import hm_gerber_tool.excellon
-import hm_gerber_ex.dxf
+#import hm_gerber_ex.dxf
 
 from math import floor
 
