@@ -260,15 +260,15 @@ def generate_rail_gm1_data(origin, size, panels, gap, vcut):
     data += 'X{}Y{}D02*\n'.format(generate_float46(min_x), generate_float46(max_y))
     data += 'X{}Y{}D01*\n\n'.format(generate_float46(min_x), generate_float46(min_y))
 
-    if vcut and panels > 1:
-        available = width - (float(panels-1) * gap)
-        section = available / float(panels)
-        x = min_x - (gap/2.0)
-        for i in range(0, panels-1):
-            x += section + gap
-            data += 'X{}Y{}D02*\n'.format(generate_float46(x), generate_float46(max_y))
-            data += 'X{}Y{}D01*\n'.format(generate_float46(x), generate_float46(min_y))
-            data += '\n\n'
+    # if vcut and panels > 1:
+    #     available = width - (float(panels-1) * gap)
+    #     section = available / float(panels)
+    #     x = min_x - (gap/2.0)
+    #     for i in range(0, panels-1):
+    #         x += section + gap
+    #         data += 'X{}Y{}D02*\n'.format(generate_float46(x), generate_float46(max_y))
+    #         data += 'X{}Y{}D01*\n'.format(generate_float46(x), generate_float46(min_y))
+    #         data += '\n\n'
 
     data += 'M02*\n'
     return data

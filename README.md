@@ -1,4 +1,12 @@
-# halfmarble-panelizer
+# We are not quite ready to announce our tool yet!
+As the authors of this software, we kindly ask you not to announce our tool anywhere yet.
+
+If you came here by a random chance or were asked to beta test it or pre-review it, then please feel free
+to take the tool out for a spin, but kindly do not discuss it in public yet.
+
+Thank you!
+
+# hm-panelizer
 
 A GUI based PCB gerber file viewer and panelizer written in python
 
@@ -26,13 +34,13 @@ reconcile our contributions back to these projects one day.
 
 ## How to run
 
-hm-panelizer is a **_python app_**, so you will need **_python_** version `3.9.x` (we use `3.9.7`) Once you have it installed on your system,
+hm-panelizer is a **_python app_**, so you will need **_python_** version `3.6.x` or higher (we use `3.9.7`) Once you have it installed on your system,
 you will need the following python packages (optional - use **_pip3_** to help you manage python packages):
 
 - `kivy`
 - `cairo` (comes with most python distributions?)
 
-Once you have `python 3.9.x` and the required python packages installed, you can run hm-panelizer via command line
+Once you have `python 3.6.x` and the required python packages installed, you can run hm-panelizer via command line
 (i.e. terminal) by `cd`'ing into the hm-panelizer folder, then issuing `python3 main.py` command.
 
 ## Screenshots:

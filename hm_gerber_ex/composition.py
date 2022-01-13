@@ -7,6 +7,7 @@
 import os
 from functools import reduce
 
+import hm_gerber_ex
 from hm_gerber_tool.cam import FileSettings
 from hm_gerber_tool.gerber_statements import EofStmt, CoordStmt, CommentStmt
 from hm_gerber_tool.excellon_statements import *
