@@ -69,7 +69,7 @@ PCB_BITES_HOLE_SPACE_MM: Final  = 0.6
 PCB_BITES_ARC_MM: Final         = 0.75
 
 # in mm
-PCB_PANEL_MERGE_ERROR: Final    = 0.075
+PCB_PANEL_MERGE_ERROR: Final    = 0.15
 
 
 GRID_BACKGROUND_COLOR: Final    = Color(0.95, 0.95, 0.95, 1.0)

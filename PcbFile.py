@@ -499,7 +499,7 @@ def generate_rail_gto_data(origin, size, panels, gap, vcut, jlc):
     data += 'G04 APERTURE END LIST*\n\n'
 
     if jlc:
-        data += generate_jlcjlcjlcjlc_text_data(origin=(10, height/2.0), aperture=10)
+        data += generate_jlcjlcjlcjlc_text_data(origin=(8.0, height/2.0), aperture=10)
 
     if vcut and panels > 1:
         available = width - (float(panels-1) * gap)

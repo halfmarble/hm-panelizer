@@ -60,7 +60,7 @@ class AppSettings:
         self._bite_hole_space = clamp(0.5, bite_hole_space, 5.0)
         self._use_vcut = use_vcut
         self._use_jlc = use_jlc
-        self._merge_error = merge_error
+        self._merge_error = clamp(0.0, merge_error, 1.0)
 
     @property
     def rail(self):

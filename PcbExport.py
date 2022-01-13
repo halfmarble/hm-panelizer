@@ -148,7 +148,7 @@ def export_pcb_panel(progress, panel_path,
         offset_x = 0.0
         if rotate != 0.0:
             offset_x = pcb_height_mm
-        boards.append((use_bounds_offset, path, offset_x+10.0*origin[0], 10.0*origin[1], rotate))
+        boards.append((use_bounds_offset, path, round_down(offset_x+10.0*origin[0]), round_down(10.0*origin[1]), rotate))
     if verbose:
         print(' boards: {}'.format(boards))
         directory = os.path.abspath(pcb_path)

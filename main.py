@@ -607,7 +607,6 @@ class PanelizerApp(App):
             merge_error = float(self._settings_popup.ids._merge_error_setting.text)
         except:
             merge_error = AppSettings.merge_error
-
         AppSettings.set(gap, rail, bites_count, bite, bite_hole_radius, bite_hole_space, use_vcut, use_jlc, merge_error)
 
         PcbRail.invalidate()

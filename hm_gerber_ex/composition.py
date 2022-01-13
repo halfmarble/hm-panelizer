@@ -24,13 +24,17 @@ from AppSettings import AppSettings
 
 def round_down(n, d=2):
     d = int('1' + ('0' * d))
-    return floor(n * d) / d
+    rounded = floor(n * d) / d
+    #print('round_down {},{}'.format(n, rounded))
+    return rounded
 
 
-def equal_floats(one, two, sigma=AppSettings.merge_error):
+def equal_floats(one, two, sigma=0.15):
     if abs(one-two) <= sigma:
+        print('equal_floats {},{},{} True'.format(one, two, sigma))
         return True
     else:
+        print('equal_floats {},{},{} False'.format(one, two, sigma))
         return False
 
 
@@ -66,7 +70,7 @@ class GerberComposition(Composition):
         f.write(start.to_gerber(self.settings) + '\n')
         for cutout in cutouts:
             cutout_y = cutout[0]
-            if equal_floats(cutout_y, round_down(start.y)):
+            if equal_floats(cutout_y, round_down(start.y), AppSettings.merge_error):
                 lines = cutout[1]
                 for cutout_line in lines:
                     start_cutout_x = cutout_line[0]
@@ -93,7 +97,7 @@ class GerberComposition(Composition):
         if isinstance(start, CoordStmt) and start.op == 'D02' and len(lines) > (i+1):
             end = lines[i + 1]
             if isinstance(end, CoordStmt) and end.op == 'D01':
-                if equal_floats(end.y, start.y):
+                if equal_floats(end.y, start.y, AppSettings.merge_error):
                     if verbose:
                         print('#')
                         print('# HORIZONTAL LINE')
@@ -103,7 +107,7 @@ class GerberComposition(Composition):
                               .format(end.x, end.y, end.to_gerber(self.settings)))
                     for cutout in cutouts:
                         cutout_y = cutout[0]
-                        if equal_floats(cutout_y, round_down(end.y)):
+                        if equal_floats(cutout_y, round_down(end.y), AppSettings.merge_error):
                             if verbose:
                                 print('#')
                                 print('#  MATCHING Y {}'.format(cutout_y))
