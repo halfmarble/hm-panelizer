@@ -90,6 +90,9 @@ class PanelizerApp(App):
     def __init__(self, **kwargs):
         super(PanelizerApp, self).__init__(**kwargs)
 
+        self._demo = True
+        self._demo_label = None
+
         self._settings = AppSettings
 
         self._tmp_folders_to_delete = []
@@ -157,6 +160,8 @@ class PanelizerApp(App):
         # let the system layout the window
         redraw_window()
 
+        self._demo_label = DemoLabel()
+
         self.load_pcb(join(dirname(__file__), DEMO_PCB_PATH_STR), None)
         Clock.schedule_once(self.load_real_pcb_board, 2.0)
 
@@ -186,6 +191,8 @@ class PanelizerApp(App):
             self._panels_x = INITIAL_COLUMNS
             self._panels_y = INITIAL_ROWS
             self._pcb_panel.panelize(self._panels_x, self._panels_y, self._angle, self._bites_count)
+            self._demo = True if name is None else False
+
         else:
             self._pixels_per_cm = self._pcb.pixels_per_cm
             self._pcb_board = PcbBoard(root=self._surface, pcb=self._pcb)
@@ -198,6 +205,7 @@ class PanelizerApp(App):
         return self._pcb.invalid_reason
 
     def panelize(self):
+        self._surface.remove_widget(self._demo_label)
         if self._pcb is not None:
             self._show_panel = self.root.ids._panelization_button.state == 'down'
             if self._show_panel:
@@ -219,6 +227,8 @@ class PanelizerApp(App):
                 self._pcb_board.activate()
             self.update_status()
             self.calculate_pcb_fit_scale()
+        if self._demo:
+            self._surface.add_widget(self._demo_label)
 
     def panelize_column(self, add):
         if self._pcb is not None:
@@ -302,6 +312,8 @@ class PanelizerApp(App):
                 status.text += '  {}valid layout.'.format('in' if not self._pcb_panel.valid_layout else '')
             else:
                 status.text += '  invalid layout.'
+            if self._demo:
+                status.text += ' DEMO mode.'
         else:
             status.text = '  Invalid Pcb.'
 
@@ -522,8 +534,8 @@ class PanelizerApp(App):
             self._progress.open()
 
     def save_panel_to_disk(self):
-        if self._current_pcb_folder is None:
-            self.error_open("Can not export demo Pcb board (no src gerber files available)")
+        if self._demo:
+            self.error_open("Can not export DEMO Pcb board (no src gerber files available)")
             return
 
         if self._pcb_panel is not None:

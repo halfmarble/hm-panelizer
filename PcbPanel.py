@@ -32,6 +32,7 @@ from PcbMouseBitesGroup import *
 from PcbShape import *
 from PcbMouseBites import *
 from PcbRail import *
+from UI import DemoLabel
 from Utilities import *
 
 

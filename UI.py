@@ -52,6 +52,10 @@ class LayerButton(ToggleButton):
     pass
 
 
+class DemoLabel(Label):
+    pass
+
+
 class EmptyLabel(Label):
     pass
 
