@@ -152,10 +152,10 @@ def generate_mouse_bite_gm1_data(origin, size, arc, close):
     max_y = min_y+size[1]
 
     data = ''
-    data += '%TF.GenerationSoftware,{}*%\n'.format(APP_STR)
+    data += '%TF.GenerationSoftware,{},{},{}*%\n'.format(VENDOR_NAME, APP_NAME, VERSION_STR)
     data += '%TF.SameCoordinates,Original*%\n'
     data += '%TF.FileFunction,Profile,NP*%\n'
-    data += '%TF.ProjectId,hm-PanelMouseBite*%\n'
+    data += '%TF.ProjectId,hm-PanelMouseBite,0,0*%\n'
     data += '%FSLAX46Y46*%\n'
     data += 'G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*\n'
     data += 'G04 Created by {}*\n\n'.format(APP_STR)
@@ -232,10 +232,10 @@ def generate_rail_gm1_data(origin, size, panels, gap, vcut):
     width = size[0]
 
     data = ''
-    data += '%TF.GenerationSoftware,{}*%\n'.format(APP_STR)
+    data += '%TF.GenerationSoftware,{},{},{}*%\n'.format(VENDOR_NAME, APP_NAME, VERSION_STR)
     data += '%TF.SameCoordinates,Original*%\n'
     data += '%TF.FileFunction,Profile,NP*%\n'
-    data += '%TF.ProjectId,hm-PanelRail*%\n'
+    data += '%TF.ProjectId,hm-PanelRail,0,0*%\n'
     data += '%FSLAX46Y46*%\n'
     data += 'G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*\n'
     data += 'G04 Created by {}*\n\n'.format(APP_STR)
@@ -481,7 +481,7 @@ def generate_rail_gto_data(origin, size, panels, gap, vcut, jlc):
     height = size[1]
 
     data = ''
-    data += '%TF.GenerationSoftware,{}*%\n'.format(APP_STR)
+    data += '%TF.GenerationSoftware,{},{},{}*%\n'.format(VENDOR_NAME, APP_NAME, VERSION_STR)
     data += '%TF.SameCoordinates,Original*%\n'
     data += '%TF.FileFunction,Legend,Top*%\n'
     data += '%TF.FilePolarity,Positive*%\n'
@@ -527,7 +527,7 @@ def generate_rail_gtl_data(origin, size):
     y = min_x + (height / 2.0)
 
     data = ''
-    data += '%TF.GenerationSoftware,{}*%\n'.format(APP_STR)
+    data += '%TF.GenerationSoftware,{},{},{}*%\n'.format(VENDOR_NAME, APP_NAME, VERSION_STR)
     data += '%TF.SameCoordinates,Original*%\n'
     data += '%TF.FileFunction,Copper,L1,Top*%\n'
     data += '%TF.FilePolarity,Positive*%\n'
@@ -569,7 +569,7 @@ def generate_rail_gts_data(origin, size):
     y = min_x + (height / 2.0)
 
     data = ''
-    data += '%TF.GenerationSoftware,{}*%\n'.format(APP_STR)
+    data += '%TF.GenerationSoftware,{},{},{}*%\n'.format(VENDOR_NAME, APP_NAME, VERSION_STR)
     data += '%TF.SameCoordinates,Original*%\n'
     data += '%TF.FileFunction,Soldermask,Top*%\n'
     data += '%TF.FilePolarity,Negative*%\n'
@@ -612,7 +612,7 @@ def generate_mouse_bite_drl_data(origin, size, radius, gap):
     data += 'M48'
     data += '; DRILL file {{{}}}\n'.format(APP_STR)
     data += '; FORMAT={{-:-/ absolute / metric / decimal}}\n'
-    data += '; #@! TF.GenerationSoftware,{}\n'.format(APP_STR)
+    data += '; #@! TF.GenerationSoftware,{},{},{}*%\n'.format(VENDOR_NAME, APP_NAME, VERSION_STR)
     data += '; #@! TF.FileFunction,NonPlated,1,2,NPTH\n'
     data += 'FMAT,2\n'
     data += 'METRIC\n\n'

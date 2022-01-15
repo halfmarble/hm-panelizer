@@ -27,7 +27,9 @@ from posixpath import join
 
 
 VERSION_STR: Final              = '1.0.0 (beta)'
-APP_STR: Final                  = 'hm-panelizer {}'.format(VERSION_STR)
+APP_NAME: Final                 = 'hm-panelizer'
+APP_STR: Final                  = '{} {}'.format(APP_NAME, VERSION_STR)
+VENDOR_NAME: Final              = 'halfmarble'
 
 ALLOW_DIR_DELETIONS: Final      = True
 
