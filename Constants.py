@@ -33,7 +33,7 @@ VENDOR_NAME: Final              = 'halfmarble'
 
 ALLOW_DIR_DELETIONS: Final      = True
 
-DEMO_PCB_PATH_STR: Final        = join('data', 'example_pcb', 'NEAToBOARD')
+DEMO_PCB_PATH_STR: Final        = join('data', 'demo_pcb', 'NEAToBOARD')
 
 # careful: the higher the number the better the resolution, but needs more VRAM
 PIXELS_PER_MM: Final            = 16
