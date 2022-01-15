@@ -1,7 +1,7 @@
 # We are not quite ready to announce our tool yet!
-As the authors of this software, we kindly ask you not to announce our tool anywhere yet.
+As the authors of this software, we kindly ask you not to announce or discuss our tool in public yet.
 
-If you came here by a random chance or were asked to beta test it or pre-review it, then please feel free
+If you came here by a random chance or were offered to beta test it or pre-review it, then please feel free
 to take the tool out for a spin, but kindly do not discuss it in public yet.
 
 Thank you!

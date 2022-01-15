@@ -138,6 +138,11 @@ def export_pcb_panel(progress, panel_path,
         angles.append(0.0)  # the angle always stays 0.0 for the mouse bites !
     #print(' angles: {}'.format(angles))
 
+    # for debugging: one pcb board rotated 90
+    # use_bounds_offsets = [True]
+    # paths = [pcb_path]
+    # angles = [90.0]
+
     board_count = len(paths)
     boards = []
     for i in range(board_count):
