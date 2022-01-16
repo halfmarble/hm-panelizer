@@ -31,10 +31,10 @@ def round_down(n, d=2):
 
 def equal_floats(one, two, sigma=0.15):
     if abs(one-two) <= sigma:
-        print('equal_floats {},{},{} True'.format(one, two, sigma))
+        #print('equal_floats {},{},{} True'.format(one, two, sigma))
         return True
     else:
-        print('equal_floats {},{},{} False'.format(one, two, sigma))
+        #print('equal_floats {},{},{} False'.format(one, two, sigma))
         return False
 
 
