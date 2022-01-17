@@ -229,7 +229,7 @@ def export_pcb_panel(progress, panel_path,
 
         if file is not None and ext != '.drl':
             new_name = extensions_to_names.get(ext, 'unknown')
-            full_path = os.path.join(panel_path, new_name + ext)
+            full_path = os.path.join(panel_path, new_name + '.gbr')
             if verbose:
                 print('\nWRITING: {}'.format(full_path))
             ctx.dump(full_path)
