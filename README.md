@@ -5,7 +5,7 @@ If you came here by a random chance or were offered to beta test it or pre-revie
 to take the tool out for a spin, but kindly do not discuss it in public yet.
 
 We have placed orders of a panel made by our tool with a few Pcb houses, and we are just waiting to get them back to verify that
-they worked. Once we verify that we will be ready to publicly announce it.
+they worked. Once we verify that, then we will be ready to publicly announce it.
 
 Thank you!
 
