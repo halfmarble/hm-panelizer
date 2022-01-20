@@ -208,6 +208,21 @@
             size_hint: 1.0, 0.1
             Button:
                 size_hint: 0.33, 0.75
+                text: 'OSH Park preset'
+                on_release: app.settings_oshpark()
+            Button:
+                size_hint: 0.33, 0.75
+                text: 'JLC PCB preset'
+                on_release: app.settings_jlcpcb()
+            Button:
+                size_hint: 0.33, 0.75
+                text: 'PCB Way preset'
+                on_release: app.settings_pcbway()
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint: 1.0, 0.1
+            Button:
+                size_hint: 0.33, 0.75
                 text: 'Defaults'
                 on_release: app.settings_default()
             Button:

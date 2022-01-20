@@ -68,7 +68,17 @@ PCB_PANEL_BITES_COUNT_Y: Final  = 0
 PCB_BITES_HOLE_RADIUS_MM: Final = 0.2
 PCB_BITES_HOLE_SPACE_MM: Final  = 0.6
 
-PCB_BITES_ARC_MM: Final         = 0.75
+# OSH Park recommends minimum of 0.8636
+PCB_BITES_ARC_MM: Final         = 1.0
+
+# https://docs.oshpark.com/troubleshooting/panelized-designs/
+OSHPARK_PCB_PANEL_RAIL_HEIGHT_MM: Final = 5.08
+OSHPARK_PCB_PANEL_GAP_MM: Final         = 2.54
+OSHPARK_PCB_BITES_HOLE_RADIUS_MM: Final = 0.254
+OSHPARK_PCB_BITES_HOLE_SPACE_MM: Final  = 1.016
+OSHPARK_PCB_PANEL_BITES_SIZE_MM: Final  = (PCB_BITES_ARC_MM+2.54+PCB_BITES_ARC_MM)
+OSHPARK_PCB_PANEL_VCUT: Final           = True
+
 
 # in mm
 PCB_PANEL_MERGE_ERROR: Final    = 0.15

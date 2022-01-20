@@ -163,11 +163,12 @@ class PanelizerApp(App):
         self._demo_label = DemoLabel()
 
         self.load_pcb(join(dirname(__file__), DEMO_PCB_PATH_STR), None)
-        Clock.schedule_once(self.load_real_pcb_board, 2.0)
+        Clock.schedule_once(self.load_underlying_demo_pcb_board, 2.0)
 
-    def load_real_pcb_board(self, time):
-        demo_real_pcb = '/Users/gerard/PCBs/neatoboardG'
+    def load_underlying_demo_pcb_board(self, time):
+        demo_real_pcb = '/Users/gerard/pcbs/neatoboardG'
         if os.path.isdir(demo_real_pcb):
+            self._demo = False
             self._current_pcb_folder = demo_real_pcb
             #self.load(demo_real_pcb, [])
 
@@ -568,7 +569,7 @@ class PanelizerApp(App):
     def settings_apply(self):
         self._settings_popup.ids._gap_setting.text = '{:0.3f}'.format(AppSettings.gap)
         self._settings_popup.ids._rail_setting.text = '{:0.3f}'.format(AppSettings.rail)
-        self._settings_popup.ids._bites_count_setting.text = '{:d}'.format(int(AppSettings.bites_count))
+        self._settings_popup.ids._bites_count_setting.text = '{:d}'.format(int(self._bites_count))
         self._settings_popup.ids._bite_setting.text = '{:0.3f}'.format(AppSettings.bite)
         self._settings_popup.ids._bite_hole_radius_setting.text = '{:0.3f}'.format(AppSettings.bite_hole_radius)
         self._settings_popup.ids._bite_hole_space_setting.text = '{:0.3f}'.format(AppSettings.bite_hole_space)
@@ -598,9 +599,9 @@ class PanelizerApp(App):
         except:
             rail = AppSettings.rail
         try:
-            bites_count = int(self._settings_popup.ids._bites_count_setting.text)
+            self._bites_count = int(self._settings_popup.ids._bites_count_setting.text)
         except:
-            bites_count = AppSettings.bites_count
+            self._bites_count = AppSettings.bites_count
         try:
             bite = float(self._settings_popup.ids._bite_setting.text)
         except:
@@ -619,15 +620,35 @@ class PanelizerApp(App):
             merge_error = float(self._settings_popup.ids._merge_error_setting.text)
         except:
             merge_error = AppSettings.merge_error
-        AppSettings.set(gap, rail, bites_count, bite, bite_hole_radius, bite_hole_space, use_vcut, use_jlc, merge_error)
+        AppSettings.set(gap, rail, self._bites_count, bite, bite_hole_radius, bite_hole_space, use_vcut, use_jlc, merge_error)
 
         PcbRail.invalidate()
         PcbMouseBites.invalidate()
-        self._bites_count = AppSettings.bites_count
         self.panelize()
 
     def settings_cancel(self):
         self._settings_popup.dismiss()
+
+    def settings_oshpark(self):
+        self._settings.default()
+        gap = Constants.OSHPARK_PCB_PANEL_GAP_MM
+        rail = Constants.OSHPARK_PCB_PANEL_RAIL_HEIGHT_MM
+        bite = Constants.OSHPARK_PCB_PANEL_BITES_SIZE_MM
+        bite_hole_radius = Constants.OSHPARK_PCB_BITES_HOLE_RADIUS_MM
+        bite_hole_space = Constants.OSHPARK_PCB_BITES_HOLE_SPACE_MM
+        use_vcut = Constants.OSHPARK_PCB_PANEL_VCUT
+        use_jlc = False
+        merge_error = AppSettings.merge_error
+        AppSettings.set(gap, rail, self._bites_count, bite, bite_hole_radius, bite_hole_space, use_vcut, use_jlc, merge_error)
+        self.settings_apply()
+
+    def settings_jlcpcb(self):
+        self._settings.default()
+        self.settings_apply()
+
+    def settings_pcbway(self):
+        self._settings.default()
+        self.settings_apply()
 
     def about(self):
         self._about_popup.open()
