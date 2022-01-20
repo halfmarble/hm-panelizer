@@ -217,22 +217,23 @@ class ExcellonTool(ExcellonStatement):
             settings = self.settings
         fmt = settings.format
         zs = settings.zero_suppression
+        z = settings.zeros
         stmt = 'T%02d' % self.number
         if self.retract_rate is not None:
-            stmt += 'B%s' % write_gerber_value(self.retract_rate, fmt, zs)
+            stmt += 'B%s' % write_gerber_value(self.retract_rate, fmt, zs, z)
         if self.feed_rate is not None:
-            stmt += 'F%s' % write_gerber_value(self.feed_rate, fmt, zs)
+            stmt += 'F%s' % write_gerber_value(self.feed_rate, fmt, zs, z)
         if self.max_hit_count is not None:
-            stmt += 'H%s' % write_gerber_value(self.max_hit_count, fmt, zs)
+            stmt += 'H%s' % write_gerber_value(self.max_hit_count, fmt, zs, z)
         if self.rpm is not None:
             if self.rpm < 100000.:
-                stmt += 'S%s' % write_gerber_value(self.rpm / 1000., fmt, zs)
+                stmt += 'S%s' % write_gerber_value(self.rpm / 1000., fmt, zs, z)
             else:
                 stmt += 'S%g' % (self.rpm / 1000.)
         if self.diameter is not None:
             stmt += 'C%s' % decimal_string(self.diameter, fmt[1], True)
         if self.depth_offset is not None:
-            stmt += 'Z%s' % write_gerber_value(self.depth_offset, fmt, zs)
+            stmt += 'Z%s' % write_gerber_value(self.depth_offset, fmt, zs, z)
         return stmt
 
     def to_inch(self):
@@ -401,16 +402,17 @@ class CoordinateStmt(ExcellonStatement):
 
     def to_excellon(self, settings):
         stmt = ''
+        fmt = settings.format
+        zs = settings.zero_suppression
+        z = settings.zeros
         if self.mode == "ROUT":
             stmt += "G00"
         if self.mode == "LINEAR":
             stmt += "G01"
         if self.x is not None:
-            stmt += 'X%s' % write_gerber_value(self.x, settings.format,
-                                               settings.zero_suppression)
+            stmt += 'X%s' % write_gerber_value(self.x, fmt, zs, z)
         if self.y is not None:
-            stmt += 'Y%s' % write_gerber_value(self.y, settings.format,
-                                               settings.zero_suppression)
+            stmt += 'Y%s' % write_gerber_value(self.y, fmt, zs, z)
         return stmt
 
     def to_inch(self):
@@ -471,12 +473,13 @@ class RepeatHoleStmt(ExcellonStatement):
 
     def to_excellon(self, settings):
         stmt = 'R%d' % self.count
+        fmt = settings.format
+        zs = settings.zero_suppression
+        z = settings.zeros
         if self.xdelta is not None and self.xdelta != 0.0:
-            stmt += 'X%s' % write_gerber_value(self.xdelta, settings.format,
-                                               settings.zero_suppression)
+            stmt += 'X%s' % write_gerber_value(self.xdelta, fmt, zs, z)
         if self.ydelta is not None and self.ydelta != 0.0:
-            stmt += 'Y%s' % write_gerber_value(self.ydelta, settings.format,
-                                               settings.zero_suppression)
+            stmt += 'Y%s' % write_gerber_value(self.ydelta, fmt, zs, z)
         return stmt
 
     def to_inch(self):
@@ -889,7 +892,6 @@ class SlotStmt(ExcellonStatement):
 
         return (x_coord, y_coord)
 
-
     def __init__(self, x_start=None, y_start=None, x_end=None, y_end=None, **kwargs):
         super(SlotStmt, self).__init__(**kwargs)
         self.x_start = x_start
@@ -900,22 +902,21 @@ class SlotStmt(ExcellonStatement):
 
     def to_excellon(self, settings):
         stmt = ''
+        fmt = settings.format
+        zs = settings.zero_suppression
+        z = settings.zeros
 
         if self.x_start is not None:
-            stmt += 'X%s' % write_gerber_value(self.x_start, settings.format,
-                                               settings.zero_suppression)
+            stmt += 'X%s' % write_gerber_value(self.x_start, fmt, zs, z)
         if self.y_start is not None:
-            stmt += 'Y%s' % write_gerber_value(self.y_start, settings.format,
-                                               settings.zero_suppression)
+            stmt += 'Y%s' % write_gerber_value(self.y_start, fmt, zs, z)
 
         stmt += 'G85'
 
         if self.x_end is not None:
-            stmt += 'X%s' % write_gerber_value(self.x_end, settings.format,
-                                               settings.zero_suppression)
+            stmt += 'X%s' % write_gerber_value(self.x_end, fmt, zs, z)
         if self.y_end is not None:
-            stmt += 'Y%s' % write_gerber_value(self.y_end, settings.format,
-                                               settings.zero_suppression)
+            stmt += 'Y%s' % write_gerber_value(self.y_end, fmt, zs, z)
 
         return stmt
 

@@ -24,10 +24,7 @@ class AMParamStmtEx(AMParamStmt):
     def circle(cls, name, units):
         return cls(
             'AM', name,
-            '0 circle*'
-            '0 Circle, Exposure, Diameter, Center X, Center Y, Rotation*'
             '1,1,$1,0,0,0*'
-            '0 Circle, Exposure, Diameter, Center X, Center Y, Rotation*'
             '1,0,$2,0,0,0',
             units)
 
@@ -35,10 +32,7 @@ class AMParamStmtEx(AMParamStmt):
     def rectangle(cls, name, units):
         return cls(
             'AM', name,
-            '0 rectangle*'
-            '0 Center Line, Exposure, Width, Height, Center X, Center Y, Rotation*'
             '21,1,$1,$2,0,0,0*'
-            '0 Circle, Exposure, Diameter, Center X, Center Y, Rotation*'
             '1,0,$3,0,0,0',
             units)
 
@@ -46,10 +40,7 @@ class AMParamStmtEx(AMParamStmt):
     def obround(cls, name, units):
         return cls(
             'AM', name,
-            '0 obround*'
-            '0 Circle, Exposure, Diameter, Center X, Center Y, Rotation*'
             '1,1,$1,0,0,0*'
-            '0 Circle, Exposure, Diameter, Center X, Center Y, Rotation*'
             '1,0,$3,0,0,0',
             units)
 
@@ -57,19 +48,14 @@ class AMParamStmtEx(AMParamStmt):
     def landscape_obround(cls, name, units):
         return cls(
             'AM', name,
-            '0 landscape_obround*'
             '$4=$2-$1*'
             '$5=$2/2*'
             '$6=$1/2*'
             '$7=$5-$6*'
             '$8=$6-$5*'
-            '0 Center Line, Exposure, Width, Height, Center X, Center Y, Rotation*'
             '21,1,$4,$2,0,0,0*'
-            '0 Circle, Exposure, Diameter, Center X, Center Y, Rotation*'
             '1,1,$2,$7,0,0*'
-            '0 Circle, Exposure, Diameter, Center X, Center Y, Rotation*'
             '1,1,$2,$8,0,0*'
-            '0 Circle, Exposure, Diameter, Center X, Center Y, Rotation*'
             '1,0,$3,0,0,0',
             units)
 
@@ -78,19 +64,14 @@ class AMParamStmtEx(AMParamStmt):
     def portrate_obround(cls, name, units):
         return cls(
             'AM', name,
-            '0 portrate_obround*'
             '$4=$2-$1*'
             '$5=$2/2*'
             '$6=$1/2*'
             '$7=$5-$6*'
             '$8=$6-$5*'
-            '0 Center Line, Exposure, Width, Height, Center X, Center Y, Rotation*'
             '21,1,$1,$4,0,0,0*'
-            '0 Circle, Exposure, Diameter, Center X, Center Y, Rotation*'
             '1,1,$1,0,$7,0*'
-            '0 Circle, Exposure, Diameter, Center X, Center Y, Rotation*'
             '1,1,$1,0,$8,0*'
-            '0 Circle, Exposure, Diameter, Center X, Center Y, Rotation*'
             '1,0,$3,0,0,0',
             units)
 
@@ -98,9 +79,7 @@ class AMParamStmtEx(AMParamStmt):
     def polygon(cls, name, units):
         return cls(
             'AM', name,
-            '0 polygon*'
             '5,1,$2,0,0,$1,$3*'
-            '0 Circle, Exposure, Diameter, Center X, Center Y, Rotation*'
             '1,0,$4,0,0,0',
             units)
 

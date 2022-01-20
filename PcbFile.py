@@ -599,13 +599,13 @@ def generate_rail_gts_data(origin, size):
     return data
 
 
-def generate_mouse_bite_drl_data(origin, size, radius, gap):
+def generate_mouse_bite_drl_data(origin, size, radius, space):
     min_x = origin[0]
     min_y = origin[1]
     max_x = min_x+size[0]
     max_y = min_y+size[1]
-    w = size[0]
-    h = size[1]
+    width = size[0]
+    height = size[1]
     diameter = 2.0*radius
 
     data = ''
@@ -624,14 +624,14 @@ def generate_mouse_bite_drl_data(origin, size, radius, gap):
     data += 'G05\n'
     data += 'T1\n'
 
-    unit = (radius + radius + gap)
-    count = int(w / unit) - 1
-    cx = min_x + (w / 2.0)
+    unit = (radius + space + radius)
+    count = int(width / unit) - 1
+    cx = min_x + (width / 2.0)
     data += 'X{}Y{}\n'.format(generate_decfloat3(cx), generate_decfloat3(min_y))
     data += 'X{}Y{}\n'.format(generate_decfloat3(cx), generate_decfloat3(max_y))
     x = 0
     for i in range(0, count):
-        x += gap
+        x += unit
         data += 'X{}Y{}\n'.format(generate_decfloat3(cx+x), generate_decfloat3(min_y))
         data += 'X{}Y{}\n'.format(generate_decfloat3(cx-x), generate_decfloat3(min_y))
         data += 'X{}Y{}\n'.format(generate_decfloat3(cx+x), generate_decfloat3(max_y))
@@ -667,8 +667,8 @@ def render_mouse_bite_gm1(path, filename, origin, size, arc, close):
     render_pcb_layer(layer.bounds, layer, path, filename, outline=True)
 
 
-def save_mouse_bite_drl(path, origin, size, radius, gap):
-    drl = generate_mouse_bite_drl_data(origin, size, radius, gap)
+def save_mouse_bite_drl(path, origin, size, radius, space):
+    drl = generate_mouse_bite_drl_data(origin, size, radius, space)
     with open(os.path.join(path, 'Mouse_Bites-NPTH.drl'), "w") as text_file:
         text_file.write(drl)
 

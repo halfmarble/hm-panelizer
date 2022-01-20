@@ -94,7 +94,7 @@ def parse_gerber_value(value, format=(4, 6), zero_suppression='trailing'):
     return -result if negative else result
 
 
-def write_gerber_value(value, format=(4, 6), zero_suppression='trailing', zeros=None):
+def write_gerber_value(value, format=(4, 6), zero_suppression='trailing', zeros=None, verbose=False):
     """ Convert a floating point number to a Gerber/Excellon-formatted string.
 
     .. note::
@@ -127,18 +127,38 @@ def write_gerber_value(value, format=(4, 6), zero_suppression='trailing', zeros=
     value : string
         The specified value as a Gerber/Excellon-formatted string.
     """
-    
+    if verbose:
+        print('write_gerber_value')
+        print(' value:            {}'.format(value))
+        print(' format:           {}'.format(format))
+        print(' zero_suppression: {}'.format(zero_suppression))
+        print(' zeros:            {}'.format(zeros))
+
     if format[0] == float:
-        return "%f" %value
+        string = "%f" % value
+        if verbose:
+            print('  format[0] == float: {}'.format(string))
+        return string
 
     if zeros is not None and zeros == 'decimal':
         # TODO: use format
-        if format[1] <= 1:
-            return '{:0.1f}'.format(value)
+        if value == 0.0:
+            string = '0'
+        elif format[1] <= 1:
+            string = '{:0.1f}'.format(value)
         elif format[1] == 2:
-            return '{:0.2f}'.format(value)
+            string = '{:0.2f}'.format(value)
         else:
-            return '{:0.3f}'.format(value)
+            string = '{:0.3f}'.format(value)
+        if verbose:
+            print('  zeros == \'decimal\': {}'.format(string))
+        if zero_suppression == 'trailing':
+            string = string.strip('0')
+            if string.endswith('.'):
+                string = string + '0'
+            if verbose:
+                print('  AFTER STRIP {}'.format(string))
+        return string
 
     # Format precision
     integer_digits, decimal_digits = format
@@ -148,7 +168,7 @@ def write_gerber_value(value, format=(4, 6), zero_suppression='trailing', zeros=
         raise ValueError('Parser only supports precision up to 6:7 format')
 
     # Edge case... (per Gerber spec we should return 0 in all cases, see page 77)
-    if value == 0:
+    if value == 0.0:
         return '0'
 
     # negative sign affects padding, so deal with it at the end...

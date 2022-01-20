@@ -66,9 +66,8 @@ class FileSettings(object):
             raise ValueError('Units must be either inch or metric')
         self.units = units
 
-        if zeros is not None and zeros == 'decimal':
+        if zeros is not None:
             self.zeros = zeros
-            self.zero_suppression = 'leading'
         else:
             self._zeros = ''
 
@@ -97,15 +96,12 @@ class FileSettings(object):
 
     @property
     def zero_suppression(self):
-        if self._zeros != 'decimal':
-            return self._zero_suppression
-        else:
-            return 'leading'
+        return self._zero_suppression
 
     @zero_suppression.setter
     def zero_suppression(self, value):
+        self._zero_suppression = value
         if self._zeros != 'decimal':
-            self._zero_suppression = value
             self._zeros = 'leading' if value == 'trailing' else 'trailing'
 
     @property
@@ -114,12 +110,9 @@ class FileSettings(object):
 
     @zeros.setter
     def zeros(self, value):
-
         self._zeros = value
         if self._zeros != 'decimal':
             self._zero_suppression = 'leading' if value == 'trailing' else 'trailing'
-        else:
-            self._zero_suppression = 'leading'
 
     def __getitem__(self, key):
         if key == 'notation':
@@ -179,7 +172,7 @@ class FileSettings(object):
                 self.angle_units == other.angle_units)
 
     def __str__(self):
-        return ('<Settings: %s %s %s %s %s %s>' %
+        return ('<Settings: units:%s notation:%s zeros:%s zero_suppression:%s format:%s angle_units:%s>' %
                 (self.units, self.notation, self.zeros, self.zero_suppression, self.format, self.angle_units))
 
 

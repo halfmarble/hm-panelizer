@@ -138,10 +138,13 @@ def export_pcb_panel(progress, panel_path,
         angles.append(0.0)  # the angle always stays 0.0 for the mouse bites !
     #print(' angles: {}'.format(angles))
 
-    # for debugging: one pcb board rotated 90
-    # use_bounds_offsets = [True]
-    # paths = [pcb_path]
-    # angles = [90.0]
+    # for debugging
+    if False:
+        print('WARNING: USING DEBUG CODE IN EXPORT')
+        use_bounds_offsets = [True]
+        paths = [pcb_path]
+        angles = [90.0]
+        mouse_bites_cutouts = None
 
     board_count = len(paths)
     boards = []
@@ -170,7 +173,7 @@ def export_pcb_panel(progress, panel_path,
             print(' {}'.format(filename))
         print('\n\n')
 
-    settings = FileSettings(format=(3, 3), zeros='decimal')
+    settings = FileSettings(format=(3, 3), zeros='decimal', zero_suppression='trailing')
     ctx_npth_drl = DrillComposition(settings)
     ctx_pth_drl = DrillComposition(settings)
     ctx = None
@@ -229,7 +232,7 @@ def export_pcb_panel(progress, panel_path,
 
         if file is not None and ext != '.drl':
             new_name = extensions_to_names.get(ext, 'unknown')
-            full_path = os.path.join(panel_path, new_name + '.gbr')
+            full_path = os.path.join(panel_path, new_name + ext)
             if verbose:
                 print('\nWRITING: {}'.format(full_path))
             ctx.dump(full_path)
