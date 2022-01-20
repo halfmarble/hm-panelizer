@@ -648,10 +648,28 @@ class PanelizerApp(App):
 
     def settings_jlcpcb(self):
         self._settings.default()
+        gap = Constants.JLC_PCB_PANEL_GAP_MM
+        rail = Constants.JLC_PCB_PANEL_RAIL_HEIGHT_MM
+        bite = Constants.JLC_PCB_PANEL_BITES_SIZE_MM
+        bite_hole_radius = Constants.JLC_PCB_BITES_HOLE_RADIUS_MM
+        bite_hole_space = Constants.JLC_PCB_BITES_HOLE_SPACE_MM
+        use_vcut = Constants.JLC_PCB_PANEL_VCUT
+        use_jlc = True
+        merge_error = AppSettings.merge_error
+        AppSettings.set(gap, rail, self._bites_count, bite, bite_hole_radius, bite_hole_space, use_vcut, use_jlc, merge_error)
         self.settings_apply()
 
     def settings_pcbway(self):
         self._settings.default()
+        gap = Constants.PCBWAY_PCB_PANEL_GAP_MM
+        rail = Constants.PCBWAY_PCB_PANEL_RAIL_HEIGHT_MM
+        bite = Constants.PCBWAY_PCB_PANEL_BITES_SIZE_MM
+        bite_hole_radius = Constants.PCBWAY_PCB_BITES_HOLE_RADIUS_MM
+        bite_hole_space = Constants.PCBWAY_PCB_BITES_HOLE_SPACE_MM
+        use_vcut = Constants.PCBWAY_PCB_PANEL_VCUT
+        use_jlc = False
+        merge_error = AppSettings.merge_error
+        AppSettings.set(gap, rail, self._bites_count, bite, bite_hole_radius, bite_hole_space, use_vcut, use_jlc, merge_error)
         self.settings_apply()
 
     def about(self):
