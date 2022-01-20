@@ -205,6 +205,14 @@ class PanelizerApp(App):
 
         return self._pcb.invalid_reason
 
+    def show_panel(self):
+        if self._pcb_panel is not None:
+            self._show_panel = self.root.ids._panelization_button.state == 'down'
+            if not self._show_panel:
+                self.root.ids._panelization_button.state = 'down'
+                self._pcb_board.deactivate()
+                self._pcb_panel.activate()
+
     def panelize(self):
         self._surface.remove_widget(self._demo_label)
         if self._pcb is not None:
@@ -352,7 +360,6 @@ class PanelizerApp(App):
             if self._pcb_panel is not None:
                 self._pcb_panel.paint()
             self.update_status()
-            # self.panelize()
 
     def resize(self, size):
         if self._pcb is not None:
@@ -540,8 +547,7 @@ class PanelizerApp(App):
             return
 
         if self._pcb_panel is not None:
-            self.root.ids._panelization_button.state = 'down'
-            self.panelize()
+            self.show_panel()
             if self._pcb_panel.valid_layout:
                 content = SaveDialog(save=self.save, cancel=self.dismiss_save_popup)
                 file_chooser = content.ids._save_file_chooser
@@ -578,9 +584,7 @@ class PanelizerApp(App):
         self._settings_popup.ids._merge_error_setting.text = '{:0.3f}'.format(AppSettings.merge_error)
 
     def settings_open(self):
-        if self._pcb_panel is not None:
-            self.root.ids._panelization_button.state = 'down'
-            self.panelize()
+        self.show_panel()
         self.settings_apply()
         self._settings_popup.open()
 

@@ -79,8 +79,23 @@ class PcbPanel(OffScreenScatter):
         width = self.size[0]
         height = self.size[1]
 
-        changed = self._columns != columns or self._rows != rows or self._angle != angle or \
-                  self._bite_count != bite_count or self._width != width or self._height != height
+        changed = self._columns != columns or self._rows != rows or \
+                  self._angle != angle or self._bite_count != bite_count
+        # if changed:
+        #     print()
+        #     if self._columns != columns:
+        #         print('columns changed {}:{}'.format(self._columns, columns))
+        #     if self._rows != rows:
+        #         print('rows changed {}:{}'.format(self._rows, rows))
+        #     if self._angle != angle:
+        #         print('angle changed {}:{}'.format(self._angle, angle))
+        #     if self._bite_count != bite_count:
+        #         print('bite_count changed {}:{}'.format(self._bite_count, bite_count))
+        #     if self._width != width:
+        #         print('width changed {}:{}'.format(self._width, width))
+        #     if self._height != height:
+        #         print('height changed {}:{}'.format(self._height, height))
+        #     print()
 
         self._columns = columns
         self._rows = rows
