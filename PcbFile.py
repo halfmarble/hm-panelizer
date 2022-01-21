@@ -502,15 +502,73 @@ def generate_rail_gto_data(origin, size, panels, gap, vcut, jlc):
         data += generate_jlcjlcjlcjlc_text_data(origin=(8.0, height/2.0), aperture=10)
 
     if vcut and panels > 1:
+        data += 'D10*\n'
         available = width - (float(panels-1) * gap)
         section = available / float(panels)
         x = min_x - (gap/2.0)
         for i in range(0, int(panels-1)):
             x += section + gap
-            data += 'D10*\n'
             data += 'X{}Y{}D02*\n'.format(generate_float46(x), generate_float46(max_y))
-            data += 'X{}Y{}D01*\n\n'.format(generate_float46(x), generate_float46(min_y))
+            data += 'X{}Y{}D01*\n'.format(generate_float46(x), generate_float46(min_y))
             data += generate_vscore_text_data(origin=(x+0.5, 0.0), aperture=11)
+
+    data += 'M02*\n'
+    return data
+
+
+def generate_rail_gbo_data(origin, size):
+    min_x = origin[0]
+    min_y = origin[1]
+    max_x = min_x+size[0]
+    max_y = min_y+size[1]
+    width = size[0]
+    height = size[1]
+
+    data = ''
+    data += '%TF.GenerationSoftware,{},{},{}*%\n'.format(VENDOR_NAME, APP_NAME, VERSION_STR)
+    data += '%TF.SameCoordinates,Original*%\n'
+    data += '%TF.FileFunction,Legend,Top*%\n'
+    data += '%TF.FilePolarity,Positive*%\n'
+    data += '%FSLAX46Y46*%\n'
+    data += 'G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*\n'
+    data += 'G04 Created by {}*\n\n'.format(APP_STR)
+
+    data += '%MOMM*%\n'
+    data += '%LPD*%\n\n'
+
+    data += 'G04 APERTURE LIST*\n'
+    data += '%TA.AperFunction,Profile*%\n'
+    data += '%ADD10C,0.100000*%\n'
+    data += 'G04 APERTURE END LIST*\n\n'
+    data += 'D10*\n'
+
+    margin = 0.5
+    y_major = (0.5 * height) - margin
+    y_minor = (0.4 * height) - margin
+    y_tick = (0.3 * height) - margin
+
+    # metric ruler
+    for x in range(0, int(width)+1):
+        y = y_tick
+        if (x % 5) == 0:
+            y = y_minor
+        if (x % 10) == 0:
+            y = y_major
+        pos = width - x
+        data += 'X{}Y{}D02*\n'.format(generate_float46(pos), generate_float46(min_y+y))
+        data += 'X{}Y{}D01*\n'.format(generate_float46(pos), generate_float46(min_y))
+
+    # imperial ruler (mm to inch)
+    width_imp = (width / 25.4) * 16.0
+    for x in range(0, int(width_imp)):
+        y = y_tick
+        if (x % 8) == 0:
+            y = y_minor
+        if (x % 16) == 0:
+            y = y_major
+        pos = (x/25.4) * 16.0 * 2.54
+        data += 'X{}Y{}D02*\n'.format(generate_float46(pos), generate_float46(max_y))
+        data += 'X{}Y{}D01*\n'.format(generate_float46(pos), generate_float46(max_y-y))
 
     data += 'M02*\n'
     return data
@@ -724,6 +782,12 @@ def save_rail_gto(path, origin, size, panels, gap, vcut, jlc):
     gto = generate_rail_gto_data(origin, size, panels, gap, vcut, jlc)
     with open(os.path.join(path, 'Rails-F_Silkscreen.gto'), "w") as text_file:
         text_file.write(gto)
+
+
+def save_rail_gbo(path, origin, size):
+    gbo = generate_rail_gbo_data(origin, size)
+    with open(os.path.join(path, 'Rails-B_Silkscreen.gbo'), "w") as text_file:
+        text_file.write(gbo)
 
 
 def render_rail_gto(bounds, path, filename, origin, size, panels, gap, vcut, jlc):

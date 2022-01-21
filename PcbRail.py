@@ -62,6 +62,7 @@ class PcbRail:
         save_rail_gtl(self._tmp_folder, self._origin, self._size)
         save_rail_gts(self._tmp_folder, self._origin, self._size)
         save_rail_gto(self._tmp_folder, self._origin, self._size, self._panels, self._gap, self._vcut, self._jlc)
+        save_rail_gbo(self._tmp_folder, self._origin, self._size)
 
         return self._tmp_folder
 
