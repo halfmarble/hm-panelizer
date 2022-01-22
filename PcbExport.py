@@ -31,6 +31,9 @@ from hm_gerber_tool.cam import FileSettings
 from hm_gerber_tool.utils import listdir
 
 from Utilities import *
+from PcbWorkarounds import *
+
+DEBUG_PANEL_EXPORT = False
 
 
 def is_pth(name):
@@ -139,11 +142,11 @@ def export_pcb_panel(progress, panel_path,
     #print(' angles: {}'.format(angles))
 
     # for debugging
-    if False:
-        print('WARNING: USING DEBUG CODE IN EXPORT')
+    if DEBUG_PANEL_EXPORT:
+        print('\nWARNING: USING DEBUG CODE IN EXPORT\n')
         use_bounds_offsets = [True]
         paths = [pcb_path]
-        angles = [90.0]
+        angles = [0.0]
         mouse_bites_cutouts = None
 
     board_count = len(paths)
@@ -252,6 +255,8 @@ def export_pcb_panel(progress, panel_path,
     ctx_pth_drl.dump(full_path)
     if verbose:
         print('DONE\n')
+
+    fix_drl_routing(panel_path)
 
     update_progressbar(progress, 'Done', 1.0)
 
