@@ -140,14 +140,14 @@ class GerberFile(hm_gerber_tool.rs274x.GerberFile):
                 statement.lp = 'dark' if statement.lp == 'clear' else 'clear'
     
     def _generalize_aperture(self):
-        RECTANGLE = 0
-        OBROUND = 1
+        CIRCLE = 0
+        RECTANGLE = 1
         LANDSCAPE_OBROUND = 2
         PORTRATE_OBROUND = 3
         POLYGON = 4
         macro_defs = [
+            ('MACC', AMParamStmtEx.circle),
             ('MACR', AMParamStmtEx.rectangle),
-            ('MACO', AMParamStmtEx.obround),
             ('MACLO', AMParamStmtEx.landscape_obround),
             ('MACPO', AMParamStmtEx.portrate_obround),
             ('MACP', AMParamStmtEx.polygon)
@@ -176,7 +176,7 @@ class GerberFile(hm_gerber_tool.rs274x.GerberFile):
                         x = statement.modifiers[0][0] if len(statement.modifiers[0]) > 0 else 0
                         y = statement.modifiers[0][1] if len(statement.modifiers[0]) > 1 else 0
                         if x == y:
-                            statement.shape = macro_defs[OBROUND][0]
+                            statement.shape = macro_defs[CIRCLE][0]
                         elif x > y:
                             statement.shape = macro_defs[LANDSCAPE_OBROUND][0]
                         else:

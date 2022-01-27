@@ -24,24 +24,14 @@ class AMParamStmtEx(AMParamStmt):
     def circle(cls, name, units):
         return cls(
             'AM', name,
-            '1,1,$1,0,0,0*'
-            '1,0,$2,0,0,0',
+            '1,1,$1,0,0,0',
             units)
 
     @classmethod
     def rectangle(cls, name, units):
         return cls(
             'AM', name,
-            '21,1,$1,$2,0,0,0*'
-            '1,0,$3,0,0,0',
-            units)
-
-    @classmethod
-    def obround(cls, name, units):
-        return cls(
-            'AM', name,
-            '1,1,$1,0,0,0*'
-            '1,0,$3,0,0,0',
+            '21,1,$1,$2,0,0,0',
             units)
 
     @classmethod
@@ -55,8 +45,7 @@ class AMParamStmtEx(AMParamStmt):
             '$8=$6-$5*'
             '21,1,$4,$2,0,0,0*'
             '1,1,$2,$7,0,0*'
-            '1,1,$2,$8,0,0*'
-            '1,0,$3,0,0,0',
+            '1,1,$2,$8,0,0',
             units)
 
     # O,<X size>X<Y size>[X<Hole diameter>]
@@ -71,16 +60,14 @@ class AMParamStmtEx(AMParamStmt):
             '$8=$6-$5*'
             '21,1,$1,$4,0,0,0*'
             '1,1,$1,0,$7,0*'
-            '1,1,$1,0,$8,0*'
-            '1,0,$3,0,0,0',
+            '1,1,$1,0,$8,0',
             units)
 
     @classmethod
     def polygon(cls, name, units):
         return cls(
             'AM', name,
-            '5,1,$2,0,0,$1,$3*'
-            '1,0,$4,0,0,0',
+            '5,1,$2,0,0,$1,$3',
             units)
 
     def to_inch(self):

@@ -79,3 +79,30 @@ def fix_drl_routing(path):
             f.writelines(lines_route)
             f.write('M30\n')
             f.close()
+
+
+# Workaround needed for OSH Park online gerber preview to work correctly.
+# Always end (or start) with LPD to set up the polarity correctly for drawing,
+# in case LPC (clear) is used at any point and the manufacturer concatenates the files.
+def fix_silk_lpc(path):
+    if not os.path.isdir(path):
+        print('ERROR: path {} does not exist'.format(path))
+        return
+
+    for filename in listdir(path, True, True):
+        filename_ext = os.path.splitext(filename)[1].lower()
+        if filename_ext == '.gbo' or filename_ext == '.gto':
+            lines_main = []
+            file = load_file(path, filename)
+            segments = file.split("\n")
+            for s in segments:
+                if s == 'M02*':
+                    pass
+                else:
+                    lines_main.append(s+'\n')
+
+            f = open(os.path.join(path, filename), "w")
+            f.writelines(lines_main)
+            f.write('%LPD*%\n')
+            f.write('M02*\n')
+            f.close()
