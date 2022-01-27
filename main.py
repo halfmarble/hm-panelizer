@@ -636,7 +636,6 @@ class PanelizerApp(App):
         self._settings_popup.dismiss()
 
     def settings_oshpark(self):
-        self._settings.default()
         gap = Constants.OSHPARK_PCB_PANEL_GAP_MM
         rail = Constants.OSHPARK_PCB_PANEL_RAIL_HEIGHT_MM
         bite = Constants.OSHPARK_PCB_PANEL_BITES_SIZE_MM
@@ -649,7 +648,6 @@ class PanelizerApp(App):
         self.settings_apply()
 
     def settings_jlcpcb(self):
-        self._settings.default()
         gap = Constants.JLC_PCB_PANEL_GAP_MM
         rail = Constants.JLC_PCB_PANEL_RAIL_HEIGHT_MM
         bite = Constants.JLC_PCB_PANEL_BITES_SIZE_MM
@@ -662,7 +660,6 @@ class PanelizerApp(App):
         self.settings_apply()
 
     def settings_pcbway(self):
-        self._settings.default()
         gap = Constants.PCBWAY_PCB_PANEL_GAP_MM
         rail = Constants.PCBWAY_PCB_PANEL_RAIL_HEIGHT_MM
         bite = Constants.PCBWAY_PCB_PANEL_BITES_SIZE_MM
