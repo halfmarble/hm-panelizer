@@ -165,6 +165,8 @@ class PanelizerApp(App):
         self.load_pcb(join(dirname(__file__), DEMO_PCB_PATH_STR), None)
         Clock.schedule_once(self.load_underlying_demo_pcb_board, 2.0)
 
+    # for debugging: allows me to supply the underlying Pcb gerber files
+    # so that I can test export panel of the "demo" board quickly
     def load_underlying_demo_pcb_board(self, time):
         demo_real_pcb = '/Users/gerard/pcbs/neatoboardG'
         if os.path.isdir(demo_real_pcb):
