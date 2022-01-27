@@ -99,9 +99,11 @@ def export_pcb_panel(progress, panel_path,
         print(' pcb_origin_mm: {}'.format(pcb_origin_mm))
         print(' pcb_size_mm: {}'.format(pcb_size_mm))
 
+    rail_count = 0
     origins = []
     for o in rail_origins:
         origins.append(o)
+        rail_count += 1
 
     pcb_count = 0
     for o in pcb_origins:
@@ -117,24 +119,34 @@ def export_pcb_panel(progress, panel_path,
     mouse_bites_cutouts = cutouts_from_origins(mouse_bite_width_mm, mouse_bite_height_mm, mouse_bite_origins)
 
     if verbose:
-        print(' origins: {}'.format(origins))
-        print(' mouse_bites_cutouts: {}'.format(mouse_bites_cutouts))
+        print(' origins:')
+        for origin in origins:
+            print('  {}'.format(origin))
+        print(' mouse_bites_cutouts:')
+        for cutout in mouse_bites_cutouts:
+            print('  {}'.format(cutout))
 
-    use_bounds_offsets = [False, False]
+    use_bounds_offsets = []
+    for i in range(rail_count):
+        use_bounds_offsets.append(False)
     for i in range(pcb_count):
         use_bounds_offsets.append(True)  # use bounds origin to further offset the Pcb back to 0,0
     for i in range(mouse_bites_count):
         use_bounds_offsets.append(False)
     #print(' use_bounds_offsets: {}'.format(use_bounds_offsets))
 
-    paths = [rail_path, rail_path]
+    paths = []
+    for i in range(rail_count):
+        paths.append(rail_path)
     for i in range(pcb_count):
         paths.append(pcb_path)
     for i in range(mouse_bites_count):
         paths.append(mouse_bite_path)
     #print(' paths: {}'.format(paths))
 
-    angles = [0.0, 0.0]  # the angle always stays 0.0 for the rails !
+    angles = []
+    for i in range(rail_count):
+        angles.append(0.0)  # the angle always stays 0.0 for the rails !
     for i in range(pcb_count):
         angles.append(angle)
     for i in range(mouse_bites_count):
@@ -159,9 +171,11 @@ def export_pcb_panel(progress, panel_path,
         offset_x = 0.0
         if rotate != 0.0:
             offset_x = pcb_height_mm
-        boards.append((use_bounds_offset, path, round_down(offset_x+10.0*origin[0]), round_down(10.0*origin[1]), rotate))
+        boards.append((use_bounds_offset, path, (offset_x+10.0*origin[0]), (10.0*origin[1]), rotate))
     if verbose:
-        print(' boards: {}'.format(boards))
+        print(' boards:')
+        for board in boards:
+            print('  {}'.format(board))
         directory = os.path.abspath(pcb_path)
         print('\npcb files in {}:'.format(directory))
         for filename in listdir(directory, True, True):
@@ -223,12 +237,12 @@ def export_pcb_panel(progress, panel_path,
                     file.to_metric()
                     if use_bounds_offsets:
                         # move to 0,0 before rotation
-                        file.offset(round_down(-pcb_origin_x_mm), round_down(-pcb_origin_y_mm))
+                        file.offset((-pcb_origin_x_mm), (-pcb_origin_y_mm))
                     if angle != 0.0:
                         # rotate
                         file.rotate(angle)
                     # final offset
-                    file.offset(round_down(x_offset), round_down(y_offset))
+                    file.offset((x_offset), (y_offset))
                     if verbose:
                         print(' MERGING')
                     ctx.merge(file)
@@ -287,14 +301,14 @@ def cutouts_from_origins(width_mm, height_mm, origins):
     cutouts = []
     for row in origins:
         y = scale*row[0][1]
-        line_bottom = [round_down(y)]
-        line_top = [round_down(y+height_mm)]
+        line_bottom = [(y)]
+        line_top = [(y+height_mm)]
         cuts_bottom = []
         cuts_top = []
         for origin in row:
             x = scale*origin[0]
-            cuts_bottom.append((round_down(x), round_down(x+width_mm)))
-            cuts_top.append((round_down(x), round_down(x+width_mm)))
+            cuts_bottom.append(((x), (x+width_mm)))
+            cuts_top.append(((x), (x+width_mm)))
         line_bottom.append(cuts_bottom)
         line_top.append(cuts_top)
         cutouts.append(line_bottom)

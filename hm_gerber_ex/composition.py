@@ -62,7 +62,7 @@ class GerberComposition(Composition):
         else:
             raise Exception('unsupported file type')
 
-    def split_line(self, f, cutouts, start, end, verbose=False):
+    def split_line(self, f, cutouts, cutout_y, start, end, verbose=False):
         if verbose:
             print('#   SPLIT')
             print('#            LINE START  {},{} [{}] '
@@ -129,7 +129,7 @@ class GerberComposition(Composition):
                                           .format(start.x, start.y, start.to_gerber(self.settings)))
                                     print('#   NOW LINE END   {},{} [{}] '
                                           .format(end.x, end.y, end.to_gerber(self.settings)))
-                            split = self.split_line(f, cutouts, start, end, verbose)
+                            split = self.split_line(f, cutouts, cutout_y, start, end, verbose)
         if split:
             return i+1
         else:
