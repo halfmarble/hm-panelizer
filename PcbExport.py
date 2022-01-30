@@ -34,6 +34,7 @@ from Utilities import *
 from PcbWorkarounds import *
 
 DEBUG_PANEL_EXPORT = False
+DEBUG_PANEL_EXPORT_ANGLE = 90.0
 
 
 def is_pth(name):
@@ -158,7 +159,7 @@ def export_pcb_panel(progress, panel_path,
         print('\nWARNING: USING DEBUG CODE IN EXPORT\n')
         use_bounds_offsets = [True]
         paths = [pcb_path]
-        angles = [0.0]
+        angles = [DEBUG_PANEL_EXPORT_ANGLE]
         mouse_bites_cutouts = None
 
     board_count = len(paths)

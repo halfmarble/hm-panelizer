@@ -308,7 +308,6 @@ class ADParamStmt(ParamStmt):
             return cls('AD', dcode, 'P', ([diameter, num_vertices, rotation, hole_width, hole_height],))
         return cls('AD', dcode, 'P', ([diameter, num_vertices, rotation],))
 
-
     @classmethod
     def macro(cls, dcode, name):
         return cls('AD', dcode, name, '')
@@ -369,9 +368,38 @@ class ADParamStmt(ParamStmt):
 
     def to_gerber(self, settings=None):
         if any(self.modifiers):
-            return '%ADD{0}{1},{2}*%'.format(self.d, self.shape, ','.join(['X'.join(["%.4g" % x for x in modifier]) for modifier in self.modifiers]))
+            arguments = ','.join(['X'.join(["%.4g" % x for x in modifier]) for modifier in self.modifiers])
+            return '%ADD{0}{1},{2}*%'.format(self.d, self.shape, arguments)
         else:
             return '%ADD{0}{1}*%'.format(self.d, self.shape)
+
+    # rotates the macro 90 by not rotating the indvidual instructions (some PCB houses do not support it)
+    # but instead by swapping the arguments of how we use them
+    def flip(self):
+        if self.shape == 'C':
+            pass
+        elif self.shape == 'R' or self.shape == 'O':
+            m = self.modifiers[0]
+            a0 = m[0]
+            a1 = m[1]
+            self.modifiers.clear()
+            self.modifiers.append((a1, a0))
+        elif self.shape == 'RoundRect':
+            m = self.modifiers[0]
+            a0 = m[0]
+            a1 = m[1]
+            a2 = m[2]
+            a3 = m[3]
+            a4 = m[4]
+            a5 = m[5]
+            a6 = m[6]
+            a7 = m[7]
+            a8 = m[8]
+            a9 = m[9]
+            self.modifiers.clear()
+            self.modifiers.append((a0, -a2, a1, -a4, a3, -a6, a5, -a8, a7, a9))
+        else:
+            print('ERROR: do not know how to flip {} !'.format(self))
 
     def __str__(self):
         if self.shape == 'C':

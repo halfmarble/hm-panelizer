@@ -48,7 +48,6 @@ class AMParamStmtEx(AMParamStmt):
             '1,1,$2,$8,0,0',
             units)
 
-    # O,<X size>X<Y size>[X<Hole diameter>]
     @classmethod
     def portrate_obround(cls, name, units):
         return cls(

@@ -15,9 +15,9 @@ import re
 def loads(data, filename=None):
     cls = hm_gerber_tool.rs274x.GerberParser
     cls.SF = r"(?P<param>SF)(A(?P<a>{decimal}))?(B(?P<b>{decimal}))?".format(decimal=cls.DECIMAL)
-    cls.PARAMS = (cls.FS, cls.MO, cls.LP, cls.AD_CIRCLE, 
+    cls.PARAMS = (cls.FS, cls.MO, cls.LP, cls.AD_CIRCLE,
                   cls.AD_RECT, cls.AD_OBROUND, cls.AD_POLY,
-                  cls.AD_MACRO, cls.AM, cls.AS, cls.IF, cls.IN, 
+                  cls.AD_MACRO, cls.AM, cls.AS, cls.IF, cls.IN,
                   cls.IP, cls.IR, cls.MI, cls.OF, cls.SF, cls.LN)
     cls.PARAM_STMT = [re.compile(r"%?{0}\*%?".format(p)) for p in cls.PARAMS]
     return cls().parse_raw(data, filename)
@@ -25,9 +25,9 @@ def loads(data, filename=None):
 
 def write_gerber_header(file, settings):
     file.write('%s\n%s\n%%IPPOS*%%\n' % (
-               MOParamStmt('MO', settings.units).to_gerber(settings),
-               FSParamStmt('FS', settings.zero_suppression, 
-                           settings.notation, settings.format).to_gerber(settings)))
+        MOParamStmt('MO', settings.units).to_gerber(settings),
+        FSParamStmt('FS', settings.zero_suppression,
+                    settings.notation, settings.format).to_gerber(settings)))
 
 
 class GerberFile(hm_gerber_tool.rs274x.GerberFile):
@@ -36,7 +36,7 @@ class GerberFile(hm_gerber_tool.rs274x.GerberFile):
     def from_gerber_file(cls, gerber_file):
         if not isinstance(gerber_file, hm_gerber_tool.rs274x.GerberFile):
             raise Exception('only gerber.rs274x.GerberFile object is specified')
-        
+
         return cls(gerber_file.statements, gerber_file.settings, gerber_file.primitives,
                    gerber_file.apertures, gerber_file.filename)
 
@@ -67,7 +67,7 @@ class GerberFile(hm_gerber_tool.rs274x.GerberFile):
         self.context.zeros = 'trailing'
         self.context.format = self.format
         self.units = self.units
-        filename=filename if filename is not None else self.filename
+        filename = filename if filename is not None else self.filename
         with open(filename, 'w') as f:
             write_gerber_header(f, self.context)
             for macro in self.aperture_macros:
@@ -97,8 +97,8 @@ class GerberFile(hm_gerber_tool.rs274x.GerberFile):
                 aperture.to_metric()
             for statement in self.statements:
                 statement.to_metric()
-            self.units='metric'
-            self.context.units='metric'
+            self.units = 'metric'
+            self.context.units = 'metric'
 
     def offset(self, x_offset=0, y_offset=0):
         for statement in self.main_statements:
@@ -113,13 +113,20 @@ class GerberFile(hm_gerber_tool.rs274x.GerberFile):
     def rotate(self, angle, center=(0, 0)):
         if angle % 360 == 0:
             return
-        self._generalize_aperture()
         last_x = 0
         last_y = 0
         last_rx = 0
         last_ry = 0
-        for name in self.aperture_macros:
-            self.aperture_macros[name].rotate(angle, center)
+
+        # TODO major workaround verify!
+        # PCB houses do not like rotated AM macros, so keep them same, but rotate arguments and points instead
+        # self._generalize_aperture()
+        # for name in self.aperture_macros:
+        #     self.aperture_macros[name].rotate(angle, center)
+        if angle != 0:
+            for aperture in self.aperture_defs:
+                aperture.flip()
+
         for statement in self.main_statements:
             if isinstance(statement, CoordStmt) and statement.x is not None and statement.y is not None:
                 if statement.i is not None and statement.j is not None:
@@ -133,12 +140,12 @@ class GerberFile(hm_gerber_tool.rs274x.GerberFile):
                 last_rx, last_ry = rotate(statement.x, statement.y, angle, center)
                 statement.x = last_rx
                 statement.y = last_ry
-    
+
     def negate_polarity(self):
         for statement in self.main_statements:
             if isinstance(statement, LPParamStmt):
                 statement.lp = 'dark' if statement.lp == 'clear' else 'clear'
-    
+
     def _generalize_aperture(self):
         CIRCLE = 0
         RECTANGLE = 1
@@ -157,7 +164,7 @@ class GerberFile(hm_gerber_tool.rs274x.GerberFile):
         for statement in self.aperture_defs:
             if isinstance(statement, ADParamStmt) and statement.shape in ['R', 'O', 'P']:
                 need_to_change = True
-        
+
         if need_to_change:
             for idx in range(0, len(macro_defs)):
                 macro_def = macro_defs[idx]
@@ -175,12 +182,12 @@ class GerberFile(hm_gerber_tool.rs274x.GerberFile):
                     elif statement.shape == 'O':
                         x = statement.modifiers[0][0] if len(statement.modifiers[0]) > 0 else 0
                         y = statement.modifiers[0][1] if len(statement.modifiers[0]) > 1 else 0
-                        if x == y:
-                            statement.shape = macro_defs[CIRCLE][0]
+                        if x < y:
+                            statement.shape = macro_defs[PORTRATE_OBROUND][0]
                         elif x > y:
                             statement.shape = macro_defs[LANDSCAPE_OBROUND][0]
                         else:
-                            statement.shape = macro_defs[PORTRATE_OBROUND][0]
+                            statement.shape = macro_defs[CIRCLE][0]
                     elif statement.shape == 'P':
                         statement.shape = macro_defs[POLYGON][0]
 
@@ -219,7 +226,7 @@ class GerberContext(FileSettings):
         self.angle = angle
         self.axis = axis
 
-        self.matrix = (1, 0, 
+        self.matrix = (1, 0,
                        1, 0,
                        1, 1)
 
