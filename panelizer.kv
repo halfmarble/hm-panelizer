@@ -47,7 +47,8 @@
 
 
 <TitleLabel>:
-    halign: 'right'
+    text_size: self.size
+    valign: 'middle'
     bold: True
     font_size: 16
     size_hint_x: 0.4
@@ -87,7 +88,8 @@
                 size_hint: 1.0, 0.1
                 EmptyLabel:
                 TitleLabel:
-                    text: 'board gap:'
+                    halign: 'right'
+                    text: 'board gap:   '
                 TextInput:
                     id: _gap_setting
                     size_hint_x: 0.25
@@ -101,7 +103,8 @@
                 size_hint: 1.0, 0.1
                 EmptyLabel:
                 TitleLabel:
-                    text: 'rails height:'
+                    halign: 'right'
+                    text: 'rails height:   '
                 TextInput:
                     id: _rail_setting
                     size_hint_x: 0.25
@@ -114,7 +117,8 @@
                 size_hint: 1.0, 0.1
                 EmptyLabel:
                 TitleLabel:
-                    text: 'mouse bites per PCB:'
+                    halign: 'right'
+                    text: 'mouse bites per PCB:   '
                 TextInput:
                     id: _bites_count_setting
                     size_hint_x: 0.25
@@ -127,7 +131,8 @@
                 size_hint: 1.0, 0.1
                 EmptyLabel:
                 TitleLabel:
-                    text: 'mouse bite size:'
+                    halign: 'right'
+                    text: 'mouse bite size:   '
                 TextInput:
                     id: _bite_setting
                     size_hint_x: 0.25
@@ -140,7 +145,8 @@
                 size_hint: 1.0, 0.1
                 EmptyLabel:
                 TitleLabel:
-                    text: 'mouse bite hole radius:'
+                    halign: 'right'
+                    text: 'mouse bite hole radius:   '
                 TextInput:
                     id: _bite_hole_radius_setting
                     size_hint_x: 0.25
@@ -153,7 +159,8 @@
                 size_hint: 1.0, 0.1
                 EmptyLabel:
                 TitleLabel:
-                    text: 'mouse bite hole spacing:'
+                    halign: 'right'
+                    text: 'mouse bite hole spacing:   '
                 TextInput:
                     id: _bite_hole_space_setting
                     size_hint_x: 0.25
@@ -166,7 +173,8 @@
                 size_hint: 1.0, 0.1
                 EmptyLabel:
                 TitleLabel:
-                    text: 'use v-cut:'
+                    halign: 'right'
+                    text: 'use v-cut:   '
                 ToggleButton:
                     id: _use_vcut_setting
                     size_hint: 0.25, 0.95
@@ -179,7 +187,8 @@
                 size_hint: 1.0, 0.1
                 EmptyLabel:
                 TitleLabel:
-                    text: 'use JLC label:'
+                    halign: 'right'
+                    text: 'use JLC label:   '
                 ToggleButton:
                     id: _use_jlc_setting
                     size_hint: 0.25, 0.95
@@ -192,7 +201,8 @@
                 size_hint: 1.0, 0.1
                 EmptyLabel:
                 TitleLabel:
-                    text: 'panelization slop (error):'
+                    halign: 'right'
+                    text: 'panelization slop (error):   '
                 TextInput:
                     id: _merge_error_setting
                     size_hint_x: 0.25
