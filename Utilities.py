@@ -37,6 +37,8 @@ from kivy.uix.image import Image
 
 from math import floor, ceil
 
+import Constants
+
 
 def round_down(n, d=2):
     d = int('1' + ('0' * d))
@@ -46,6 +48,15 @@ def round_down(n, d=2):
 def round_up(n, d=2):
     d = int('1' + ('0' * d))
     return ceil(n * d) / d
+
+
+def equal_floats(one, two, sigma=Constants.PCB_PANEL_MERGE_ERROR):
+    if abs(one-two) <= sigma:
+        #print('equal_floats {},{},{} True'.format(one, two, sigma))
+        return True
+    else:
+        #print('equal_floats {},{},{} False'.format(one, two, sigma))
+        return False
 
 
 def clamp(left, value, right):

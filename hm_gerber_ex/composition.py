@@ -16,27 +16,6 @@ import hm_gerber_tool.rs274x
 import hm_gerber_tool.excellon
 #import hm_gerber_ex.dxf
 
-from math import floor
-
-# BACK DEPENDENCY ON hm-panelizer!
-from AppSettings import AppSettings
-
-
-def round_down(n, d=2):
-    d = int('1' + ('0' * d))
-    rounded = floor(n * d) / d
-    #print('round_down {},{}'.format(n, rounded))
-    return rounded
-
-
-def equal_floats(one, two, sigma=0.15):
-    if abs(one-two) <= sigma:
-        #print('equal_floats {},{},{} True'.format(one, two, sigma))
-        return True
-    else:
-        #print('equal_floats {},{},{} False'.format(one, two, sigma))
-        return False
-
 
 class Composition(object):
     def __init__(self, settings=None, comments=None):
@@ -47,12 +26,11 @@ class Composition(object):
 class GerberComposition(Composition):
     APERTURE_ID_BIAS = 10
 
-    def __init__(self, settings=None, comments=None, cutout_lines=None):
+    def __init__(self, settings=None, comments=None):
         super(GerberComposition, self).__init__(settings, comments)
         self.aperture_macros = {}
         self.apertures = []
         self.drawings = []
-        self.cutout_lines = cutout_lines
 
     def merge(self, file):
         if isinstance(file, hm_gerber_ex.rs274x.GerberFile):
@@ -61,91 +39,6 @@ class GerberComposition(Composition):
             self._merge_dxf(file)
         else:
             raise Exception('unsupported file type')
-
-    def split_line(self, f, cutouts, cutout_y, start, end, verbose=False):
-        if verbose:
-            print('#   SPLIT')
-            print('#            LINE START  {},{} [{}] '
-                  .format(start.x, start.y, start.to_gerber(self.settings)))
-        f.write(start.to_gerber(self.settings) + '\n')
-        for cutout in cutouts:
-            cutout_y = cutout[0]
-            if equal_floats(cutout_y, round_down(start.y), AppSettings.merge_error):
-                lines = cutout[1]
-                for cutout_line in lines:
-                    start_cutout_x = cutout_line[0]
-                    end_cutout_x = cutout_line[1]
-                    if start_cutout_x >= start.x and end_cutout_x <= end.x:
-                        new_end = CoordStmt(None, start_cutout_x, cutout_y, None, None, 'D01', self.settings)
-                        new_start = CoordStmt(None, end_cutout_x, cutout_y, None, None, 'D02', self.settings)
-                        if verbose:
-                            print('#   INSERTING LINE END   {},{} [{}] '
-                                  .format(new_end.x, new_end.y, new_end.to_gerber(self.settings)))
-                            print('#   INSERTING LINE START {},{} [{}] '
-                                  .format(new_start.x, new_start.y, new_start.to_gerber(self.settings)))
-                        f.write(new_end.to_gerber(self.settings) + '\n')
-                        f.write(new_start.to_gerber(self.settings) + '\n')
-        if verbose:
-            print('#            LINE END    {},{} [{}] '
-                  .format(end.x, end.y, end.to_gerber(self.settings)))
-        f.write(end.to_gerber(self.settings) + '\n')
-        return True
-
-    def process_segment(self, f, i, lines, cutouts, verbose=False):
-        split = False
-        start = lines[i]
-        if isinstance(start, CoordStmt) and start.op == 'D02' and len(lines) > (i+1):
-            end = lines[i + 1]
-            if isinstance(end, CoordStmt) and end.op == 'D01':
-                if equal_floats(end.y, start.y, AppSettings.merge_error):
-                    if verbose:
-                        print('#')
-                        print('# HORIZONTAL LINE')
-                        print('# LINE START {},{} [{}] '
-                              .format(start.x, start.y, start.to_gerber(self.settings)))
-                        print('# LINE END   {},{} [{}] '
-                              .format(end.x, end.y, end.to_gerber(self.settings)))
-                    for cutout in cutouts:
-                        cutout_y = cutout[0]
-                        if equal_floats(cutout_y, round_down(end.y), AppSettings.merge_error):
-                            if verbose:
-                                print('#')
-                                print('#  MATCHING Y {}'.format(cutout_y))
-                                print('#  LINE START {},{} [{}] '
-                                      .format(start.x, start.y, start.to_gerber(self.settings)))
-                                print('#  LINE END   {},{} [{}] '
-                                      .format(end.x, end.y, end.to_gerber(self.settings)))
-                            if end.x > start.x:
-                                if verbose:
-                                    print('#  DIRECTION ----->')
-                            else:
-                                if verbose:
-                                    print('#  DIRECTION <----- (SWAP NEEDED)')
-                                temp_x = end.x
-                                end.x = start.x
-                                start.x = temp_x
-                                if verbose:
-                                    print('#   NOW LINE START {},{} [{}] '
-                                          .format(start.x, start.y, start.to_gerber(self.settings)))
-                                    print('#   NOW LINE END   {},{} [{}] '
-                                          .format(end.x, end.y, end.to_gerber(self.settings)))
-                            split = self.split_line(f, cutouts, cutout_y, start, end, verbose)
-        if split:
-            return i+1
-        else:
-            f.write(lines[i].to_gerber(self.settings) + '\n')
-            return i
-
-    # can handle only horizontal lines, and lines going from left to right (i.e. start.x < end.x)
-    def process_statements(self, f, statements, cutouts, verbose=False):
-        if verbose:
-            print('>>>>>>>>>>> process_statements')
-            print('>>>>>>>>>>> cutouts: {}'.format(cutouts))
-        statements_list = []
-        for statement in statements():
-            statements_list.append(statement)
-        for i in range(len(statements_list)):
-            i = self.process_segment(f, i, statements_list, cutouts, verbose)
 
     def dump(self, path):
         def statements():
@@ -160,11 +53,8 @@ class GerberComposition(Composition):
         self.settings.zeros = 'trailing'
         with open(path, 'w') as f:
             hm_gerber_ex.rs274x.write_gerber_header(f, self.settings)
-            if self.cutout_lines is not None:
-                self.process_statements(f, statements, self.cutout_lines, verbose=False)
-            else:
-                for statement in statements():
-                    f.write(statement.to_gerber(self.settings) + '\n')
+            for statement in statements():
+                f.write(statement.to_gerber(self.settings) + '\n')
 
     def _merge_gerber(self, file):
         aperture_macro_map = {}

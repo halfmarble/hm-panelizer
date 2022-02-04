@@ -25,15 +25,16 @@ import os
 import sys
 
 import hm_gerber_ex
-
 from hm_gerber_ex import GerberComposition, DrillComposition
 from hm_gerber_tool.cam import FileSettings
 from hm_gerber_tool.utils import listdir
 
 from Utilities import *
 from PcbWorkarounds import *
+from SplitGerberComposition import *
 
-DEBUG_PANEL_EXPORT = False
+
+DEBUG_PANEL_EXPORT = True
 DEBUG_PANEL_EXPORT_ANGLE = 90.0
 
 
@@ -212,7 +213,7 @@ def export_pcb_panel(progress, panel_path,
             cutout_lines = None
             if ext == '.gm1':
                 cutout_lines = mouse_bites_cutouts
-            ctx = GerberComposition(cutout_lines=cutout_lines)
+            ctx = SplitGerberComposition(cutout_lines=cutout_lines)
         file = None
 
         # board
