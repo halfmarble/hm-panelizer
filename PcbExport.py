@@ -34,7 +34,7 @@ from PcbWorkarounds import *
 from SplitGerberComposition import *
 
 
-DEBUG_PANEL_EXPORT = True
+DEBUG_PANEL_EXPORT = False
 DEBUG_PANEL_EXPORT_ANGLE = 90.0
 
 
