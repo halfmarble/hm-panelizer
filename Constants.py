@@ -36,11 +36,11 @@ ALLOW_DIR_DELETIONS: Final      = True
 DEMO_PCB_PATH_STR: Final        = join('data', 'demo_pcb', 'NEAToBOARD')
 
 # careful: the higher the number the better the resolution, but needs more VRAM
-PIXELS_PER_MM: Final            = 16
+PIXELS_PER_MM: Final            = 8
 
-PIXELS_SIZE_MIN: Final          = 128
+PIXELS_SIZE_MIN: Final          = 256
 # super careful (do not go above 4096, unless you have a good GPU and lots of VRAM)
-PIXELS_SIZE_MAX: Final          = 2048
+PIXELS_SIZE_MAX: Final          = 1024
 
 PCB_OUTLINE_WIDTH: Final        = 1.5
 
