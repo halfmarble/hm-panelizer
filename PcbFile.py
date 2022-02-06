@@ -75,6 +75,7 @@ def generate_pcb_data_layers(cwd, pcb_rel_path, data_rel_path, progressbar=None,
     print('\n')
 
     bounds = pcb.board_bounds
+
     get_outline = True
     clip_to_outline = False
     print_outline = False
@@ -540,11 +541,13 @@ def generate_rail_gbo_data(origin, size):
 def generate_rail_gtl_data(origin, size):
     min_x = origin[0]
     min_y = origin[1]
-    max_x = min_x+size[0]
-    max_y = min_y+size[1]
+    width = size[0]
     height = size[1]
+    max_x = min_x+width
+    max_y = min_y+height
 
-    offset = 5
+    offset = 5.0
+    x = min_x + offset
     y = min_x + (height / 2.0)
 
     data = ''
@@ -567,12 +570,11 @@ def generate_rail_gtl_data(origin, size):
     data += 'D10*\n\n'
 
     data += 'G01*\n'
-    data += 'X{}Y{}D03*\n'.format(generate_float46(min_x+offset), generate_float46(y))
+    data += 'X{}Y{}D03*\n'.format(generate_float46(x), generate_float46(y))
 
-    x = min_x
-    while x < max_x:
-        x += 10
-    x -= 10
+    gap = 10.0
+    while x < (max_x-offset-1.0):
+        x += gap
     data += 'X{}Y{}D03*\n'.format(generate_float46(x), generate_float46(y))
 
     data += 'M02*\n'
@@ -582,11 +584,13 @@ def generate_rail_gtl_data(origin, size):
 def generate_rail_gts_data(origin, size):
     min_x = origin[0]
     min_y = origin[1]
-    max_x = min_x+size[0]
-    max_y = min_y+size[1]
+    width = size[0]
     height = size[1]
+    max_x = min_x+width
+    max_y = min_y+height
 
-    offset = 5
+    offset = 5.0
+    x = min_x + offset
     y = min_x + (height / 2.0)
 
     data = ''
@@ -608,12 +612,11 @@ def generate_rail_gts_data(origin, size):
     data += 'D10*\n\n'
 
     data += 'G01*\n'
-    data += 'X{}Y{}D03*\n'.format(generate_float46(min_x+offset), generate_float46(y))
+    data += 'X{}Y{}D03*\n'.format(generate_float46(x), generate_float46(y))
 
-    x = min_x
-    while x < max_x:
-        x += 10
-    x -= 10
+    gap = 10.0
+    while x < (max_x-offset-1.0):
+        x += gap
     data += 'X{}Y{}D03*\n'.format(generate_float46(x), generate_float46(y))
 
     data += 'M02*\n'
