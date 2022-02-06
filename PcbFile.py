@@ -573,7 +573,7 @@ def generate_rail_gtl_data(origin, size):
     data += 'X{}Y{}D03*\n'.format(generate_float46(x), generate_float46(y))
 
     gap = 10.0
-    while x < (max_x-offset-1.0):
+    while x < (max_x-gap-offset):
         x += gap
     data += 'X{}Y{}D03*\n'.format(generate_float46(x), generate_float46(y))
 
@@ -615,7 +615,7 @@ def generate_rail_gts_data(origin, size):
     data += 'X{}Y{}D03*\n'.format(generate_float46(x), generate_float46(y))
 
     gap = 10.0
-    while x < (max_x-offset-1.0):
+    while x < (max_x-gap-offset):
         x += gap
     data += 'X{}Y{}D03*\n'.format(generate_float46(x), generate_float46(y))
 
