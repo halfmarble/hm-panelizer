@@ -575,7 +575,7 @@ class GerberCairoContext(GerberContext):
             self.active_ctx.line_to(*end)
             self.active_ctx.stroke()
 
-        elif hasattr(line, 'vertices') and line.vertices is not None:
+        elif hasattr(line, 'vertices') and line.vertices is not None and len(line.vertices) > 1:
             points = [self.scale_point(x) for x in line.vertices]
             self.active_ctx.set_line_width(0)
             self.active_ctx.move_to(*points[-1])
