@@ -90,7 +90,10 @@ class PCB(object):
         if len(layers) > 0:
             board = cls(layers, board_name)
             print('[PCB]: board_bounds {}'.format(board.board_bounds))
-            return board
+            if board.board_bounds is None:
+                return None
+            else:
+                return board
         else:
             return None
 
