@@ -15,15 +15,15 @@ A GUI based PCB gerber file viewer and panelizer written in python
 
 This tool would not have been possible without the following projects:
 
-www.kicad.org
+- www.kicad.org
 
-www.kivy.org
+- www.kivy.org
 
-www.github.com/curtacircuitos/pcb-tools
+- www.github.com/curtacircuitos/pcb-tools
 
-www.github.com/opiopan/pcb-tools-extension
+- www.github.com/opiopan/pcb-tools-extension
 
-www.useiconic.com/open
+- www.useiconic.com/open
 
 We are releasing it under MIT license, Copyright 2021,2022 HalfMarble LLC (www.halfmarble.com)
 
@@ -34,6 +34,21 @@ some of them incompatible or unwanted (for example changing names of APIs to mak
 and contributing back would add significant amount of development time. We feel unhappy that
 we were unable to find an easy way to contribute back to those projects, and hope that someone can
 reconcile our contributions back to these projects one day.
+
+## Why did we create hm-panelizer?
+
+There are a couple of open source tools out there that will help you panelize your Pcb, 
+for example http://blog.thisisnotrocketscience.nl/projects/pcb-panelizer/ and www.github.com/yaqwsx/KiKit,
+however, we wanted a GUI based app, which we could run on a macOS based machine. We could not find one,
+so we wrote one.
+
+We also took this challenge on as an opportunity to learn the _**python**_ language and get an insight
+into the mysteries of **_gerber_** files format.
+
+## _! WARNING !_
+
+_We hope that you will find hm-panelizer useful, however, we offer no guarantee that it will work in your case - 
+always verify with other tools, before you order your Pcb panels!_
 
 ## How to run
 
@@ -59,18 +74,6 @@ Main view (outline verification)
 Panel view
 
 ![screenshot2](pics/Screenshot2.png)
-
-## _! WARNING !_
-
-_We hope that you will find hm-panelizer useful, however, we offer no guarantee that it will work in your case - 
-always verify with other tools, before you order your Pcb panels!_
-
-## Why did we create hm-panelizer?
-
-There are a couple of open source tools out there that will help you panelize your Pcb, 
-for example http://blog.thisisnotrocketscience.nl/projects/pcb-panelizer/ and www.github.com/yaqwsx/KiKit,
-however, we wanted a GUI based app, which we could run on a macOS based machine. We could not find one,
-so we wrote one.
 
 ## Will hm-panelizer work with my Pcb?
 
