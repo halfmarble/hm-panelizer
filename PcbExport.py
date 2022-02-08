@@ -35,7 +35,7 @@ from SplitGerberComposition import *
 
 
 DEBUG_PANEL_EXPORT = False
-DEBUG_PANEL_EXPORT_ANGLE = 90.0
+DEBUG_PANEL_EXPORT_ANGLE = 0.0
 
 
 def is_pth(name):
