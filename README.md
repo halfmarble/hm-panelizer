@@ -92,8 +92,12 @@ Having said that, here are requirements to create a Pcb that should make it suit
 - use **metric system**
 - your pcb gerber files must use **Altium/Protel filename extensions** (see https://pcbprime.com/pcb-tips/accepted-file-formats/Gerber%20File%20Extension%20Comparison.pdf)
 - the **board outline gerber file** (.gm1) must be present
-- currently, our tool can only add **mouse-bites to perfectly straight lines** (see hm-panelizer's "Outline verification" feature)
 - **"Disable aperture macros"** when exporting gerber files (this may not be needed for simple designs and only needed by some Pcb houses)
+
+Limitations:
+
+- currently, our tool can only add **mouse-bites to perfectly straight lines** only (see hm-panelizer's "Outline verification" feature)
+- only horizontal mousebites are suppported
 
 Here are the KiCad settings we personally use to export our Pcbs:
 
@@ -116,7 +120,7 @@ And here is a list of wish features we would like to see:
 - speed optimizations (rendering and panelization)
 - GUI for setting colors of Pcb layers, themes
 - scrollbars
-- support both horizontal and vertical mouse bites at the same time
+- support both horizontal and vertical mouse bites
 - standard output/error redirected to the progress panel to track the debug logs
 - render component parts
 - 3D rendering
