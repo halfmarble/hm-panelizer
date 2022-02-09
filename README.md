@@ -98,6 +98,8 @@ Limitations:
 
 - currently, our tool can only add **mouse-bites to perfectly straight lines** only (see hm-panelizer's "Outline verification" feature)
 - only horizontal mousebites are suppported
+- the **_horizontal/vertical_** feature is currently problematic with most Pcb houses (we recommend that you use your Pcb design app
+to do the rotation and only use **hm-panelizer** for layout and mousebites for now)
 
 Here are the KiCad settings we personally use to export our Pcbs:
 
