@@ -1,3 +1,4 @@
+
 # We are not quite ready to announce our tool yet!
 As the authors of this software, we kindly ask you not to announce or discuss our tool in public yet.
 
@@ -56,7 +57,7 @@ hm-panelizer is a **_python app_**, so you will need **_python_** version `3.6.x
 you will need the following python packages (optional - use **_pip3_** to help you manage python packages):
 
 - `kivy`
-- `cairo` (comes with most python distributions?)
+- `cairocffi`
 
 Once you have `python 3.6.x` and the required python packages installed, you can run hm-panelizer via command line
 (i.e. terminal) by `cd`'ing into the hm-panelizer folder, then issuing `python3 main.py` command.
@@ -79,15 +80,6 @@ Panel view
 
 It might. The gerber viewer part should almost certainly work, but the panelizer feature is another story.
 
-To ensure that your panel gets fabricated correctly, we recommend not to use hm-panelizer's **horizontal/vertical** feature 
-(for now, until we get more feedback from you), 
-but instead to rotate your Pcb from within your design app (ex. KiCad) and only use hm-panelizer for layout and mouse bites functionality.
-We worked hard to make sure that flipping a pcb board **horizontally/vertically** works, but we can not guarantee it. The reason is that
-Pcb houses do not seem to respect rotating macro's instructions using macro's rotate parameter, so we had to resort to
-an alternate mechanism of rotating macros, by swapping their arguments and rotating the points themselves. This, however,
-works only with built-in macros and a generic `RoundRect` macro as used by KiCad. If your board uses any other fancy macros,
-this will most definitively not work (KiCad offers **"Disable aperture macros"** when exporting gerber files to workaround this?)
-
 We personally use KiCad 6.x and we wanted to panelize our own Pcb (i.e. NEAToBOARD),
 so that's what we mostly tested. We did try a few other Pcbs created with other software and we are eager to hear your
 experience.
@@ -101,6 +93,7 @@ Having said that, here are requirements to create a Pcb that should make it suit
 - your pcb gerber files must use **Altium/Protel filename extensions** (see https://pcbprime.com/pcb-tips/accepted-file-formats/Gerber%20File%20Extension%20Comparison.pdf)
 - the **board outline gerber file** (.gm1) must be present
 - currently, our tool can only add **mouse-bites to perfectly straight lines** (see hm-panelizer's "Outline verification" feature)
+- **"Disable aperture macros"** when exporting gerber files (this may not be needed for simple designs and only needed by some Pcb houses)
 
 Here are the KiCad settings we personally use to export our Pcbs:
 
@@ -116,8 +109,7 @@ KiCad drill settings
 
 Here is a list of features we definitively want to add:
 
-- KiCad BOM conversion to popular Pcb house (JLC, PCBWay, Oshpark, etc.) formats
-- panelize parts placement
+- panelized parts position support
 
 And here is a list of wish features we would like to see:
 
