@@ -649,7 +649,7 @@ def generate_mouse_bite_drl_data(origin, size, radius, space):
     data += 'T1\n'
 
     unit = (radius + space + radius)
-    count = int(width / unit) - 1
+    count = int(width / unit) - 2
     cx = min_x + (width / 2.0)
     data += 'X{}Y{}\n'.format(generate_decfloat3(cx), generate_decfloat3(min_y))
     data += 'X{}Y{}\n'.format(generate_decfloat3(cx), generate_decfloat3(max_y))
