@@ -832,7 +832,7 @@ class GerberCairoContext(GerberContext):
         self.active_ctx.scale(1, -1)
 
     def new_render_layer(self, mirror=False, flip=False):
-        matrix = cairo.matrix.Matrix()
+        matrix = cairo.Matrix()
         matrix.x0 = self._active_matrix_base.x0
         matrix.xx = self._active_matrix_base.xx
         matrix.xy = self._active_matrix_base.xy
