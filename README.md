@@ -1,15 +1,3 @@
-
-# We are not quite ready to announce our tool yet!
-As the authors of this software, we kindly ask you not to announce or discuss our tool in public yet.
-
-If you came here by a random chance or were offered to beta test it or pre-review it, then please feel free
-to take the tool out for a spin, but kindly do not discuss it in public yet.
-
-We have placed orders of a panel made by our tool with a few Pcb houses, and we are just waiting to get them back to verify that
-they worked. Once we verify that, then we will be ready to publicly announce it.
-
-Thank you!
-
 # hm-panelizer
 
 A GUI based PCB gerber file viewer and panelizer written in python
