@@ -44,7 +44,7 @@ install `pygame` and `pycairo` python packages. Here is an example of steps I ha
 
       open -e ~/.zshrc
 
-      export PATH=/opt/homebrew/bin:$PATH
+      export PATH=$PATH:/opt/homebrew/bin
 
 - Install "pkg-config" and "cairo":
 
