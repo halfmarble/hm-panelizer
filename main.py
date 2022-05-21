@@ -23,6 +23,9 @@
 
 import os.path
 import tempfile
+import subprocess
+import webbrowser
+import sys
 
 from os import listdir
 from os.path import dirname
@@ -675,6 +678,11 @@ class PanelizerApp(App):
         self._about_popup.open()
 
     def about_ok(self):
+        url = 'https://ko-fi.com/halfmarble'
+        if sys.platform == 'darwin':
+            subprocess.Popen(['open', url])
+        else:
+            webbrowser.open_new_tab(url)
         self._about_popup.dismiss()
 
     def cleanup(self):

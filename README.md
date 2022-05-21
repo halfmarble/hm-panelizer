@@ -4,8 +4,6 @@ A GUI based PCB gerber file viewer and panelizer written in python
 
 This tool would not have been possible without the following projects:
 
-- www.kicad.org
-
 - www.kivy.org
 
 - www.github.com/curtacircuitos/pcb-tools
@@ -14,41 +12,58 @@ This tool would not have been possible without the following projects:
 
 - www.useiconic.com/open
 
-We are releasing it under MIT license, Copyright 2021,2022 HalfMarble LLC (www.halfmarble.com)
+hm-panelizer is released under MIT license, Copyright 2021,2022 HalfMarble LLC (www.halfmarble.com)
 
-Please note that we forked **_pcb-tools_** and **_pcb-tools-extension_**, made significant modifications,
-and included both of these projects as part of our tool. We tried at first to keep minimal changes
-to those projects, so that we could contribute back, but we eventually ended up needing to make many changes,
-some of them incompatible or unwanted (for example changing names of APIs to make it easier for us to follow the code) with those projects,
-and contributing back would add significant amount of development time. We feel unhappy that
-we were unable to find an easy way to contribute back to those projects, and hope that someone can
-reconcile our contributions back to these projects one day.
+Please note that I forked **_pcb-tools_** and **_pcb-tools-extension_**, made significant modifications,
+and included them as part of this tool.
 
-## Why did we create hm-panelizer?
+## Why did I create hm-panelizer?
 
 There are a couple of open source tools out there that will help you panelize your Pcb, 
 for example http://blog.thisisnotrocketscience.nl/projects/pcb-panelizer/ and www.github.com/yaqwsx/KiKit,
-however, we wanted a GUI based app, which we could run on a macOS based machine. We could not find one,
-so we wrote one.
+however, I wanted a GUI based app, which I could run (_easily_) on a macOS based machine, so here we are.
 
-We also took this challenge on as an opportunity to learn the _**python**_ language and get an insight
-into the mysteries of **_gerber_** files format.
+It also gave me an opportunity to learn python (_it is my first python app, so it is most certainly not optimally implemented_) 
+and gain some insight into the mysterious world of gerber files.
 
 ## _! WARNING !_
 
-_We hope that you will find hm-panelizer useful, however, we offer no guarantee that it will work in your case - 
+_I hope that you will find hm-panelizer useful, however, I offer no guarantee that it will work in your case - 
 always verify with other tools, before you order your Pcb panels!_
 
 ## How to run
 
-hm-panelizer is a **_python app_**, so you will need **_python_** version `3.6.x` or higher (we use `3.9.7`) Once you have it installed on your system,
-you will need the following python packages (optional - use **_pip3_** to help you manage python packages):
+hm-panelizer is a **_python app_**, so you will need **_python_** version `3.6.x` or higher (we use `3.9.12`) and 
+install `pygame` and `pycairo` python packages. Here is an example of steps I had to perform on my own macOS machine:
 
-- `kivy`
-- `cairocffi`
+- Install home-brew:
 
-Once you have `python 3.6.x` and the required python packages installed, you can run hm-panelizer via command line
-(i.e. terminal) by `cd`'ing into the hm-panelizer folder, then issuing `python3 main.py` command.
+      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+- Add "/opt/homebrew/bin" to your PATH in ZSH configuration file:
+
+      open -e ~/.zshrc
+
+      export PATH=/opt/homebrew/bin:$PATH
+
+- Install "pkg-config" and "cairo":
+
+      /opt/homebrew/bin/brew install pkg-config
+
+      /opt/homebrew/bin/brew install cairo
+
+- Upgrade pip:
+
+      python3 -m pip install --upgrade pip
+
+- Install "pycairo" and "pygame" python packages:
+
+      pip3 install pygame
+
+      pip3 install pycairo
+
+Once you have `python` and the required python packages installed, you can run `hm-panelizer` via command line
+(i.e. terminal) by `cd`'ing into the **hm-panelizer** folder, then issuing `python3 main.py` command.
 
 ## Screenshots:
 
@@ -68,11 +83,11 @@ Panel view
 
 It might. The gerber viewer part should almost certainly work, but the panelizer feature is another story.
 
-We personally use KiCad 6.x and we wanted to panelize our own Pcb (i.e. NEAToBOARD),
-so that's what we mostly tested. We did try a few other Pcbs created with other software and we are eager to hear your
+I personally use [KiCad](https://www.kicad.org) 6.x and wanted to panelize my own Pcb,
+so that's what I mostly tested. I did try a few other Pcbs created with other software and I am eager to hear your
 experience.
 
-Please keep in mind, however, that hm-panelizer was just a side project for us. We are releasing it
+Please keep in mind, however, that hm-panelizer was just a side project for me. I am releasing it
 as open source in hopes that the community will contribute to it.  If you find a bug and can fix it, then please help!
 
 Having said that, here are requirements to create a Pcb that should make it suitable for hm-panelizer:
@@ -84,12 +99,12 @@ Having said that, here are requirements to create a Pcb that should make it suit
 
 Limitations:
 
-- currently, our tool can only add **mouse-bites to perfectly straight lines** only (see hm-panelizer's "Outline verification" feature)
+- currently, the tool can only add **mouse-bites to perfectly straight lines** only (see hm-panelizer's "Outline verification" feature)
 - only horizontal mousebites are suppported
-- the **_horizontal/vertical_** feature is currently problematic with most Pcb houses (we recommend that you use your Pcb design app
+- the **_horizontal/vertical_** feature is currently problematic with most Pcb houses (I recommend that you use your Pcb design app
 to do the rotation and only use **hm-panelizer** for layout and mousebites for now)
 
-Here are the KiCad settings we personally use to export our Pcbs:
+Here are the KiCad settings I personally use to export my Pcbs:
 
 KiCad plot settings
 
@@ -101,11 +116,7 @@ KiCad drill settings
 
 ## TODO
 
-Here is a list of features we definitively want to add:
-
-- panelized parts position support
-
-And here is a list of wish features we would like to see:
+Here is a list of wish features that I personally would like to add when I have the time:
 
 - speed optimizations (rendering and panelization)
 - GUI for setting colors of Pcb layers, themes
@@ -117,6 +128,10 @@ And here is a list of wish features we would like to see:
 
 ## Need help?
 
-Visit our Discord channel https://discord.gg/7mf5qqBMEF
+Visit my Discord channel https://discord.gg/7mf5qqBMEF
 
-#### Please consider supporting us if you like hm-panelizer and you want to see more features!
+## Please consider supporting hm-panelizer if you want to see more features!
+
+### https://ko-fi.com/halfmarble ### 
+
+ 

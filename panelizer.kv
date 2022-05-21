@@ -249,12 +249,12 @@
 <About@Popup>:
     auto_dismiss: True
     size_hint: (None, None)
-    size: (512, 350)
+    size: (512, 400)
     BoxLayout:
         orientation: "vertical"
         BoxLayout:
             orientation: "vertical"
-            size_hint: 1.0, 0.85
+            size_hint: 1.0, 0.7
             TitleLabel:
                 size_hint: 1.0, 0.1
                 text: ' '
@@ -276,10 +276,6 @@
             TitleLabel:
                 bold: False
                 size_hint: 1.0, 0.1
-                text: 'www.kicad.org'
-            TitleLabel:
-                bold: False
-                size_hint: 1.0, 0.1
                 text: 'kivy.org'
             TitleLabel:
                 bold: False
@@ -297,12 +293,30 @@
                 size_hint: 1.0, 0.1
                 text: ' '
         BoxLayout:
-            orientation: "horizontal"
-            size_hint: 1.0, 0.1
+            orientation: "vertical"
+            size_hint: 1.0, 0.3
+            canvas:
+                Color:
+                    rgba: 0.3, 0.3, 0.3, 0.8
+                Rectangle:
+                    pos: self.x + 30, self.y + 95
+                    size: self.width - 60, 1
+            TitleLabel:
+                size_hint: 1.0, 0.05
+                text: ' '
+            TitleLabel:
+                size_hint: 1.0, 0.1
+                text: 'Support open source development of hm-panelizer'
             Button:
-                text: 'OK'
+                pos_hint: {'center_x': 0.5}
+                size: 192, 30
+                size_hint: None, None
+                background_normal: 'data/icons/Kofi_normal.png'
+                background_down: 'data/icons/Kofi_down.png'
                 on_release: app.about_ok()
-
+            TitleLabel:
+                size_hint: 1.0, 0.05
+                text: ' '
 
 <Error@Popup>:
     auto_dismiss: True
