@@ -1,5 +1,7 @@
 # hm-panelizer
 
+![icon](https://raw.githubusercontent.com/halfmarble/hm-panelizer/main/data/icons/icon.png)
+
 A GUI based PCB gerber file viewer and panelizer written in python
 
 This tool would not have been possible without the following projects:
