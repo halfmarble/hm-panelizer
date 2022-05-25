@@ -34,7 +34,7 @@ always verify with other tools, before you order your Pcb panels!_
 ## How to run
 
 hm-panelizer is a **_python app_**, so you will need **_python_** version `3.6.x` or higher (we use `3.9.12`) and 
-install `pygame` and `pycairo` python packages. Here is an example of steps I had to perform on my own macOS machine:
+install `kivy`, `pygame` and `pycairo` python packages. Here is an example of steps I had to perform on my own macOS machine:
 
 - Install **homebrew** by following one step installation on https://brew.sh/
 
@@ -51,11 +51,13 @@ install `pygame` and `pycairo` python packages. Here is an example of steps I ha
 
       /opt/homebrew/bin/brew install cairo
 
-- Upgrade pip:
+- Upgrade "pip":
 
       python3 -m pip install --upgrade pip
 
-- Install "pycairo" and "pygame" python packages:
+- Install "kivy", pycairo" and "pygame" python packages:
+
+      pip3 install kivy
 
       pip3 install pygame
 
