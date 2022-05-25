@@ -36,9 +36,8 @@ always verify with other tools, before you order your Pcb panels!_
 hm-panelizer is a **_python app_**, so you will need **_python_** version `3.6.x` or higher (we use `3.9.12`) and 
 install `pygame` and `pycairo` python packages. Here is an example of steps I had to perform on my own macOS machine:
 
-- Install home-brew:
+- Install **homebrew** by following one step installation on https://brew.sh/
 
-      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 - Add "/opt/homebrew/bin" to your PATH in ZSH configuration file:
 
