@@ -133,6 +133,7 @@ Visit my Discord channel https://discord.gg/7mf5qqBMEF
 
 ## Please consider supporting hm-panelizer if you want to see more features!
 
-### https://ko-fi.com/halfmarble ### 
+[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/halfmarble)
+
 
  
