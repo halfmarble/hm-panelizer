@@ -22,7 +22,7 @@ and included them as part of this tool.
 ## Why did I create hm-panelizer?
 
 There are a couple of open source tools out there that will help you panelize your Pcb, 
-for example http://blog.thisisnotrocketscience.nl/projects/pcb-panelizer/ and www.github.com/yaqwsx/KiKit,
+for example http://blog.thisisnotrocketscience.nl/projects/pcb-panelizer/ , https://github.com/sej7278/kicad-panelizer and www.github.com/yaqwsx/KiKit,
 however, I wanted a GUI based app, which I could run (_easily_) on a macOS based machine, so here we are.
 
 It also gave me an opportunity to learn python (_it is my first python app, so it is most certainly not optimally implemented_) 
