@@ -57,17 +57,9 @@ install `kivy`, `pygame` and `pycairo` python packages. Here is an example of st
 
       python3 -m pip install --upgrade pip
 
-- Install "kivy", pycairo" and "pygame" python packages:
+- Install required python packages "kivy", pycairo" and "pygame" (and optional cairocffi):
 
-      pip3 install kivy
-
-      pip3 install pygame
-
-      pip3 install pycairo
-      
-- I have received a report that "cairocffi" python package is required as well. On my Mac things work fine without it, however, if your machine needs it, then you can install it with:
-
-      pip3 install cairocffi
+      pip3 install -r requirements.txt
 
 Once you have `python` and the required python packages installed, you can run `hm-panelizer` via command line
 (i.e. terminal) by `cd`'ing into the **hm-panelizer** folder, then issuing `python3 main.py` command.
