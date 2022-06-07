@@ -1,0 +1,4 @@
+kivy
+pygame
+pycairo
+cairocffi
