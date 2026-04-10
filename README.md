@@ -1,3 +1,5 @@
+[![License](https://img.shields.io/badge/Open%20Source-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
+
 # hm-panelizer
 
 ![icon](https://raw.githubusercontent.com/halfmarble/hm-panelizer/main/data/icons/icon.png)
