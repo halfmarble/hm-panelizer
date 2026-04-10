@@ -135,13 +135,13 @@ Here is a list of wish features that I personally would like to add when I have 
 - render component parts
 - 3D rendering
 
-## Need help?
+## 📄 License
 
-Visit my Discord channel https://discord.gg/7mf5qqBMEF
+Distributed under the MIT License. See `LICENSE` for more information.
 
-## Please consider supporting hm-panelizer if you want to see more features!
+---
+Created with ❤️ by [halfmarble](https://github.com/halfmarble)
 
-[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/halfmarble)
 
 
  
